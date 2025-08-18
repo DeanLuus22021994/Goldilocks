@@ -11,6 +11,14 @@ Quickstart
   - Or: docker compose up --build (uses gunicorn on 9000)
 - Open in browser: $BROWSER http://localhost:9000
 
+Shell UI
+
+- Top header bar (sticky), Azure-portal-like collapsible sidebar menu, main content, and footer.
+- Theme toggle (light/dark), health badge, and responsive layout.
+- Profile dropdown (top-right) appears when logged in. For demo, toggle via localStorage:
+  - localStorage.setItem("goldilocks-auth", JSON.stringify({ loggedIn: true, name: "Ada" }))
+  - localStorage.removeItem("goldilocks-auth") to hide again.
+
 Endpoints
 
 - GET / -> serves static/index.html
@@ -26,8 +34,8 @@ Observability
 
 UI
 
-- Minimal responsive layout, modular CSS/JS, accessible theme toggle (light/dark) with persistence and prefers-color-scheme.
-- Favicon included; focus-visible outlines; reduced-motion friendly; density utilities (compact/comfortable).
+- Modular CSS/JS, accessible theme toggle, focus-visible, reduced-motion friendly.
+- Density utilities (compact/comfortable), favicon.
 
 Testing
 
@@ -58,3 +66,8 @@ Dev Container
 - Git and make installed permanently in the Docker image.
 - postCreateCommand upgrades pip, installs requirements, installs pre-commit hooks.
 - Port 9000 auto-forwards and opens.
+
+Troubleshooting: Pylance missing imports
+
+- If you see "Import ... could not be resolved" in VS Code, ensure you're opened in the Dev Container so the interpreter has Flask/pytest installed.
+- Or select the correct Python interpreter (Command Palette → Python: Select Interpreter) corresponding to the container environment.
