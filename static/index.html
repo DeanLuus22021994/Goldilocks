@@ -15,11 +15,32 @@
   </head>
   <body>
     <header>
-      <div class="container">
-        <h1>Goldilocks</h1>
-        <p>
-          Flask app is running. Health: <span class="badge" data-health>—</span>
-        </p>
+      <div
+        class="container"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
+        "
+      >
+        <div>
+          <h1>Goldilocks</h1>
+          <p>
+            Flask app is running. Health:
+            <span class="badge" data-health>—</span>
+          </p>
+        </div>
+        <button
+          class="icon-btn"
+          data-toggle-theme
+          aria-pressed="false"
+          aria-label="Toggle color theme"
+        >
+          <span aria-hidden="true">🌓</span>
+          <span data-theme-label>light</span>
+        </button>
       </div>
     </header>
 
