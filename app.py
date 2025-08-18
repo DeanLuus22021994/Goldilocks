@@ -137,6 +137,10 @@ def not_found(_: Exception) -> tuple[Response, int]:
     return jsonify({"message": "Not Found"}), 404
 
 
+# Explicit re-exports for typing (tests patch pkg_version)
+__all__ = ["app", "pkg_version"]
+
+
 # Explicit exports for typing and tests
 __all__ = [
     "app",
