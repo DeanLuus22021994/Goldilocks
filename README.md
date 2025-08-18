@@ -17,10 +17,25 @@ Endpoints
 Testing
 
 - pytest -q
+- Coverage: pytest -q --cov=app --cov-report=term-missing --cov-report=xml
+
+Static analysis
+
+- mypy .
+- pre-commit run --all-files (black, isort, flake8, mypy, pyupgrade)
+
+VS Code tasks
+
+- Run Flask (port 9000)
+- Test: pytest
+- Test: watch (looponfail)
+- Coverage
+- Type check (mypy)
+- Pre-commit (all files)
 
 CI
 
-- GitHub Actions runs pytest on push/PR.
+- GitHub Actions runs pytest with coverage, caches pip, runs mypy and pre-commit.
 
 Dev Container
 

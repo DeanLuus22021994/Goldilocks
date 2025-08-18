@@ -20,6 +20,24 @@
       "command": "pytest -q -f",
       "detail": "Requires pytest-xdist; reruns tests on file changes.",
       "problemMatcher": []
+    },
+    {
+      "label": "Coverage",
+      "type": "shell",
+      "command": "pytest -q --cov=app --cov-report=term-missing --cov-report=xml",
+      "problemMatcher": []
+    },
+    {
+      "label": "Type check (mypy)",
+      "type": "shell",
+      "command": "mypy .",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pre-commit (all files)",
+      "type": "shell",
+      "command": "pre-commit run --all-files",
+      "problemMatcher": []
     }
   ]
 }
