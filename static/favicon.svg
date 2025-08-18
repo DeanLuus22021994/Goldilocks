@@ -1,0 +1,12 @@
+<!-- Simple Goldilocks favicon (SVG) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#ef4444"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#g)"/>
+  <path fill="#fff" d="M20 44c0-9.941 8.059-18 18-18h6v6h-6c-6.627 0-12 5.373-12 12H20z"/>
+  <circle cx="44" cy="20" r="6" fill="#fff"/>
+</svg>
