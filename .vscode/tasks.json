@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Flask (port 9000)",
+      "type": "shell",
+      "command": "flask --app app run --host 0.0.0.0 --port 9000 --no-debugger --no-reload",
+      "options": { "env": { "FLASK_APP": "app.py" } },
+      "problemMatcher": []
+    }
+  ]
+}
