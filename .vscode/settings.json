@@ -21,6 +21,7 @@
     "Installshield",
     "iobj",
     "ipch",
+    "isort",
     "jmconfig",
     "jsonify",
     "mfractor",
