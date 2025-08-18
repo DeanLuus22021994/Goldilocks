@@ -5,6 +5,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1
 
+# Install minimal runtime deps (none needed for pure Python)
 WORKDIR /app
 
 COPY requirements.txt ./
@@ -17,4 +18,6 @@ COPY static ./static
 ENV FLASK_APP=app.py
 EXPOSE 9000
 
-CMD ["flask", "run", "--host", "0.0.0.0", "--port", "9000", "--no-debugger", "--no-reload"]
+# Use gunicorn for high performance; default workers auto = 2*CPU+1
+# Bind to all interfaces on port 9000, keep threads small for latency
+CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--workers", "0", "--threads", "2", "--access-logfile", "-", "--error-logfile", "-", "app:app"]

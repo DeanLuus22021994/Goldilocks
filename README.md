@@ -6,11 +6,13 @@ Run
 
 - Press F5, or:
   - flask --app app run --host 0.0.0.0 --port 9000 --no-debugger --no-reload
+  - docker compose up --build (uses gunicorn on 9000)
 
 Endpoints
 
 - GET / -> serves static/index.html
 - GET /healthz -> {"status":"ok"}
+- GET /version -> app, Python, Flask, platform
 
 Dev Container
 
