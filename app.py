@@ -135,3 +135,10 @@ def version() -> tuple[Response, int]:
 @app.errorhandler(404)
 def not_found(_: Exception) -> tuple[Response, int]:
     return jsonify({"message": "Not Found"}), 404
+
+
+# Explicit exports for typing and tests
+__all__ = [
+    "app",
+    "pkg_version",
+]
