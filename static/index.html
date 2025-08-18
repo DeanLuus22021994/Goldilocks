@@ -13,6 +13,8 @@
     <link rel="preload" href="/static/css/header.css" as="style" />
     <link rel="preload" href="/static/css/buttons.css" as="style" />
     <link rel="preload" href="/static/css/utilities.css" as="style" />
+    <link rel="preload" href="/static/css/nav.css" as="style" />
+    <link rel="preload" href="/static/css/footer.css" as="style" />
     <link rel="stylesheet" href="/static/css/variables.css" />
     <link rel="stylesheet" href="/static/css/theme.css" />
     <link rel="stylesheet" href="/static/css/base.css" />
@@ -21,18 +23,23 @@
     <link rel="stylesheet" href="/static/css/header.css" />
     <link rel="stylesheet" href="/static/css/buttons.css" />
     <link rel="stylesheet" href="/static/css/utilities.css" />
+    <link rel="stylesheet" href="/static/css/nav.css" />
+    <link rel="stylesheet" href="/static/css/footer.css" />
   </head>
   <body>
-    <header>
-      <div class="container header-bar">
-        <div>
-          <h1 class="center">Goldilocks</h1>
-          <p class="center">
-            Flask app is running. Health:
-            <span class="badge" data-health>—</span>
-          </p>
+    <!-- Top header bar -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="left">
+          <button class="icon-btn" data-nav-toggle aria-label="Toggle menu">
+            <span aria-hidden="true">☰</span>
+          </button>
+          <strong class="brand">Goldilocks</strong>
+          <span class="small hide-sm"
+            >Health: <span class="badge" data-health>—</span></span
+          >
         </div>
-        <div class="header-meta">
+        <div class="right">
           <button
             class="icon-btn"
             data-toggle-theme
@@ -40,29 +47,94 @@
             aria-label="Toggle color theme"
           >
             <span aria-hidden="true">🌓</span>
-            <span data-theme-label>light</span>
+            <span class="hide-sm" data-theme-label>light</span>
           </button>
+          <!-- Profile (shown by JS when logged in) -->
+          <div class="profile" data-profile hidden>
+            <button
+              class="icon-btn"
+              data-profile-toggle
+              aria-haspopup="menu"
+              aria-expanded="false"
+            >
+              <img
+                class="avatar"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='8' r='5' fill='%23999'/%3E%3Crect x='4' y='15' width='16' height='7' rx='3' fill='%23999'/%3E%3C/svg%3E"
+                alt=""
+                width="24"
+                height="24"
+              />
+              <span class="hide-sm" data-profile-name>—</span>
+            </button>
+            <div class="profile-menu" data-profile-menu role="menu">
+              <div class="small muted" style="padding: 0.25rem 0.5rem">
+                Signed in as <strong data-profile-name>—</strong>
+              </div>
+              <hr />
+              <a href="#" role="menuitem">Profile</a>
+              <a href="#" role="menuitem">Settings</a>
+              <hr />
+              <a href="#" role="menuitem" data-signout>Sign out</a>
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
-    <main class="container section">
-      <div class="grid">
-        <div class="card">
-          <strong>Health</strong>
-          <p>
-            <a href="/health">/health</a> returns <code>{"status":"ok"}</code>.
-          </p>
+    <div class="portal" data-portal>
+      <!-- Sidebar navigation like Azure portal -->
+      <aside class="sidebar" data-sidebar>
+        <nav class="nav" aria-label="Main">
+          <a class="nav-item" href="/">
+            <span class="icon" aria-hidden="true">🏠</span>
+            <span>Home</span>
+          </a>
+          <a class="nav-item" href="/health">
+            <span class="icon" aria-hidden="true">❤️</span>
+            <span>Health</span>
+          </a>
+          <a class="nav-item" href="/version">
+            <span class="icon" aria-hidden="true">🧪</span>
+            <span>Version</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <main class="content">
+        <div class="container section">
+          <div class="grid">
+            <div class="card">
+              <strong>Health</strong>
+              <p>
+                <a href="/health">/health</a> returns
+                <code>{"status":"ok"}</code>.
+              </p>
+            </div>
+            <div class="card">
+              <strong>Version</strong>
+              <p><a href="/version">/version</a> shows app, Python, Flask.</p>
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <strong>Version</strong>
-          <p><a href="/version">/version</a> shows app, Python, Flask.</p>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="flex items-center justify-between wrap gap-3">
+          <span class="muted">© <span data-year></span> Goldilocks</span>
+          <span class="small">
+            <a href="/version">Version</a> ·
+            <a
+              href="https://flask.palletsprojects.com/"
+              rel="noreferrer noopener"
+              >Flask</a
+            >
+          </span>
         </div>
       </div>
-      <p class="section mt-6 muted center">
-        © <span data-year></span> Goldilocks
-      </p>
-    </main>
+    </footer>
 
     <script src="/static/js/main.js" defer></script>
   </body>

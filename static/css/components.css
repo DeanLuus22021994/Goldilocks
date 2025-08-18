@@ -34,3 +34,45 @@
 .icon-btn:hover {
   filter: brightness(1.05);
 }
+
+.small {
+  font-size: 0.9em;
+}
+
+/* Profile dropdown */
+.profile {
+  position: relative;
+}
+.profile .avatar {
+  border-radius: 999px;
+}
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 200px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--elev);
+  padding: var(--space-2);
+  display: none;
+}
+.profile-menu.open {
+  display: block;
+}
+.profile-menu a {
+  display: block;
+  padding: 0.4rem 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+.profile-menu a:hover {
+  background: color-mix(in oklab, var(--border) 90%, transparent);
+}
+.profile-menu hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: var(--space-2) 0;
+}
