@@ -42,6 +42,8 @@
     "pylance",
     "pylint",
     "pytest",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONUNBUFFERED",
     "rptproj",
     "rsuser",
     "schemaview",

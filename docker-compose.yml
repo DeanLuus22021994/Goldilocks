@@ -1,0 +1,32 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: goldilocks-flask:latest
+    container_name: goldilocks-web
+    privileged: true
+    network_mode: host
+    init: true
+    ports:
+      - "9000:9000"
+    environment:
+      - FLASK_APP=app.py
+    volumes:
+      - ./:/app
+      - pip-cache:/root/.cache/pip
+    command:
+      [
+        "flask",
+        "run",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9000",
+        "--no-debugger",
+        "--no-reload",
+      ]
+    restart: unless-stopped
+
+volumes:
+  pip-cache:
