@@ -1,30 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Goldilocks Flask App</title>
     <link rel="preload" href="/static/css/variables.css" as="style" />
+    <link rel="preload" href="/static/css/theme.css" as="style" />
     <link rel="preload" href="/static/css/base.css" as="style" />
     <link rel="preload" href="/static/css/layout.css" as="style" />
     <link rel="preload" href="/static/css/components.css" as="style" />
+    <link rel="preload" href="/static/css/header.css" as="style" />
+    <link rel="preload" href="/static/css/buttons.css" as="style" />
     <link rel="stylesheet" href="/static/css/variables.css" />
+    <link rel="stylesheet" href="/static/css/theme.css" />
     <link rel="stylesheet" href="/static/css/base.css" />
     <link rel="stylesheet" href="/static/css/layout.css" />
     <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/header.css" />
+    <link rel="stylesheet" href="/static/css/buttons.css" />
   </head>
   <body>
     <header>
-      <div
-        class="container"
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          flex-wrap: wrap;
-        "
-      >
+      <div class="container header-bar">
         <div>
           <h1>Goldilocks</h1>
           <p>
@@ -32,15 +29,17 @@
             <span class="badge" data-health>—</span>
           </p>
         </div>
-        <button
-          class="icon-btn"
-          data-toggle-theme
-          aria-pressed="false"
-          aria-label="Toggle color theme"
-        >
-          <span aria-hidden="true">🌓</span>
-          <span data-theme-label>light</span>
-        </button>
+        <div class="header-meta">
+          <button
+            class="icon-btn"
+            data-toggle-theme
+            aria-pressed="false"
+            aria-label="Toggle color theme"
+          >
+            <span aria-hidden="true">🌓</span>
+            <span data-theme-label>light</span>
+          </button>
+        </div>
       </div>
     </header>
 
