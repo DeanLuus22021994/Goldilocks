@@ -46,3 +46,22 @@
 .wrap {
   flex-wrap: wrap;
 }
+
+/* Density utilities: override spacing scale in scope */
+.density-compact {
+  --space-1: 0.125rem;
+  --space-2: 0.25rem;
+  --space-3: 0.5rem;
+  --space-4: 0.75rem;
+  --space-5: 1rem;
+  --space-6: 1.25rem;
+}
+
+.density-comfortable {
+  --space-1: 0.375rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.25rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+}
