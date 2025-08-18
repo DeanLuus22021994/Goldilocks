@@ -20,7 +20,6 @@
     "vscode": {
       "settings": {},
       "extensions": [
-        "streetsidesoftware.code-spell-checker",
         "ms-python.python",
         "ms-python.vscode-pylance",
         "GitHub.copilot",
@@ -46,7 +45,12 @@
 
   // Use 'postCreateCommand' to run commands after the container is created.
   // Upgrade pip, then install pinned requirements (no --upgrade to keep it fast & reproducible)
-  "postCreateCommand": "bash -lc 'python -m pip install --upgrade pip && pip3 install -r requirements.txt'"
+  "postCreateCommand": "bash -lc 'python -m pip install --upgrade pip && pip3 install -r requirements.txt'",
+
+  // Run the container as root and with full privileges
+  "remoteUser": "root",
+  "runArgs": ["--privileged"],
+  "init": true
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
