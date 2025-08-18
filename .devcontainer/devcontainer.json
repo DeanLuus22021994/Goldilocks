@@ -3,6 +3,7 @@
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "web",
   "workspaceFolder": "/app",
+  "overrideCommand": true,
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
     "PIP_NO_INPUT": "1"
