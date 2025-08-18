@@ -5,6 +5,12 @@
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
   "image": "mcr.microsoft.com/devcontainers/python:1-3.13",
 
+  // Keep the container lean and fast
+  "containerEnv": {
+    "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+    "PIP_NO_INPUT": "1"
+  },
+
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
 
@@ -16,7 +22,9 @@
       "extensions": [
         "streetsidesoftware.code-spell-checker",
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
     }
   },
@@ -28,13 +36,17 @@
   // More info: https://containers.dev/implementors/json_reference/#port-attributes
   "portsAttributes": {
     "9000": {
-      "label": "Hello Remote World",
+      "label": "Goldilocks Flask App",
       "onAutoForward": "openBrowser"
     }
   },
 
+  // Persist pip cache across rebuilds to speed up installs
+  "mounts": ["source=pip-cache,target=/home/vscode/.cache/pip,type=volume"],
+
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "bash -lc 'python -m pip install --upgrade pip && pip3 install --upgrade -r requirements.txt'"
+  // Upgrade pip, then install pinned requirements (no --upgrade to keep it fast & reproducible)
+  "postCreateCommand": "bash -lc 'python -m pip install --upgrade pip && pip3 install -r requirements.txt'"
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
