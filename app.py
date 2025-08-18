@@ -94,8 +94,9 @@ def index() -> Response:
     return send_from_directory("static", "index.html")
 
 
-@app.get("/healthz")
-def healthz() -> Tuple[Response, int]:
+@app.get("/health")
+@app.get("/healthz")  # temporary alias
+def health() -> Tuple[Response, int]:
     return jsonify({"status": "ok"}), 200
 
 
