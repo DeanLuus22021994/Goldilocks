@@ -40,9 +40,9 @@ formatter: logging.Formatter = logging.Formatter(
 )
 try:
     jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
-    JsonFormatter = getattr(jsonlogger_mod, "JsonFormatter")
+    JsonFormatter = jsonlogger_mod.JsonFormatter
     formatter = JsonFormatter("%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s")
-except (ModuleNotFoundError, ImportError, AttributeError):  # pragma: no cover
+except (ImportError, AttributeError):  # pragma: no cover
     pass
 
 handler.setFormatter(formatter)
