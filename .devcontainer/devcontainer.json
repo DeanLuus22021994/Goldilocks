@@ -4,11 +4,27 @@
   "service": "web",
   "workspaceFolder": "/app",
   "overrideCommand": true,
+
+  // Ensure required host capabilities
+  "hostRequirements": {
+    "gpu": "optional"
+  },
+
+  // Dev Container Features (installs apt packages at build time)
+  "features": {
+    "ghcr.io/devcontainers/features/apt-packages:1": {
+      "packages": "make"
+    }
+  },
+
+  // Environment inside the container
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
     "PIP_NO_INPUT": "1",
-    "PIP_ROOT_USER_ACTION": "ignore"
+    "PIP_ROOT_USER_ACTION": "ignore",
+    "FLASK_APP": "app.py"
   },
+
   "customizations": {
     "vscode": {
       "settings": {},
@@ -21,11 +37,15 @@
       ]
     }
   },
+
   "forwardPorts": [9000],
   "portsAttributes": {
     "9000": { "label": "Goldilocks Flask App", "onAutoForward": "openBrowser" }
   },
-  "postCreateCommand": "bash -lc 'python -m pip install --upgrade pip && pip3 install -r requirements.txt'",
+
+  // Install system deps (fallback for make), then Python deps and hooks
+  "postCreateCommand": "bash -lc 'command -v make >/dev/null 2>&1 || (apt-get update && apt-get install -y --no-install-recommends make); python -m pip install --upgrade pip && pip3 install -r requirements.txt && pre-commit install -f && pre-commit install-hooks'",
+
   "remoteUser": "root",
   "init": true
 }
