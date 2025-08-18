@@ -1,5 +1,16 @@
 {
   "git.path": "/usr/bin/git",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
+  },
+  "python.formatting.provider": "black",
+  "python.analysis.typeCheckingMode": "basic",
+  "isort.args": ["--profile", "black"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
   "cSpell.words": [
     "ackages",
     "autoforwarded",
