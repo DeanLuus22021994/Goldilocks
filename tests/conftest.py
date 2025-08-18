@@ -12,6 +12,14 @@ if ROOT not in sys.path:
 
 from app import app as flask_app  # noqa: E402
 
+# Cached terminal reporter, set during configuration
+_TR = None
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    global _TR
+    _TR = config.pluginmanager.get_plugin("terminalreporter")
+
 
 @pytest.fixture(scope="session")
 def app():
@@ -39,3 +47,21 @@ def json_of() -> Callable[[Any], dict[str, Any]]:
 def correlation_id_header() -> dict[str, str]:
     """Provide a stable correlation ID header for tests."""
     return {"X-Request-ID": "test-cid-123"}
+
+
+def pytest_runtest_logreport(report: pytest.TestReport) -> None:
+    """Emit a brief RAG status line per test: 'GREEN <nodeid>' etc."""
+    if report.when != "call" or _TR is None:  # pragma: no cover - missing reporter
+        return
+
+    outcome = report.outcome  # 'passed' | 'failed' | 'skipped'
+    rag = "GREEN" if outcome == "passed" else ("RED" if outcome == "failed" else "AMBER")
+    if getattr(report, "wasxfail", False):
+        rag = "AMBER"
+
+    _TR.write_line(
+        f"{rag} {report.nodeid}",
+        green=outcome == "passed",
+        red=outcome == "failed",
+        yellow=(outcome == "skipped" or getattr(report, "wasxfail", False)),
+    )
