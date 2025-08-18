@@ -1,0 +1,36 @@
+/* Color tokens and spacing scale */
+:root {
+  color-scheme: light dark;
+
+  /* Palette (auto-adapts in dark mode) */
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: rgba(0, 0, 0, 0.12);
+  --elev: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* Typography */
+  --ff: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --lh: 1.5;
+
+  /* Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0c;
+    --fg: #eaeaea;
+    --muted: #a1a1aa;
+    --card: #151517;
+    --border: rgba(255, 255, 255, 0.12);
+    --elev: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+}

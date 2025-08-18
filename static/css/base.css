@@ -1,0 +1,44 @@
+/* Base element resets and structure */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ff);
+  line-height: var(--lh);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+header {
+  padding: var(--space-6) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.container {
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+h1 {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(1.5rem, 2.5vw + 1rem, 2.25rem);
+}
+
+p {
+  margin: var(--space-2) 0;
+  color: var(--muted);
+}

@@ -1,0 +1,10 @@
+/* Simple grid layout helpers */
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.section {
+  margin: var(--space-6) 0;
+}
