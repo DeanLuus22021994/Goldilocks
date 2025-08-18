@@ -1,8 +1,8 @@
 import json
 import os
 import sys
-from typing import Any, cast
 from collections.abc import Callable
+from typing import Any, cast
 
 import pytest
 from flask import Flask
