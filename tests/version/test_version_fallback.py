@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError
 from typing import Any, cast
-from collections.abc import Callable
 
 import flask as _flask
 import pytest
