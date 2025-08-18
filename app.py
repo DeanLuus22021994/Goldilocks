@@ -13,7 +13,6 @@ import uuid
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 from logging import StreamHandler, getLogger
-from typing import Tuple
 
 from flask import Flask, Response, g, jsonify, request, send_from_directory
 
@@ -47,8 +46,12 @@ except (ModuleNotFoundError, ImportError, AttributeError):  # pragma: no cover
     pass
 
 handler.setFormatter(formatter)
-logger.addHandler(handler)
+# Avoid duplicate handlers on reload
+if not any(isinstance(h, StreamHandler) for h in logger.handlers):
+    logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+# Do not propagate to root to avoid double-logging when root has handlers
+logger.propagate = False
 
 # Propagate Flask's logs to the root logger and ensure it has our handler
 app.logger.handlers = []
@@ -95,12 +98,12 @@ def index() -> Response:
 
 
 @app.get("/health")
-def health() -> Tuple[Response, int]:
+def health() -> tuple[Response, int]:
     return jsonify({"status": "ok"}), 200
 
 
 @app.get("/version")
-def version() -> Tuple[Response, int]:
+def version() -> tuple[Response, int]:
     # app version can be provided via env APP_VERSION, else package metadata, else fallback
     app_version = os.environ.get("APP_VERSION")
     if not app_version:
@@ -127,5 +130,5 @@ def version() -> Tuple[Response, int]:
 
 
 @app.errorhandler(404)
-def not_found(_: Exception) -> Tuple[Response, int]:
+def not_found(_: Exception) -> tuple[Response, int]:
     return jsonify({"message": "Not Found"}), 404
