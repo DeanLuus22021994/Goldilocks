@@ -1,9 +1,11 @@
 import json
 import os
 import sys
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 import pytest
+from flask import Flask
+from flask.testing import FlaskClient
 
 # Ensure project root is importable so `import app` resolves to app.py at repo root
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -13,7 +15,7 @@ if ROOT not in sys.path:
 from app import app as flask_app  # noqa: E402
 
 # Cached terminal reporter and verbosity settings
-_TR = None
+_TR: Any = None
 _QUIET = False
 
 
@@ -24,13 +26,13 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.fixture(scope="session")
-def app():
+def app() -> Flask:
     """Return the Flask app instance once per test session."""
     return flask_app
 
 
 @pytest.fixture()
-def client(app):
+def client(app: Flask) -> FlaskClient:
     """Lightweight test client per test for isolation."""
     return app.test_client()
 
@@ -40,7 +42,7 @@ def json_of() -> Callable[[Any], dict[str, Any]]:
     """Decode a Flask response body to JSON."""
 
     def _json(resp: Any) -> dict[str, Any]:
-        return json.loads(resp.data.decode("utf-8"))
+        return cast(dict[str, Any], json.loads(resp.data.decode("utf-8")))
 
     return _json
 
@@ -69,7 +71,9 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     )
 
 
-def pytest_report_teststatus(report: pytest.TestReport, config: pytest.Config):
+def pytest_report_teststatus(
+    report: pytest.TestReport, config: pytest.Config
+) -> tuple[str, str, str] | None:
     """Customize short progress output to R/A/G letters so it appears even with -q."""
     if report.when != "call":
         # For setup/teardown failures or skips
