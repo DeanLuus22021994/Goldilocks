@@ -10,6 +10,7 @@ import os
 import sys
 import time
 import uuid
+import warnings
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 from logging import StreamHandler, getLogger
@@ -118,7 +119,9 @@ def version() -> tuple[Response, int]:
         # Fallback for unusual environments
         import flask as _flask
 
-        flask_version = getattr(_flask, "__version__", "unknown")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            flask_version = getattr(_flask, "__version__", "unknown")
 
     data = {
         "app": app_version,
