@@ -95,7 +95,6 @@ def index() -> Response:
 
 
 @app.get("/health")
-@app.get("/healthz")  # temporary alias
 def health() -> Tuple[Response, int]:
     return jsonify({"status": "ok"}), 200
 
