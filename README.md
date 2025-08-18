@@ -40,7 +40,7 @@ CI
 Dev Container
 
 - Python 3.13 image, pip cache persisted
-- Git installed for VS Code integration
+- Git and make installed permanently in the Docker image (faster CI and consistent local dev)
 - PIP_ROOT_USER_ACTION=ignore to suppress root warning
 - Runs as root, privileged, host networking
 - Port 9000 auto-opens on forward

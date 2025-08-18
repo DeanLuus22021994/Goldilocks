@@ -7,9 +7,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1
 
-# Install Git for VS Code and general use
+# Install base tools for dev and CI (permanent)
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git ca-certificates \
+  && apt-get install -y --no-install-recommends git ca-certificates make \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
