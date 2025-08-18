@@ -6,7 +6,8 @@
   "overrideCommand": true,
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
-    "PIP_NO_INPUT": "1"
+    "PIP_NO_INPUT": "1",
+    "PIP_ROOT_USER_ACTION": "ignore"
   },
   "customizations": {
     "vscode": {

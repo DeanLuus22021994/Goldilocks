@@ -6,8 +6,9 @@ services:
     image: goldilocks-flask:latest
     container_name: goldilocks-web
     init: true
-    ports:
-      - "9000:9000"
+    # Host networking + privileged root container
+    network_mode: host
+    privileged: true
     environment:
       - FLASK_APP=app.py
     volumes:

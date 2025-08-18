@@ -14,9 +14,18 @@ Endpoints
 - GET /healthz -> {"status":"ok"}
 - GET /version -> app, Python, Flask, platform
 
+Testing
+
+- pytest -q
+
+CI
+
+- GitHub Actions runs pytest on push/PR.
+
 Dev Container
 
 - Python 3.13 image, pip cache persisted
-- Copilot + Copilot Chat preinstalled
-- Port 9000 auto-opens on forward
+- Git installed for VS Code integration
+- PIP_ROOT_USER_ACTION=ignore to suppress root warning
 - Runs as root, privileged, host networking
+- Port 9000 auto-opens on forward
