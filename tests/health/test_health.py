@@ -16,14 +16,13 @@ def test_health_sets_correlation_header_when_provided(client, correlation_id_hea
 def test_health_generates_correlation_header_when_missing(client) -> None:
     resp = client.get("/health")
     cid = resp.headers.get("X-Request-ID")
-    assert cid and len(cid) >= 16
+    assert isinstance(cid, str) and len(cid) >= 16
 
 
 def test_health_has_response_time_header(client) -> None:
     resp = client.get("/health")
     val = resp.headers.get("X-Response-Time-ms")
-    assert val is not None
-    assert float(val) >= 0.0
+    assert val is not None and float(val) >= 0.0
 
 
 def test_health_head_ok(client) -> None:

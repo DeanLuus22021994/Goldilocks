@@ -1,6 +1,5 @@
-def test_version_has_expected_keys(client, json_of):
+def test_version_response_includes_expected_keys(client, json_of) -> None:
     resp = client.get("/version")
     assert resp.status_code == 200
     data = json_of(resp)
-    for key in ("app", "python", "flask", "platform"):
-        assert key in data
+    assert {"app", "python", "flask", "platform"}.issubset(data.keys())

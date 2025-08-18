@@ -11,7 +11,7 @@ Run
 Endpoints
 
 - GET / -> serves static/index.html
-- GET /healthz -> {"status":"ok"}
+- GET /health -> {"status":"ok"}
 - GET /version -> app, Python, Flask, platform
 
 Testing
