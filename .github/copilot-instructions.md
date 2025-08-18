@@ -1,6 +1,6 @@
 # Copilot instructions for Goldilocks
 
-- Add pytest and a unit test for /healthz.
+- Add pytest and a unit test for /health.
 - Create GitHub Actions workflow to run pytest on push.
 - Add Dockerfile to run Flask on port 9000.
 - Improve index.html with minimal responsive styling.
