@@ -11,6 +11,7 @@
     <link rel="preload" href="/static/css/components.css" as="style" />
     <link rel="preload" href="/static/css/header.css" as="style" />
     <link rel="preload" href="/static/css/buttons.css" as="style" />
+    <link rel="preload" href="/static/css/utilities.css" as="style" />
     <link rel="stylesheet" href="/static/css/variables.css" />
     <link rel="stylesheet" href="/static/css/theme.css" />
     <link rel="stylesheet" href="/static/css/base.css" />
@@ -18,13 +19,14 @@
     <link rel="stylesheet" href="/static/css/components.css" />
     <link rel="stylesheet" href="/static/css/header.css" />
     <link rel="stylesheet" href="/static/css/buttons.css" />
+    <link rel="stylesheet" href="/static/css/utilities.css" />
   </head>
   <body>
     <header>
       <div class="container header-bar">
         <div>
-          <h1>Goldilocks</h1>
-          <p>
+          <h1 class="center">Goldilocks</h1>
+          <p class="center">
             Flask app is running. Health:
             <span class="badge" data-health>—</span>
           </p>
@@ -56,10 +58,7 @@
           <p><a href="/version">/version</a> shows app, Python, Flask.</p>
         </div>
       </div>
-      <p
-        class="section"
-        style="margin-top: var(--space-6); color: var(--muted)"
-      >
+      <p class="section mt-6 muted center">
         © <span data-year></span> Goldilocks
       </p>
     </main>
