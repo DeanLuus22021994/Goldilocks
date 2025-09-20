@@ -1,7 +1,3 @@
-# filepath: /app/.flake8
-# flake8 config moved to pyproject.toml under [tool.flake8]
-# This file intentionally left minimal to avoid conflicting settings.
-
 [flake8]
 max-line-length = 100
 extend-select = B,C4
