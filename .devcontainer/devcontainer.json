@@ -81,7 +81,7 @@
             "source.organizeImports.ruff": "always",
             "source.fixAll.ruff": "always"
           },
-          "editor.rulers": [88],
+          "editor.rulers": [120],
           "editor.tabSize": 4
         },
         "[json]": {

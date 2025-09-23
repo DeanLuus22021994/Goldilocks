@@ -3,9 +3,7 @@ from __future__ import annotations
 from flask.testing import FlaskClient
 
 
-def test_index_serves_html_and_headers(
-    client: FlaskClient, correlation_id_header: dict[str, str]
-) -> None:
+def test_index_serves_html_and_headers(client: FlaskClient, correlation_id_header: dict[str, str]) -> None:
     res = client.get("/", headers=correlation_id_header)
     assert res.status_code == 200
     ctype = res.headers.get("Content-Type", "")
