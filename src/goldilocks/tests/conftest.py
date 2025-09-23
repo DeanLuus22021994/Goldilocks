@@ -23,8 +23,8 @@ def pytest_configure(config: pytest.Config) -> None:
     _QUIET = bool(getattr(config.option, "quiet", 0))
 
 
-@pytest.fixture(scope="session")
-def app() -> Flask:
+@pytest.fixture(scope="session", name="app")
+def app_fixture() -> Flask:
     """Return the Flask app instance once per test session."""
     return flask_app
 

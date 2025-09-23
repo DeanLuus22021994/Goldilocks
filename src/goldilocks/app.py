@@ -18,6 +18,12 @@ from logging import StreamHandler, getLogger
 import flask as flask_module
 from flask import Flask, Response, g, jsonify, request
 
+# Import at module level to satisfy linters and provide a safe fallback
+try:
+    from goldilocks import __version__ as _FALLBACK_APP_VERSION
+except Exception:  # pragma: no cover
+    _FALLBACK_APP_VERSION = "0.1.0"  # pragma: no cover
+
 # Get the path to the frontend static directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 STATIC_FOLDER = os.path.join(BASE_DIR, "frontend", "static")
@@ -42,14 +48,21 @@ logger = getLogger("goldilocks")
 handler = StreamHandler()
 handler.addFilter(CorrelationIdFilter())
 
-formatter: logging.Formatter = logging.Formatter(
-    "%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s"
+# Use a single constant for the log format and keep lines under 79 chars
+LOG_FORMAT = " ".join(
+    (
+        "%(asctime)s",
+        "%(levelname)s",
+        "%(name)s",
+        "%(correlation_id)s",
+        "%(message)s",
+    )
 )
+formatter: logging.Formatter = logging.Formatter(LOG_FORMAT)
 try:
     jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
     JsonFormatter = jsonlogger_mod.JsonFormatter
-    log_format = "%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s"
-    formatter = JsonFormatter(log_format)
+    formatter = JsonFormatter(LOG_FORMAT)
 except (ImportError, AttributeError):  # pragma: no cover
     pass
 
@@ -125,13 +138,7 @@ def version() -> tuple[Response, int]:
             app_version = pkg_version("goldilocks")
         except PackageNotFoundError:
             # Fallback to package variable defined in __init__
-            try:
-                # Import at module level to avoid pylint warning
-                import goldilocks
-
-                app_version = getattr(goldilocks, "__version__", "0.1.0")
-            except (ImportError, AttributeError):  # pragma: no cover
-                app_version = "0.1.0"  # pragma: no cover
+            app_version = _FALLBACK_APP_VERSION
 
     try:
         flask_version = pkg_version("Flask")
