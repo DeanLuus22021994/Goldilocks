@@ -18,7 +18,7 @@ cd "$(dirname "$0")/../.." || exit 1
 
 echo "📦 Building stage 1: Builder (dependencies + bytecode compilation)..."
 docker build \
-    ${BUILD_ARGS} \
+    "${BUILD_ARGS}" \
     --target builder \
     --cache-from goldilocks:builder \
     --tag goldilocks:builder \
@@ -27,7 +27,7 @@ docker build \
 
 echo "🔧 Building stage 2: Tools (development environment)..."
 docker build \
-    ${BUILD_ARGS} \
+    "${BUILD_ARGS}" \
     --target tools \
     --cache-from goldilocks:builder,goldilocks:tools \
     --tag goldilocks:tools \
@@ -36,7 +36,7 @@ docker build \
 
 echo "🚀 Building stage 3: Runtime (production environment)..."
 docker build \
-    ${BUILD_ARGS} \
+    "${BUILD_ARGS}" \
     --target runtime \
     --cache-from goldilocks:builder,goldilocks:runtime \
     --tag goldilocks:runtime \

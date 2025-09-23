@@ -12,7 +12,8 @@ def test_index_serves_html_and_headers(
     assert ctype.startswith("text/html")
 
     # timing and correlation headers
-    assert res.headers.get("X-Request-ID") == correlation_id_header["X-Request-ID"]
+    expected_id = correlation_id_header["X-Request-ID"]
+    assert res.headers.get("X-Request-ID") == expected_id
     assert "X-Response-Time-ms" in res.headers
     # basic sanity that it's a float string
     float(res.headers["X-Response-Time-ms"])  # conversion should succeed

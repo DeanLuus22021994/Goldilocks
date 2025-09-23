@@ -25,11 +25,11 @@ fi
 # Start production server with gunicorn
 exec python -m gunicorn \
     --bind 0.0.0.0:9000 \
-    --workers ${WORKERS:-2} \
-    --timeout ${TIMEOUT:-30} \
-    --keep-alive ${KEEP_ALIVE:-2} \
-    --max-requests ${MAX_REQUESTS:-1000} \
-    --max-requests-jitter ${MAX_REQUESTS_JITTER:-100} \
+    --workers "${WORKERS:-2}" \
+    --timeout "${TIMEOUT:-30}" \
+    --keep-alive "${KEEP_ALIVE:-2}" \
+    --max-requests "${MAX_REQUESTS:-1000}" \
+    --max-requests-jitter "${MAX_REQUESTS_JITTER:-100}" \
     --access-logfile - \
     --error-logfile - \
     --log-level info \

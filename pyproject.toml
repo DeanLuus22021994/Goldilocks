@@ -9,6 +9,10 @@ profile = "black"
 line_length = 100
 known_first_party = ["goldilocks", "app"]
 
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+
 [tool.pytest.ini_options]
 testpaths = ["src/goldilocks/tests"]
 addopts = "-q --cov=goldilocks --cov-report=term-missing"

@@ -28,7 +28,8 @@ app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path="/static")
 class CorrelationIdFilter(logging.Filter):
     """Ensure every log record contains a correlation_id field."""
 
-    def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - thin shim
+    def filter(self, record: logging.LogRecord) -> bool:
+        # pragma: no cover - thin shim
         try:
             record.correlation_id = getattr(g, "correlation_id", "-")
         except RuntimeError:  # outside request context
@@ -47,7 +48,8 @@ formatter: logging.Formatter = logging.Formatter(
 try:
     jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
     JsonFormatter = jsonlogger_mod.JsonFormatter
-    formatter = JsonFormatter("%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s")
+    log_format = "%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s"
+    formatter = JsonFormatter(log_format)
 except (ImportError, AttributeError):  # pragma: no cover
     pass
 
@@ -114,7 +116,8 @@ def health() -> tuple[Response, int]:
 @app.get("/version")
 def version() -> tuple[Response, int]:
     """Return versions for the app, Python, Flask, and platform."""
-    # app version can be provided via env APP_VERSION, else package metadata, else fallback
+    # app version can be provided via env APP_VERSION, else package metadata,
+    # else fallback
     app_version = os.environ.get("APP_VERSION")
     if not app_version:
         try:
@@ -123,10 +126,11 @@ def version() -> tuple[Response, int]:
         except PackageNotFoundError:
             # Fallback to package variable defined in __init__
             try:
-                from goldilocks import __version__ as _pkg_ver
+                # Import at module level to avoid pylint warning
+                import goldilocks
 
-                app_version = _pkg_ver
-            except ImportError:
+                app_version = getattr(goldilocks, "__version__", "0.1.0")
+            except (ImportError, AttributeError):
                 app_version = "0.1.0"
 
     try:

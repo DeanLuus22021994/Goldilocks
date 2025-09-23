@@ -1,3 +1,5 @@
+"""Test configuration and fixtures for Goldilocks test suite."""
+
 import json
 from collections.abc import Callable
 from typing import Any, cast
@@ -15,7 +17,8 @@ _QUIET = False
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    global _TR, _QUIET
+    """Configure pytest with terminal reporter and verbosity settings."""
+    global _TR, _QUIET  # pylint: disable=global-statement
     _TR = config.pluginmanager.get_plugin("terminalreporter")
     _QUIET = bool(getattr(config.option, "quiet", 0))
 
@@ -54,7 +57,13 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
         return
 
     outcome = report.outcome  # 'passed' | 'failed' | 'skipped'
-    rag = "GREEN" if outcome == "passed" else ("RED" if outcome == "failed" else "AMBER")
+    if outcome == "passed":
+        rag = "GREEN"
+    elif outcome == "failed":
+        rag = "RED"
+    else:
+        rag = "AMBER"
+
     if getattr(report, "wasxfail", False):
         rag = "AMBER"
 
@@ -67,9 +76,10 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
 
 
 def pytest_report_teststatus(
-    report: pytest.TestReport, config: pytest.Config
+    report: pytest.TestReport,
+    config: pytest.Config,  # pylint: disable=unused-argument
 ) -> tuple[str, str, str] | None:
-    """Customize short progress output to R/A/G letters so it appears even with -q."""
+    """Customize short progress output to R/A/G letters for -q mode."""
     if report.when != "call":
         # For setup/teardown failures or skips
         if report.skipped:

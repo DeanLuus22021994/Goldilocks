@@ -1,3 +1,10 @@
+"""Test version endpoint fallback behavior.
+
+Tests the version endpoint fallback when package metadata is unavailable.
+Tests that the version endpoint properly falls back to flask.__version__
+when PackageNotFoundError is raised for Flask package.
+"""
+
 from __future__ import annotations
 
 from collections.abc import Callable
