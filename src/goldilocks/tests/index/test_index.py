@@ -1,3 +1,5 @@
+"""Tests for the index endpoint ensuring HTML response and required headers."""
+
 from __future__ import annotations
 
 from flask.testing import FlaskClient
