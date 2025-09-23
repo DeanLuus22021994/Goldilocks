@@ -1,4 +1,7 @@
-Core app implementation
+# Technical Specifications
+
+## Core app implementation
+
 - /app/app.py
   - Logging and correlation ID
     - CorrelationIdFilter (ensures correlation_id on all log records)
@@ -9,14 +12,15 @@ Core app implementation
     - GET /health -> returns {"status": "ok"}
     - GET /version
       - App version: APP_VERSION env var, else importlib.metadata.version("app"), else "0.1.0"
-      - Flask version: pkg_version("Flask"), with fallback to flask.__version__ when PackageNotFoundError
+      - Flask version: pkg_version("Flask"), with fallback to flask.**version** when PackageNotFoundError
       - Returns keys: app, python, flask, platform
   - Error handling
     - @app.errorhandler(404) -> {"message": "Not Found"}
   - Test/mypy compatibility
-    - Explicit exports: __all__ = ["app", "pkg_version"] so tests can monkeypatch gold.pkg_version (fixes mypy attr-defined)
+    - Explicit exports: **all** = ["app", "pkg_version"] so tests can monkeypatch gold.pkg_version (fixes mypy attr-defined)
 
-HTTP tests and fixtures
+## HTTP tests and fixtures
+
 - /app/tests/conftest.py
   - Ensures repo root is importable for import app (adds ../ to sys.path)
   - Fixtures:
@@ -39,9 +43,10 @@ HTTP tests and fixtures
   - /version returns keys: {"app", "python", "flask", "platform"}
 - /app/tests/version/test_version_fallback.py
   - Monkeypatches gold.pkg_version to raise PackageNotFoundError for "Flask"
-  - Asserts fallback uses flask.__version__ (fix depends on app.py exporting pkg_version)
+  - Asserts fallback uses flask.**version** (fix depends on app.py exporting pkg_version)
 
 CI, test, and lint/type-check configuration
+
 - /app/.github/workflows/ci.yml
   - Uses Python 3.13, caches pip
   - Installs deps, runs pytest with coverage (xml + term-missing)
@@ -61,6 +66,7 @@ CI, test, and lint/type-check configuration
   - max-line-length=100, extend-select=B,C4, ignore=W503 (duplicated with pyproject’s [tool.flake8])
 
 Dev/run environment
+
 - /app/Dockerfile
   - Python 3.13 slim, installs git and requirements
   - Copies app.py and static/
@@ -80,16 +86,19 @@ Dev/run environment
   - Documents run/test/type-check/pre-commit commands and endpoints
 
 Static content
+
 - /app/static/index.html
   - Minimal responsive styling, links to /health and /version, consistent with tests expecting text/html
 
 Repo automation and guidance
+
 - /app/.github/dependabot.yml
   - Tracks devcontainers weekly (consider adding pip and github-actions ecosystems if desired)
 - /app/.github/copilot-instructions.md
   - The original task checklist (pytest, CI, Dockerfile, index.html styling, VS Code task, /version endpoint)
 
 Likely attention points (non-blocking for tests, but worth noting)
+
 - Gunicorn workers value "0" in Dockerfile and docker-compose (Gunicorn typically requires workers >= 1; if you hit runtime issues, set an explicit number or omit to use default via CMD args you control elsewhere).
 - flake8 configuration appears in both pyproject.toml and .flake8; consider consolidating to one source of truth.
 - /version app_version uses pkg_version("app"); since this repo isn’t an installed package, PackageNotFoundError will be common and fallback to "0.1.0" is expected. If you want dynamic versioning, consider reading from env, git, or packaging metadata.

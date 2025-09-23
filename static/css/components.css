@@ -76,3 +76,7 @@
   border-top: 1px solid var(--border);
   margin: var(--space-2) 0;
 }
+
+.profile-menu-header {
+  padding: 0.25rem 0.5rem;
+}
