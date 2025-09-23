@@ -21,7 +21,7 @@ from flask import Flask, Response, g, jsonify, request
 # Import at module level to satisfy linters and provide a safe fallback
 try:
     from goldilocks import __version__ as _FALLBACK_APP_VERSION
-except Exception:  # pragma: no cover
+except ImportError:  # pragma: no cover
     _FALLBACK_APP_VERSION = "0.1.0"  # pragma: no cover
 
 # Get the path to the frontend static directory
