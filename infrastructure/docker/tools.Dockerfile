@@ -30,8 +30,8 @@ COPY package.json package-lock.json* ./
 # Install Node.js dependencies if package.json exists
 RUN if [ -f "package.json" ]; then npm ci --only=production; fi
 
-# Copy test files for development
-COPY tests/ ./tests/
+# Tests are already copied as part of src/ in the base stage
+# No separate test copy needed since tests are in src/goldilocks/tests/
 
 # Set up pre-commit hooks
 RUN /opt/venv/bin/pre-commit install-hooks || true
