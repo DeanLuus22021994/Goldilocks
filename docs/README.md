@@ -6,8 +6,6 @@ author: Goldilocks Development Team
 ms.date: 2024-09-24
 ---
 
-# Goldilocks Documentation
-
 High-performance Flask application with optimized architecture and modern development practices.
 
 > [!NOTE]

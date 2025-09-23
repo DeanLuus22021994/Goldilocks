@@ -47,4 +47,5 @@ def register_api_routes(app: Any) -> None:
     """Register all API routes with the Flask application."""
     # This would be implemented when API routes are added
     # Future: Add route registration logic here
+    _ = app  # Acknowledge unused parameter for future implementation
     return None

@@ -6,8 +6,6 @@ author: Goldilocks Development Team
 ms.date: 2024-09-24
 ---
 
-# Project Structure
-
 This document explains the organized project structure and where to find different types of files.
 
 > [!NOTE]

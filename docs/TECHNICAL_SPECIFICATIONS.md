@@ -6,8 +6,6 @@ author: Goldilocks Development Team
 ms.date: 2024-09-24
 ---
 
-# Technical Specifications
-
 ## Quick Reference
 
 | Component    | Version     | Status | Performance Target |
