@@ -85,7 +85,13 @@ fi
 
 # Activate virtual environment and install dependencies
 print_step "Installing Python dependencies..."
-source .venv/bin/activate
+# shellcheck disable=SC1091  # .venv activation script is generated at runtime
+if [ -f ".venv/bin/activate" ]; then
+    # shellcheck disable=SC1091
+    source .venv/bin/activate
+else
+    print_warning ".venv/bin/activate not found; skipping activation"
+fi
 
 # Install requirements using uv for faster installation
 if [ -f "requirements.txt" ]; then

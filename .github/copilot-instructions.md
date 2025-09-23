@@ -5,7 +5,7 @@
 **MODERNIZE** - Use latest stable versions, current best practices, modern tooling
 **DRY** - Don't Repeat Yourself, abstract common patterns, reuse code
 **SRP** - Single Responsibility Principle, one purpose per function/class
-**STRUCTURED** - Organized, predictable, maintainable codebase architecture  
+**STRUCTURED** - Organized, predictable, maintainable codebase architecture
 **MONOLITHIC** - Unified, cohesive application design avoiding unnecessary microservice complexity
 **STANDARDIZATION** - Consistent coding style, patterns, and conventions throughout
 **IDEMPOTENCY** - Operations produce same result when run multiple times
