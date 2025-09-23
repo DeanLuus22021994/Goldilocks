@@ -1,0 +1,9 @@
+- name: Overview
+  href: README.md
+- name: Technical Specifications
+  href: TECHNICAL_SPECIFICATIONS.md
+- name: Project Structure
+  href: PROJECT_STRUCTURE.md
+- name: API Reference
+  href: api/
+  homepage: api/goldilocks.html

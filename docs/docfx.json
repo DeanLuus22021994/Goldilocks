@@ -1,0 +1,51 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["*.yml"],
+          "dest": "api/"
+        },
+        {
+          "files": ["../src/**/*.py"],
+          "dest": "api/",
+          "exclude": ["**/tests/**"]
+        }
+      ]
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": ["**/*.yml"],
+        "dest": "api/"
+      },
+      {
+        "files": ["*.md"],
+        "dest": "."
+      },
+      {
+        "files": ["../README.md"],
+        "dest": "."
+      }
+    ],
+    "resource": [
+      {
+        "files": ["assets/**"],
+        "dest": "assets/"
+      }
+    ],
+    "dest": "_site"
+  },
+  "globalMetadata": {
+    "_appTitle": "Goldilocks Documentation",
+    "_appFooter": "© 2024 Goldilocks Development Team",
+    "_enableSearch": true
+  },
+  "fileMetadata": {
+    "_tocTitle": {
+      "docs/": "Documentation",
+      "api/": "API Reference"
+    }
+  }
+}

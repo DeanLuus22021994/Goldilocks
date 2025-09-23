@@ -1,73 +1,132 @@
-# Goldilocks Dev Container (Python + Flask)
+---
+uid: goldilocks.overview
+title: Goldilocks Documentation
+description: Comprehensive documentation for the Goldilocks Flask application
+author: Goldilocks Development Team
+ms.date: 2024-09-24
+---
 
-Minimal, fast, reproducible Flask starter in a Dev Container.
+# Goldilocks Documentation
 
-Quickstart
+High-performance Flask application with optimized architecture and modern development practices.
 
-- VS Code Dev Container: open folder and reopen in container; post-create installs deps and pre-commit hooks.
-- Run:
+> [!NOTE]
+> This documentation is auto-generated and kept in sync with the current codebase structure using DocFX.
+
+## 🚀 Quick Start
+
+Get up and running with Goldilocks:
+
+- **VS Code Dev Container**: Open folder and reopen in container; post-create installs deps and pre-commit hooks.
+- **Run Options**:
   - VS Code task: Run Flask (port 9000)
-  - Or: flask --app app run --host 0.0.0.0 --port 9000 --no-debugger --no-reload
-  - Or: docker compose up --build (uses gunicorn on 9000)
-- Open in browser: `$BROWSER http://localhost:9000`
+  - Command line: `flask --app src.goldilocks.app run --host 0.0.0.0 --port 9000`
+  - Docker: `docker compose up --build` (uses gunicorn on 9000)
+- **Access**: Navigate to `http://localhost:9000`
 
-Shell UI
+## 🎨 User Interface
 
-- Top header bar (sticky), Azure-portal-like collapsible sidebar menu, main content, and footer.
-- Theme toggle (light/dark), health badge, and responsive layout.
-- Profile dropdown (top-right) appears when logged in. For demo, toggle via localStorage:
-  - localStorage.setItem("goldilocks-auth", JSON.stringify({ loggedIn: true, name: "Ada" }))
-  - localStorage.removeItem("goldilocks-auth") to hide again.
+Modern, accessible web interface:
 
-Endpoints
+- **Layout**: Sticky header, collapsible sidebar menu, main content, and footer
+- **Theming**: Light/dark theme toggle with system preference detection
+- **Responsive**: Mobile-friendly responsive layout
+- **Accessibility**: Focus-visible indicators, reduced-motion support
+- **Authentication**: Profile dropdown (demo via localStorage)
 
-- GET / -> serves static/index.html
-- GET /health -> {"status":"ok"}; supports HEAD; sets X-Request-ID and X-Response-Time-ms
-- GET /version -> app, python, flask, platform (app version via APP_VERSION env or fallback)
-- 404 -> JSON {"message":"Not Found"}
+```javascript
+// Enable demo auth
+localStorage.setItem(
+  "goldilocks-auth",
+  JSON.stringify({ loggedIn: true, name: "Ada" })
+);
+// Disable demo auth
+localStorage.removeItem("goldilocks-auth");
+```
 
-Observability
+## 📡 API Endpoints
 
-- Structured logging (JSON if python-json-logger present), includes correlation_id.
-- Request correlation via X-Request-ID header (auto-generated if absent).
-- Timing header X-Response-Time-ms on all responses.
+RESTful API with structured responses:
 
-UI
+| Endpoint   | Method   | Response                   | Headers                          |
+| ---------- | -------- | -------------------------- | -------------------------------- |
+| `/`        | GET      | Serves `static/index.html` | -                                |
+| `/health`  | GET/HEAD | `{"status":"ok"}`          | X-Request-ID, X-Response-Time-ms |
+| `/version` | GET      | App/Python/Flask versions  | X-Request-ID, X-Response-Time-ms |
+| `*`        | Any      | `{"message":"Not Found"}`  | 404 status                       |
 
-- Modular CSS/JS, accessible theme toggle, focus-visible, reduced-motion friendly.
-- Density utilities (compact/comfortable), favicon.
+## 🔍 Observability
 
-Testing
+Production-ready logging and monitoring:
 
-- pytest -q
-- Coverage: pytest -q --cov=app --cov-report=term-missing --cov-report=xml
+- **Structured Logging**: JSON format with correlation IDs
+- **Request Tracing**: X-Request-ID header (auto-generated if missing)
+- **Performance**: X-Response-Time-ms timing header on all responses
+- **Health Checks**: `/health` endpoint for load balancer monitoring
 
-Static analysis
+## 🧪 Testing & Quality
 
-- mypy .
-- pre-commit run --all-files (black, isort, flake8, mypy, pyupgrade)
+Comprehensive testing and code quality tools:
 
-VS Code tasks
+```bash
+# Testing
+pytest -q                                    # Run test suite
+pytest -q --cov=goldilocks --cov-report=term-missing --cov-report=xml
 
-- Run Flask (port 9000)
-- Test: pytest
-- Test: watch (looponfail)
-- Coverage
-- Type check (mypy)
-- Pre-commit (all files)
+# Static Analysis
+mypy .                                       # Type checking
+pre-commit run --all-files                   # All quality checks (black, isort, flake8, mypy)
+```
 
-CI
+## 🛠️ VS Code Integration
 
-- GitHub Actions: pytest with coverage, caches pip, mypy and pre-commit.
+Pre-configured development tasks:
 
-Dev Container
+- **Run Flask (port 9000)** - Start development server
+- **Test: pytest** - Run full test suite
+- **Test: watch (looponfail)** - Continuous testing
+- **Coverage** - Generate coverage reports
+- **Type check (mypy)** - Static type analysis
+- **Pre-commit (all files)** - Code quality validation
 
-- Python 3.13 slim base, pip cache persisted.
-- Git and make installed permanently in the Docker image.
-- postCreateCommand upgrades pip, installs requirements, installs pre-commit hooks.
-- Port 9000 auto-forwards and opens.
+## 🚀 CI/CD Pipeline
 
-Troubleshooting: Pylance missing imports
+Automated workflows with GitHub Actions:
 
-- If you see "Import ... could not be resolved" in VS Code, ensure you're opened in the Dev Container so the interpreter has Flask/pytest installed.
-- Or select the correct Python interpreter (Command Palette → Python: Select Interpreter) corresponding to the container environment.
+- **Testing**: pytest with coverage reporting
+- **Caching**: pip dependencies and pre-commit hooks
+- **Quality**: mypy type checking and linting
+- **Performance**: Build time and test execution monitoring
+
+## 🐳 Development Container
+
+Optimized Docker-based development:
+
+- **Base**: Python 3.13 slim with pip cache persistence
+- **Tools**: Git, make, and all development dependencies pre-installed
+- **Setup**: Automated pip upgrade, requirements installation, pre-commit hooks
+- **Networking**: Port 9000 auto-forwarding and browser opening
+
+## 🔧 Troubleshooting
+
+Common development issues and solutions:
+
+### Pylance Import Errors
+
+If you see "Import ... could not be resolved" in VS Code:
+
+1. Ensure you're opened in the Dev Container (has Flask/pytest installed)
+2. Select correct Python interpreter: `Ctrl+Shift+P` → "Python: Select Interpreter"
+3. Choose the container environment interpreter
+
+### Container Issues
+
+- **Slow rebuilds**: Check devcontainer-lock.json for cache invalidation
+- **Port conflicts**: Ensure port 9000 is available
+- **Permission errors**: Verify Docker has proper file system access
+
+## 📚 Related Documentation
+
+- [Technical Specifications](xref:goldilocks.technical) - Architecture and performance details
+- [Project Structure](xref:goldilocks.structure) - File organization and modules
+- [API Reference](xref:goldilocks.api) - Generated API documentation

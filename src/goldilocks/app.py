@@ -130,8 +130,8 @@ def version() -> tuple[Response, int]:
                 import goldilocks
 
                 app_version = getattr(goldilocks, "__version__", "0.1.0")
-            except (ImportError, AttributeError):
-                app_version = "0.1.0"
+            except (ImportError, AttributeError):  # pragma: no cover
+                app_version = "0.1.0"  # pragma: no cover
 
     try:
         flask_version = pkg_version("Flask")

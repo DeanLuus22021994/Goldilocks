@@ -1,4 +1,12 @@
-# Goldilocks Technical Specifications
+---
+uid: goldilocks.technical
+title: Technical Specifications
+description: Architecture, performance metrics, and development commands for Goldilocks
+author: Goldilocks Development Team
+ms.date: 2024-09-24
+---
+
+# Technical Specifications
 
 ## Quick Reference
 

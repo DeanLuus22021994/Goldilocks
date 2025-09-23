@@ -25,7 +25,9 @@ def test_version_flask_fallback(
     json_of: Callable[[Any], dict[str, Any]],
 ) -> None:
     """Force PackageNotFoundError for Flask to exercise fallback path."""
-    original = cast(Callable[[str], str], gold.pkg_version)
+    import goldilocks.app as app_module
+
+    original = cast(Callable[[str], str], app_module.pkg_version)
 
     def fake_pkg_version(name: str) -> str:
         if name == "Flask":

@@ -1,6 +1,17 @@
-# Goldilocks Project Structure
+---
+uid: goldilocks.structure
+title: Project Structure
+description: File organization, module descriptions, and dependency mapping for Goldilocks
+author: Goldilocks Development Team
+ms.date: 2024-09-24
+---
+
+# Project Structure
 
 This document explains the organized project structure and where to find different types of files.
+
+> [!NOTE]
+> This structure is automatically validated by DocFX to ensure documentation stays current with the codebase.
 
 ## Directory Structure
 
