@@ -9,7 +9,7 @@ Quickstart
   - VS Code task: Run Flask (port 9000)
   - Or: flask --app app run --host 0.0.0.0 --port 9000 --no-debugger --no-reload
   - Or: docker compose up --build (uses gunicorn on 9000)
-- Open in browser: $BROWSER http://localhost:9000
+- Open in browser: `$BROWSER http://localhost:9000`
 
 Shell UI
 

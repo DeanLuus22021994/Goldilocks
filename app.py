@@ -15,6 +15,7 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 from logging import StreamHandler, getLogger
 
+import flask as flask_module
 from flask import Flask, Response, g, jsonify, request, send_from_directory
 
 app = Flask(__name__)
@@ -26,7 +27,7 @@ class CorrelationIdFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - thin shim
         try:
             record.correlation_id = getattr(g, "correlation_id", "-")
-        except Exception:  # outside request context
+        except RuntimeError:  # outside request context
             record.correlation_id = "-"
         return True
 
@@ -68,16 +69,17 @@ def add_correlation_id_and_timing() -> None:
     """Attach a correlation ID and start time to the request context."""
     cid = request.headers.get("X-Request-ID") or uuid.uuid4().hex
     g.correlation_id = cid
-    g._start_time = time.perf_counter()
+    g.start_time = time.perf_counter()
 
 
 @app.after_request
 def add_response_headers(resp: Response) -> Response:
+    """Add correlation ID and timing headers to response."""
     # Correlation ID and simple timing
     cid = getattr(g, "correlation_id", None)
     if cid:
         resp.headers["X-Request-ID"] = cid
-    start = getattr(g, "_start_time", None)
+    start = getattr(g, "start_time", None)
     if start is not None:
         dur_ms = (time.perf_counter() - start) * 1000.0
         resp.headers["X-Response-Time-ms"] = f"{dur_ms:.2f}"
@@ -95,16 +97,19 @@ def add_response_headers(resp: Response) -> Response:
 
 @app.get("/")
 def index() -> Response:
+    """Serve the static index page."""
     return send_from_directory("static", "index.html")
 
 
 @app.get("/health")
 def health() -> tuple[Response, int]:
+    """Return health status of the application."""
     return jsonify({"status": "ok"}), 200
 
 
 @app.get("/version")
 def version() -> tuple[Response, int]:
+    """Return versions for the app, Python, Flask, and platform."""
     # app version can be provided via env APP_VERSION, else package metadata, else fallback
     app_version = os.environ.get("APP_VERSION")
     if not app_version:
@@ -117,11 +122,9 @@ def version() -> tuple[Response, int]:
         flask_version = pkg_version("Flask")
     except PackageNotFoundError:  # pragma: no cover
         # Fallback for unusual environments
-        import flask as _flask
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            flask_version = getattr(_flask, "__version__", "unknown")
+            flask_version = getattr(flask_module, "__version__", "unknown")
 
     data = {
         "app": app_version,
@@ -134,6 +137,7 @@ def version() -> tuple[Response, int]:
 
 @app.errorhandler(404)
 def not_found(_: Exception) -> tuple[Response, int]:
+    """Handle 404 errors with JSON response."""
     return jsonify({"message": "Not Found"}), 404
 
 
