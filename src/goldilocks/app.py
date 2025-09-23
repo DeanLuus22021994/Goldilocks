@@ -16,9 +16,13 @@ from importlib.metadata import version as pkg_version
 from logging import StreamHandler, getLogger
 
 import flask as flask_module
-from flask import Flask, Response, g, jsonify, request, send_from_directory
+from flask import Flask, Response, g, jsonify, request
 
-app = Flask(__name__)
+# Get the path to the frontend static directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+STATIC_FOLDER = os.path.join(BASE_DIR, "frontend", "static")
+
+app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path="/static")
 
 
 class CorrelationIdFilter(logging.Filter):
@@ -98,7 +102,7 @@ def add_response_headers(resp: Response) -> Response:
 @app.get("/")
 def index() -> Response:
     """Serve the static index page."""
-    return send_from_directory("static", "index.html")
+    return app.send_static_file("index.html")
 
 
 @app.get("/health")
