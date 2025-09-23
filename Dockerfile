@@ -24,5 +24,5 @@ COPY static ./static
 ENV FLASK_APP=app.py
 EXPOSE 9000
 
-# Use gunicorn for high performance; default workers auto = 2*CPU+1
-CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--workers", "0", "--threads", "2", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+# Use gunicorn for high performance; workers auto = 2*CPU+1, threads for I/O concurrency
+CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--workers", "1", "--threads", "2", "--access-logfile", "-", "--error-logfile", "-", "app:app"]

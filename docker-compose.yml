@@ -20,7 +20,7 @@ services:
         "--bind",
         "0.0.0.0:9000",
         "--workers",
-        "0",
+        "1",
         "--threads",
         "2",
         "--access-logfile",
