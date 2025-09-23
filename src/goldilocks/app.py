@@ -126,7 +126,7 @@ def version() -> tuple[Response, int]:
                 from goldilocks import __version__ as _pkg_ver
 
                 app_version = _pkg_ver
-            except Exception:
+            except ImportError:
                 app_version = "0.1.0"
 
     try:

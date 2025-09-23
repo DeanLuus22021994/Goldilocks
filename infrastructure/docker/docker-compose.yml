@@ -1,35 +1,85 @@
 services:
-  web:
+  # Development service with tools and hot reload
+  goldilocks-dev:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: goldilocks-flask:latest
-    container_name: goldilocks-web
-    init: true
-    # Host networking + privileged root container
-    network_mode: host
-    privileged: true
-    environment:
-      - FLASK_APP=app.py
-    volumes:
-      - ./:/app
-      - pip-cache:/root/.cache/pip
-    command:
-      [
-        "gunicorn",
-        "--bind",
-        "0.0.0.0:9000",
-        "--workers",
-        "1",
-        "--threads",
-        "2",
-        "--access-logfile",
-        "-",
-        "--error-logfile",
-        "-",
-        "app:app",
-      ]
+      context: ../..
+      dockerfile: infrastructure/docker/tools.Dockerfile
+      target: tools
+      cache_from:
+        - goldilocks:dev-tools
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: goldilocks-dev
     restart: unless-stopped
+    volumes:
+      - ../..:/workspace:cached
+      - goldilocks-venv:/opt/venv
+      - goldilocks-node-modules:/workspace/node_modules
+      - goldilocks-bytecode:/workspace/__pycache__
+      - pip-cache:/home/app/.cache/pip
+      - npm-cache:/home/app/.npm
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONPATH=/workspace/src
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=0
+    ports:
+      - "9000:9000"
+    working_dir: /workspace
+    networks:
+      - goldilocks-network
+    profiles: ["dev"]
+
+  # Production service with minimal footprint
+  goldilocks-prod:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/runtime.Dockerfile
+      target: runtime
+      cache_from:
+        - goldilocks:runtime
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: goldilocks-prod
+    restart: unless-stopped
+    volumes:
+      - goldilocks-data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - WORKERS=2
+      - TIMEOUT=30
+    ports:
+      - "9000:9000"
+    networks:
+      - goldilocks-network
+    profiles: ["prod"]
+
+  # Build-only service for CI/CD and caching
+  goldilocks-builder:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/build.Dockerfile
+      target: builder
+      cache_from:
+        - goldilocks:builder
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: goldilocks-builder
+    volumes:
+      - goldilocks-build-cache:/app/precompiled
+    profiles: ["build"]
 
 volumes:
+  goldilocks-venv:
+  goldilocks-node-modules:
+  goldilocks-bytecode:
+  goldilocks-build-cache:
+  goldilocks-data:
   pip-cache:
+  npm-cache:
+
+networks:
+  goldilocks-network:
+    driver: bridge

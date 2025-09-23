@@ -24,7 +24,7 @@
     {
       "label": "Coverage",
       "type": "shell",
-      "command": "pytest -q --cov=app --cov-report=term-missing --cov-report=xml",
+      "command": "pytest -q --cov=goldilocks --cov-report=term-missing --cov-report=xml",
       "problemMatcher": []
     },
     {

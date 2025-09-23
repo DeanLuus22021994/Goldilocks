@@ -1,6 +1,4 @@
 import json
-import os
-import sys
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -8,12 +6,8 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 
-# Ensure project root is importable so `import app` resolves to app.py at repo root
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
-
-from app import app as flask_app  # noqa: E402
+# Import the Flask app from our package
+from goldilocks.app import app as flask_app
 
 # Cached terminal reporter and verbosity settings
 _TR: Any = None

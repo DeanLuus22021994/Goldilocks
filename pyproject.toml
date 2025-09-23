@@ -10,7 +10,7 @@ line_length = 100
 known_first_party = ["goldilocks", "app"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["src/goldilocks/tests"]
 addopts = "-q --cov=goldilocks --cov-report=term-missing"
 
 [tool.mypy]

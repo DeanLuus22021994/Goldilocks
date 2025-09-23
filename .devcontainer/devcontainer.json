@@ -12,12 +12,10 @@
     "PIP_CACHE_DIR": "/home/vscode/.cache/pip",
     "NPM_CONFIG_CACHE": "/home/vscode/.npm",
     "YARN_CACHE_FOLDER": "/home/vscode/.cache/yarn",
-    "DOCKER_BUILDKIT": "1",
-    "BUILDKIT_PROGRESS": "plain",
     "PIP_DISABLE_PIP_VERSION_CHECK": "1",
     "PIP_NO_INPUT": "1",
     "PYTHONUNBUFFERED": "1",
-    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONDONTWRITEBYTECODE": "0",
     "FLASK_APP": "src/goldilocks/app.py",
     "FLASK_ENV": "development",
     "FLASK_DEBUG": "1"
@@ -25,96 +23,38 @@
 
   // Remote environment variables from host
   "remoteEnv": {
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
-    "AZURE_CLIENT_ID": "${localEnv:AZURE_CLIENT_ID}",
-    "AZURE_CLIENT_SECRET": "${localEnv:AZURE_CLIENT_SECRET}",
-    "AZURE_TENANT_ID": "${localEnv:AZURE_TENANT_ID}"
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   },
 
   // Volume mounts for persistent caching and performance
   "mounts": [
     "source=goldilocks-venv,target=${containerWorkspaceFolder}/.venv,type=volume",
+    "source=goldilocks-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=goldilocks-bytecode,target=${containerWorkspaceFolder}/__pycache__,type=volume",
     "source=vscode-server-cache,target=/home/vscode/.vscode-server,type=volume",
     "source=vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume",
     "source=uv-cache,target=/home/vscode/.cache/uv,type=volume",
     "source=pip-cache,target=/home/vscode/.cache/pip,type=volume",
     "source=npm-cache,target=/home/vscode/.npm,type=volume",
-    "source=yarn-cache,target=/home/vscode/.cache/yarn,type=volume",
-    "source=apt-cache,target=/var/cache/apt,type=volume",
-    "source=apt-lib,target=/var/lib/apt,type=volume",
-    "source=python-site-packages,target=/usr/local/lib/python3.13/site-packages,type=volume",
-    "source=go-cache,target=/home/vscode/.cache/go-build,type=volume",
-    "source=docker-cache,target=/home/vscode/.docker,type=volume",
     "source=pytest-cache,target=${containerWorkspaceFolder}/.pytest_cache,type=volume",
     "source=mypy-cache,target=${containerWorkspaceFolder}/.mypy_cache,type=volume",
     "source=ruff-cache,target=${containerWorkspaceFolder}/.ruff_cache,type=volume"
   ],
 
-  // Enhanced host requirements
+  // Minimal host requirements
   "hostRequirements": {
-    "cpus": 2,
-    "memory": "4gb",
-    "storage": "16gb",
-    "gpu": "optional"
+    "cpus": 1,
+    "memory": "2gb",
+    "storage": "8gb"
   },
 
-  // Advanced dev container features
+  // Minimal features - only essential tools
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {
-      "ppa": true,
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "installDockerBuildx": true,
-      "installDockerComposeSwitch": true,
-      "moby": false,
-      "dockerDashComposeVersion": "v2",
-      "azureDnsAutoDetection": true,
-      "dockerDefaultAddressPool": "base=192.168.0.0/16,size=20"
-    },
-    "ghcr.io/devcontainers/features/azure-cli:1": {
-      "version": "latest",
-      "installBicep": true,
-      "bicepVersion": "latest",
-      "installUsingPython": true
-    },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "installDirectlyFromGitHubRelease": true,
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "configureZshAsDefaultShell": true,
-      "installOhMyZsh": true,
-      "installOhMyZshConfig": true,
-      "upgradePackages": true,
-      "username": "vscode",
-      "userUid": "automatic",
-      "userGid": "automatic"
-    },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22",
-      "nodeGypDependencies": true,
-      "installYarnUsingApt": true,
-      "yarnVersion": "latest",
-      "nvmVersion": "0.40.1",
-      "nvmInstallLTS": true,
-      "enableCorepack": true,
-      "installToolsForNodeGyp": true
-    },
-    "ghcr.io/devcontainers/features/powershell:1": {
-      "version": "latest",
-      "modules": "Az.Accounts,Az.Resources,Az.Storage,Az.KeyVault,Microsoft.Graph,PSReadLine,PowerShellGet,ImportExcel,Pester,PSScriptAnalyzer,Plaster"
-    },
-    "ghcr.io/devcontainers/features/nvidia-cuda:2": {
-      "installCudnn": false,
-      "installDevTools": false,
-      "installToolkit": false,
-      "installNvtop": false,
-      "installNvcc": false,
-      "installCudaLibs": false,
-      "cudnnVersion": "9",
-      "cudaVersion": "12.6"
+      "nodeGypDependencies": false,
+      "installYarnUsingApt": false,
+      "nvmVersion": "none"
     }
   },
 
@@ -123,49 +63,17 @@
       "extensions": [
         "github.copilot",
         "GitHub.copilot-chat",
-        "redhat.vscode-yaml",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.autopep8",
-        "ms-python.flake8",
-        "ms-python.black-formatter",
         "charliermarsh.ruff",
-        "ms-vscode.powershell",
-        "timonwong.shellcheck",
-        "mads-hartmann.bash-ide-vscode",
-        "DotJoshJohnson.xml",
-        "bradlc.vscode-tailwindcss",
-        "ms-vscode.vscode-typescript-next",
         "esbenp.prettier-vscode",
-        "ms-vscode.makefile-tools",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.cpptools",
-        "ms-azuretools.vscode-docker",
-        "github.vscode-github-actions",
-        "ms-vscode.live-server",
         "usernamehw.errorlens",
-        "christian-kohler.path-intellisense",
-        "ms-vscode-remote.remote-containers",
-        "ms-vscode.hexdump",
-        "ms-toolsai.jupyter"
+        "christian-kohler.path-intellisense"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/workspaces/Goldilocks/.venv/bin/python",
         "python.terminal.activateEnvironment": true,
-        "python.terminal.activateEnvInCurrentTerminal": true,
-        "python.analysis.autoImportCompletions": true,
         "python.analysis.typeCheckingMode": "strict",
-        "python.analysis.autoSearchPaths": true,
-        "python.analysis.diagnosticMode": "workspace",
-        "python.analysis.indexing": true,
-        "python.linting.enabled": true,
-        "python.linting.flake8Enabled": true,
-        "python.linting.pylintEnabled": true,
-        "python.linting.mypyEnabled": true,
-        "python.linting.banditEnabled": true,
-        "python.linting.pycodestyleEnabled": true,
-        "python.linting.pydocstyleEnabled": true,
-        "python.formatting.provider": "none",
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.formatOnSave": true,
@@ -174,24 +82,7 @@
             "source.fixAll.ruff": "always"
           },
           "editor.rulers": [88],
-          "editor.tabSize": 4,
-          "editor.insertSpaces": true
-        },
-        "[javascript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.organizeImports": "always",
-            "source.fixAll.eslint": "always"
-          }
-        },
-        "[typescript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.organizeImports": "always",
-            "source.fixAll.eslint": "always"
-          }
+          "editor.tabSize": 4
         },
         "[json]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -199,131 +90,41 @@
         "[jsonc]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
-        "[yaml]": {
-          "editor.defaultFormatter": "redhat.vscode-yaml"
-        },
-        "[shellscript]": {
-          "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
-        },
         "[html]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
         "[css]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
-        "autopep8.args": ["--max-line-length=88"],
-        "flake8.args": ["--max-line-length=88", "--extend-ignore=E203,W503"],
-        "black-formatter.args": ["--line-length=88"],
         "ruff.enable": true,
-        "ruff.lint.enable": true,
-        "ruff.format.enable": true,
-        "mypy.args": ["--config-file=pyproject.toml"],
-        "pylint.args": ["--rcfile=pyproject.toml"],
-        "typescript.preferences.quoteStyle": "single",
-        "javascript.preferences.quoteStyle": "single",
-        "prettier.singleQuote": true,
-        "prettier.semi": true,
-        "prettier.tabWidth": 2,
-        "prettier.trailingComma": "es5",
-        "yaml.schemas": {
-          "https://json.schemastore.org/github-workflow.json": "/.github/workflows/*.yml",
-          "https://json.schemastore.org/github-action.json": "/.github/actions/*/action.yml"
-        },
-        "files.associations": {
-          "*.yml": "yaml",
-          "*.yaml": "yaml",
-          "Dockerfile*": "dockerfile",
-          ".devcontainer.json": "jsonc"
-        },
         "files.watcherExclude": {
-          "**/.git/objects/**": true,
-          "**/.git/subtree-cache/**": true,
           "**/node_modules/**": true,
           "**/.venv/**": true,
-          "**/.cache/**": true,
-          "**/target/**": true,
-          "**/dist/**": true,
           "**/__pycache__/**": true,
           "**/.pytest_cache/**": true,
           "**/.mypy_cache/**": true,
           "**/.ruff_cache/**": true
         },
-        "search.exclude": {
-          "**/.git": true,
-          "**/node_modules": true,
-          "**/.venv": true,
-          "**/.cache": true,
-          "**/target": true,
-          "**/dist": true,
-          "**/__pycache__": true,
-          "**/.pytest_cache": true,
-          "**/.mypy_cache": true,
-          "**/.ruff_cache": true
-        },
-        "terminal.integrated.profiles.linux": {
-          "bash": {
-            "path": "/bin/bash",
-            "args": ["-l"]
-          }
-        },
-        "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.env.linux": {
-          "UV_CACHE_DIR": "/home/vscode/.cache/uv",
-          "PIP_CACHE_DIR": "/home/vscode/.cache/pip",
           "PYTHONUNBUFFERED": "1",
-          "PYTHONDONTWRITEBYTECODE": "1"
-        },
-        "git.autofetch": true,
-        "git.enableSmartCommit": true,
-        "git.confirmSync": false,
-        "git.defaultCloneDirectory": "/workspaces",
-        "extensions.autoUpdate": "onlyEnabledExtensions",
-        "extensions.autoCheckUpdates": false,
-        "docker.dockerPath": "/usr/local/bin/docker",
-        "docker.machineNaming": "imageLabel",
-        "github-actions.workflows.pinned.workflows": [
-          ".github/workflows/ci.yml"
-        ]
+          "PYTHONDONTWRITEBYTECODE": "0"
+        }
       }
     }
   },
 
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
-  "initializeCommand": [
-    "node",
-    "-e",
-    "require('fs').mkdirSync('.devcontainer/.build-cache',{recursive:true})"
-  ],
+  "initializeCommand": "bash .devcontainer/scripts/generate-lock.sh",
   "updateContentCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
-  "forwardPorts": [8000, 8080, 3000, 5000, 9000],
+  "forwardPorts": [9000],
   "portsAttributes": {
-    "8000": {
-      "label": "Development Server",
-      "onAutoForward": "notify"
-    },
-    "8080": {
-      "label": "Alternative Server",
-      "onAutoForward": "silent"
-    },
-    "3000": {
-      "label": "Node.js Server",
-      "onAutoForward": "notify"
-    },
-    "5000": {
-      "label": "Flask/FastAPI Server",
-      "onAutoForward": "notify"
-    },
     "9000": {
       "label": "Goldilocks Flask App",
       "onAutoForward": "openBrowser"
     }
   },
 
-  "capAdd": ["SYS_PTRACE"],
-  "securityOpt": ["seccomp=unconfined"],
-  "privileged": false,
   "runArgs": ["-p", "9000:9000"],
-  "init": true,
   "shutdownAction": "stopContainer"
 }

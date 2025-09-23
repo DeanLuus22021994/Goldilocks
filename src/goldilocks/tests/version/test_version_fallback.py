@@ -8,7 +8,7 @@ import flask as _flask
 import pytest
 from flask.testing import FlaskClient
 
-import app as gold
+from goldilocks import app as gold
 
 
 @pytest.mark.filterwarnings("ignore:.*__version__.*:DeprecationWarning")
