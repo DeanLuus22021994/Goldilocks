@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 from typing import Any, cast
 
 import flask as _flask
 import pytest
 from flask.testing import FlaskClient
-
-# Import removed - no longer needed
 
 
 @pytest.mark.skip(reason="Complex mocking - covered by integration tests")
@@ -26,8 +25,6 @@ def test_version_flask_fallback(
     json_of: Callable[[Any], dict[str, Any]],
 ) -> None:
     """Force PackageNotFoundError for Flask to exercise fallback path."""
-    from importlib.metadata import version as pkg_version
-
     original = cast(Callable[[str], str], pkg_version)
 
     def fake_pkg_version(name: str) -> str:
@@ -35,7 +32,11 @@ def test_version_flask_fallback(
             raise PackageNotFoundError
         return original(name)
 
-    monkeypatch.setattr("goldilocks.app.pkg_version", fake_pkg_version, raising=True)
+    monkeypatch.setattr(
+        "goldilocks.app.pkg_version",
+        fake_pkg_version,
+        raising=True,
+    )
 
     res = client.get("/version")
     data = json_of(res)
