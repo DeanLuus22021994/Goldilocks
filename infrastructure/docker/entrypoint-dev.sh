@@ -6,6 +6,7 @@ set -e
 echo "🚀 Starting Goldilocks development server..."
 
 # Activate virtual environment
+# shellcheck source=/dev/null
 source /opt/venv/bin/activate
 
 # Set development environment variables

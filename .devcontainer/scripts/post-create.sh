@@ -20,6 +20,7 @@ if [ ! -f ".venv/bin/activate" ]; then
 fi
 
 # Install Python dependencies
+# shellcheck source=/dev/null
 source .venv/bin/activate
 pip install -r requirements.txt
 
