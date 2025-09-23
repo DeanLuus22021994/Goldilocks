@@ -1,13 +1,13 @@
 {
   "name": "Goldilocks Development Environment",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
-  "workspaceFolder": "/workspaces/goldilocks",
+  "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
 
   // Optimized container environment variables
   "containerEnv": {
-    "GOLDILOCKS_CONFIG_DIR": "/workspaces/goldilocks/.devcontainer",
+    "GOLDILOCKS_CONFIG_DIR": "/workspaces/Goldilocks/.devcontainer",
     "UV_CACHE_DIR": "/home/vscode/.cache/uv",
     "PIP_CACHE_DIR": "/home/vscode/.cache/pip",
     "NPM_CONFIG_CACHE": "/home/vscode/.npm",
@@ -92,17 +92,6 @@
       "userUid": "automatic",
       "userGid": "automatic"
     },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.13",
-      "optimize": true,
-      "installTools": true,
-      "toolsToInstall": "flake8,autopep8,black,yapf,mypy,pydocstyle,pycodestyle,bandit,pipenv,virtualenv,pytest,pylint,ruff,pyyaml,uv,build,wheel,setuptools,setuptools-scm,pip-tools,pre-commit,poetry,twine",
-      "enableShared": true,
-      "installJupyterlab": true,
-      "configureGitLfsAndGitCryptForUser": true,
-      "installPath": "/usr/local/python",
-      "defaultVersion": "3.13"
-    },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22",
       "nodeGypDependencies": true,
@@ -161,7 +150,7 @@
         "ms-toolsai.jupyter"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspaces/goldilocks/.venv/bin/python",
+        "python.defaultInterpreterPath": "/workspaces/Goldilocks/.venv/bin/python",
         "python.terminal.activateEnvironment": true,
         "python.terminal.activateEnvInCurrentTerminal": true,
         "python.analysis.autoImportCompletions": true,
@@ -300,7 +289,11 @@
   },
 
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
-  "initializeCommand": "mkdir -p ${localWorkspaceFolder}/.devcontainer/.build-cache",
+  "initializeCommand": [
+    "node",
+    "-e",
+    "require('fs').mkdirSync('.devcontainer/.build-cache',{recursive:true})"
+  ],
   "updateContentCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
   "forwardPorts": [8000, 8080, 3000, 5000, 9000],
@@ -330,6 +323,7 @@
   "capAdd": ["SYS_PTRACE"],
   "securityOpt": ["seccomp=unconfined"],
   "privileged": false,
+  "runArgs": ["-p", "9000:9000"],
   "init": true,
   "shutdownAction": "stopContainer"
 }

@@ -34,12 +34,23 @@ print_error() {
 
 # Set up workspace ownership
 print_step "Setting up workspace permissions..."
-sudo chown -R vscode:vscode /workspaces/goldilocks
+sudo chown -R vscode:vscode "$(pwd)"
+# Ensure user cache directories exist and have proper ownership
+for d in \
+    "/home/vscode/.cache" \
+    "/home/vscode/.cache/uv" \
+    "/home/vscode/.cache/pip" \
+    "/home/vscode/.npm" \
+    "/home/vscode/.cache/yarn"
+do
+    sudo mkdir -p "$d"
+    sudo chown -R vscode:vscode "$d"
+done
 print_success "Workspace permissions configured"
 
 # Configure Git safely
 print_step "Configuring Git safe directories..."
-git config --global --add safe.directory /workspaces/goldilocks
+git config --global --add safe.directory "$(pwd)"
 print_success "Git safe directory configured"
 
 # Update system packages
@@ -74,10 +85,12 @@ print_step "Setting up Python environment..."
 python -m pip install --upgrade pip setuptools wheel
 python -m pip install uv
 
-# Create virtual environment if it doesn't exist
-if [ ! -d ".venv" ]; then
+# Create virtual environment if missing or incomplete
+if [ ! -f ".venv/bin/activate" ]; then
     print_step "Creating Python virtual environment..."
+    rm -rf .venv || true
     python -m venv .venv --upgrade-deps
+    sudo chown -R vscode:vscode .venv
     print_success "Virtual environment created"
 else
     print_warning "Virtual environment already exists"
@@ -95,7 +108,7 @@ fi
 
 # Install requirements using uv for faster installation
 if [ -f "requirements.txt" ]; then
-    uv pip install -r requirements.txt
+    uv pip install -r requirements.txt || { print_warning "uv cache permission issue, retrying with --no-cache"; uv pip install --no-cache -r requirements.txt; }
     print_success "Python requirements installed"
 else
     print_warning "No requirements.txt found"
@@ -143,9 +156,7 @@ mkdir -p frontend/{components,styles,scripts,assets}
 mkdir -p infrastructure/{docker,kubernetes,terraform}
 mkdir -p docs/{api,deployment,development}
 
-# Create __init__.py files for Python packages
-touch src/__init__.py
-touch src/goldilocks/__init__.py
+# Create __init__.py files for Python subpackages only (avoid creating top-level src/__init__.py)
 touch src/goldilocks/{api,core,models,services,utils}/__init__.py
 
 print_success "Project structure created"

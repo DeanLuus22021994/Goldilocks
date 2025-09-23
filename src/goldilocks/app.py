@@ -118,9 +118,16 @@ def version() -> tuple[Response, int]:
     app_version = os.environ.get("APP_VERSION")
     if not app_version:
         try:
-            app_version = pkg_version("app")
+            # Prefer package metadata for our distribution name if installed
+            app_version = pkg_version("goldilocks")
         except PackageNotFoundError:
-            app_version = "0.1.0"
+            # Fallback to package variable defined in __init__
+            try:
+                from goldilocks import __version__ as _pkg_ver
+
+                app_version = _pkg_ver
+            except Exception:
+                app_version = "0.1.0"
 
     try:
         flask_version = pkg_version("Flask")
