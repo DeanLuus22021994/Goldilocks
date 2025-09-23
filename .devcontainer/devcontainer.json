@@ -45,7 +45,8 @@
   "hostRequirements": {
     "cpus": 1,
     "memory": "2gb",
-    "storage": "8gb"
+    "storage": "8gb",
+    "gpu": "optional"
   },
 
   // Minimal features - only essential tools
