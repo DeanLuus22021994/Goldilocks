@@ -1,22 +1,25 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-  "python.terminal.activateEnvironment": true,
+  "python.defaultInterpreterPath": "C:\\Users\\deanl.MSI\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+  "python.terminal.activateEnvironment": false,
   "python.analysis.autoSearchPaths": true,
-  "python.analysis.extraPaths": ["${workspaceFolder}/src"],
-  "pylint.args": [
-    "--init-hook",
-    "import sys; sys.path.append('${workspaceFolder}/src')"
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src",
+    "${workspaceFolder}"
+  ],
+  "python.analysis.include": [
+    "${workspaceFolder}/src",
+    "${workspaceFolder}/*.py"
   ],
   "python.envFile": "${workspaceFolder}/.env",
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["tests", "-v", "--tb=short"],
+  "python.testing.pytestArgs": ["src/goldilocks/tests", "-v", "--tb=short"],
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
-  "editor.rulers": [120],
-  "python.formatting.blackArgs": ["--line-length", "120"],
+  "editor.rulers": [79],
+  "python.formatting.blackArgs": ["--line-length", "79"],
   "[python]": {
-    "editor.rulers": [120],
+    "editor.rulers": [79],
     "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 120
+    "editor.wordWrapColumn": 79
   },
   "files.exclude": {
     "**/__pycache__": true,
@@ -30,6 +33,8 @@
     "**/.coverage": true,
     "**/htmlcov": true
   },
-  "python-envs.defaultEnvManager": "ms-python.python:system",
-  "python-envs.pythonProjects": []
+  "python.analysis.diagnosticMode": "workspace",
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "pylance.insidersChannel": "off",
+  "python.analysis.typeCheckingMode": "basic"
 }

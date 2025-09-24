@@ -1,21 +1,23 @@
 # filepath: /app/pyproject.toml
 [tool.black]
-line-length = 120
+line-length = 79
 target-version = ["py313"]
 skip-string-normalization = true
 
 [tool.isort]
 profile = "black"
-line_length = 120
+line_length = 79
 known_first_party = ["goldilocks", "app"]
+src_paths = ["src", "."]
 
 [tool.flake8]
-max-line-length = 120
+max-line-length = 79
 extend-ignore = ["E203", "W503"]
 
 [tool.pytest.ini_options]
 testpaths = ["src/goldilocks/tests"]
 addopts = "-q --cov=goldilocks --cov-report=term-missing"
+pythonpath = ["src", "."]
 
 [tool.mypy]
 python_version = "3.13"
@@ -27,5 +29,5 @@ check_untyped_defs = true
 no_implicit_optional = true
 pretty = true
 explicit_package_bases = true
-mypy_path = ["src"]
-files = ["src"]
+mypy_path = ["src", "."]
+files = ["src", "*.py"]
