@@ -188,7 +188,8 @@ class TestUtilityFunctions:
     def test_mask_sensitive_data_email(self) -> None:
         """Test mask_sensitive_data with email address."""
         result = mask_sensitive_data("user@example.com")
-        assert result == "user***********"
+        # "user@example.com" is 16 chars, first 4 visible = "user" + 12 stars
+        assert result == "user************"
 
     def test_mask_sensitive_data_short(self) -> None:
         """Test mask_sensitive_data with short string."""
@@ -283,6 +284,7 @@ class TestTimerDecorator:
             return "result"
 
         assert documented_function.__name__ == "documented_function"
+        assert documented_function.__doc__ is not None
         assert "This function has documentation" in documented_function.__doc__
 
     def test_timer_handles_exceptions(self) -> None:

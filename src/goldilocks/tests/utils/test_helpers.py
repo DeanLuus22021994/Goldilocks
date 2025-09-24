@@ -16,9 +16,14 @@ def app() -> Generator[Flask, None, None]:
     """Create test Flask application."""
     app = create_app("testing")
 
+    # Ensure we're using in-memory SQLite for tests
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"
+    app.config['TESTING'] = True
+
     with app.app_context():
         db.create_all()
         yield app
+        db.session.remove()
         db.drop_all()
 
 
