@@ -15,10 +15,10 @@
   "remoteUser": "root",
 
   "hostRequirements": {
-    "cpus": 8,
-    "memory": "16gb",
+    "cpus": 10,
+    "memory": "14gb",
     "storage": "64gb",
-    "gpu": true
+    "gpu": "optional"
   },
 
   "runArgs": [
