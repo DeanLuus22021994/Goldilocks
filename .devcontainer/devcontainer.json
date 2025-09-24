@@ -85,6 +85,10 @@
     "ghcr.io/devcontainers/features/git:1": {
       "ppa": false,
       "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
     }
   }
 }
