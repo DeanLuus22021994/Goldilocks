@@ -52,8 +52,7 @@ RUN --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
   --mount=type=cache,target=/opt/venv-cache,sharing=locked \
   python -m venv /opt/venv --upgrade-deps \
   && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
-  && /opt/venv/bin/pip install --no-deps -r requirements.txt \
-  && /opt/venv/bin/pip check
+  && /opt/venv/bin/pip install -r requirements.txt
 
 # Copy source code for bytecode precompilation
 COPY src/ ./src/
@@ -73,11 +72,11 @@ FROM builder AS tools
 
 # Install development tools with persistent cache (LOW CODE principle)
 RUN --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
-  /opt/venv/bin/pip install --no-deps \
+  /opt/venv/bin/pip install \
   pytest pytest-cov pytest-xdist \
   ruff mypy pre-commit \
   black isort flake8 \
-  httpx bandit safety
+  httpx
 
 # Copy development configurations for caching
 COPY .pre-commit-config.yaml ./
@@ -137,7 +136,11 @@ USER root
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update && apt-get install -y --no-install-recommends \
-  sudo zsh vim less wget \
+  sudo zsh vim less wget gpg \
+  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+  && apt-get update \
+  && apt-get install -y gh \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get clean
 

@@ -142,22 +142,5 @@
       "onAutoForward": "notify"
     }
   },
-  "shutdownAction": "stopContainer",
-
-  "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "configureZshAsDefaultShell": true,
-      "installOhMyZsh": true,
-      "upgradePackages": true
-    },
-    "ghcr.io/devcontainers/features/git:1": {
-      "ppa": false,
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "installDirectlyFromGitHubRelease": true,
-      "version": "latest"
-    }
-  }
+  "shutdownAction": "stopContainer"
 }

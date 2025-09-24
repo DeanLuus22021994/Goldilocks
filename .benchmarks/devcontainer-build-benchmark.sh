@@ -1,5 +1,5 @@
 #!/bin/bash
-# DevContainer Build Benchmarking Script
+# DevContainer Build Benchmarking Script - JSON Output Only
 # Tracks Python version, resource usage, and performance metrics
 
 set -e
@@ -8,9 +8,10 @@ BENCHMARK_DIR="/projects/Goldilocks/.benchmarks"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BENCHMARK_FILE="$BENCHMARK_DIR/build_${TIMESTAMP}.json"
 
-echo "🔍 DevContainer Build Benchmark Starting..."
-echo "Timestamp: $(date)"
-echo "Benchmark file: $BENCHMARK_FILE"
+# All progress messages go to stderr, only final JSON goes to stdout
+echo "🔍 DevContainer Build Benchmark Starting..." >&2
+echo "Timestamp: $(date)" >&2
+echo "Benchmark file: $BENCHMARK_FILE" >&2
 
 # Create benchmarks directory if it doesn't exist
 mkdir -p "$BENCHMARK_DIR"
@@ -19,7 +20,7 @@ mkdir -p "$BENCHMARK_DIR"
 BUILD_START=$(date +%s.%3N)
 
 # System info before build
-echo "📊 Collecting pre-build system metrics..."
+echo "📊 Collecting pre-build system metrics..." >&2
 
 # Get initial system metrics
 INITIAL_MEMORY=$(free -m | awk '/^Mem:/ {print $3}')
@@ -78,10 +79,10 @@ cat >> "$BENCHMARK_FILE" << EOF
   "build_process": {
 EOF
 
-echo "🚀 Starting DevContainer CLI build test..."
+echo "🚀 Starting DevContainer CLI build test..." >&2
 
 # Test 1: Initialize volumes
-echo "📦 Step 1: Initializing volumes..."
+echo "📦 Step 1: Initializing volumes..." >&2
 VOLUME_START=$(date +%s.%3N)
 
 # Run initialize command
@@ -90,19 +91,19 @@ bash -c "docker volume create goldilocks-venv-optimized; docker volume create go
 VOLUME_END=$(date +%s.%3N)
 VOLUME_TIME=$(echo "$VOLUME_END - $VOLUME_START" | bc)
 
-echo "    Volume initialization time: ${VOLUME_TIME}s"
+echo "    Volume initialization time: ${VOLUME_TIME}s" >&2
 
 # Test 2: Build the devcontainer
-echo "🏗️  Step 2: Building devcontainer..."
+echo "🏗️  Step 2: Building devcontainer..." >&2
 BUILD_DOCKER_START=$(date +%s.%3N)
 
 # Build using devcontainer CLI
-if command -v devcontainer &> /dev/null; then
-    echo "Using devcontainer CLI..."
+if false; then  # Temporarily disabled due to Python 3.14 compatibility issues
+    echo "Using devcontainer CLI..." >&2
     devcontainer build --workspace-folder /projects/Goldilocks --log-level trace
     BUILD_SUCCESS=true
 else
-    echo "devcontainer CLI not found, using docker build directly..."
+    echo "Using docker build directly (recommended for Python 3.14.0rc3)..." >&2
     docker build \
         --file infrastructure/docker/dockerfiles/Dockerfile.multi-stage \
         --target devcontainer \
@@ -112,17 +113,16 @@ else
         --build-arg BUILDX_EXPERIMENTAL=1 \
         --platform linux/amd64 \
         --progress plain \
-        . || BUILD_SUCCESS=false
-    BUILD_SUCCESS=true
+        . >&2 && BUILD_SUCCESS=true || BUILD_SUCCESS=false
 fi
 
 BUILD_DOCKER_END=$(date +%s.%3N)
 BUILD_DOCKER_TIME=$(echo "$BUILD_DOCKER_END - $BUILD_DOCKER_START" | bc)
 
-echo "    Docker build time: ${BUILD_DOCKER_TIME}s"
+echo "    Docker build time: ${BUILD_DOCKER_TIME}s" >&2
 
 # Test 3: Get container info and Python version
-echo "🐍 Step 3: Testing container and Python version..."
+echo "🐍 Step 3: Testing container and Python version..." >&2
 CONTAINER_TEST_START=$(date +%s.%3N)
 
 # Start a test container
@@ -156,13 +156,13 @@ docker rm $CONTAINER_ID &>/dev/null
 CONTAINER_TEST_END=$(date +%s.%3N)
 CONTAINER_TEST_TIME=$(echo "$CONTAINER_TEST_END - $CONTAINER_TEST_START" | bc)
 
-echo "    Container test time: ${CONTAINER_TEST_TIME}s"
-echo "    Python version: $PYTHON_VERSION"
-echo "    Venv Python version: $VENV_PYTHON_VERSION"
-echo "    Flask version: $FLASK_VERSION"
+echo "    Container test time: ${CONTAINER_TEST_TIME}s" >&2
+echo "    Python version: $PYTHON_VERSION" >&2
+echo "    Venv Python version: $VENV_PYTHON_VERSION" >&2
+echo "    Flask version: $FLASK_VERSION" >&2
 
 # Get post-build system metrics
-echo "📈 Collecting post-build system metrics..."
+echo "📈 Collecting post-build system metrics..." >&2
 FINAL_MEMORY=$(free -m | awk '/^Mem:/ {print $3}')
 FINAL_DISK=$(df -BM /var/lib/docker | awk 'NR==2 {print $3}' | sed 's/M//')
 FINAL_GPU_MEMORY=0
@@ -179,12 +179,18 @@ GPU_MEMORY_DELTA=$((FINAL_GPU_MEMORY - INITIAL_GPU_MEMORY))
 BUILD_END=$(date +%s.%3N)
 TOTAL_TIME=$(echo "$BUILD_END - $BUILD_START" | bc)
 
+# Format decimal numbers with leading zeros
+VOLUME_TIME_FORMATTED=$(printf "%.3f" "$VOLUME_TIME")
+BUILD_DOCKER_TIME_FORMATTED=$(printf "%.3f" "$BUILD_DOCKER_TIME")
+CONTAINER_TEST_TIME_FORMATTED=$(printf "%.3f" "$CONTAINER_TEST_TIME")
+TOTAL_TIME_FORMATTED=$(printf "%.3f" "$TOTAL_TIME")
+
 # Complete the JSON file
 cat >> "$BENCHMARK_FILE" << EOF
-    "volume_initialization_time_seconds": $VOLUME_TIME,
-    "docker_build_time_seconds": $BUILD_DOCKER_TIME,
-    "container_test_time_seconds": $CONTAINER_TEST_TIME,
-    "total_build_time_seconds": $TOTAL_TIME,
+    "volume_initialization_time_seconds": $VOLUME_TIME_FORMATTED,
+    "docker_build_time_seconds": $BUILD_DOCKER_TIME_FORMATTED,
+    "container_test_time_seconds": $CONTAINER_TEST_TIME_FORMATTED,
+    "total_build_time_seconds": $TOTAL_TIME_FORMATTED,
     "build_successful": $BUILD_SUCCESS
   },
   "python_info": {
@@ -206,7 +212,7 @@ cat >> "$BENCHMARK_FILE" << EOF
     "gpu_memory_used_mb": $FINAL_GPU_MEMORY
   },
   "performance_summary": {
-    "build_efficiency": "$(echo "scale=1; $BUILD_DOCKER_TIME / 60" | bc) minutes",
+    "build_efficiency": "$(printf "%.1f" $(echo "scale=3; $BUILD_DOCKER_TIME / 60" | bc)) minutes",
     "memory_efficiency": "${MEMORY_DELTA}MB increase",
     "disk_efficiency": "${DISK_DELTA}MB increase",
     "overall_rating": "$(if [ "$BUILD_SUCCESS" = "true" ] && (( $(echo "$TOTAL_TIME < 120" | bc -l) )); then echo "Excellent"; elif [ "$BUILD_SUCCESS" = "true" ] && (( $(echo "$TOTAL_TIME < 300" | bc -l) )); then echo "Good"; elif [ "$BUILD_SUCCESS" = "true" ]; then echo "Fair"; else echo "Failed"; fi)"
@@ -214,47 +220,15 @@ cat >> "$BENCHMARK_FILE" << EOF
 }
 EOF
 
-# Display results
-echo ""
-echo "🎯 DevContainer Build Benchmark Results"
-echo "======================================="
-echo "Build Success: $BUILD_SUCCESS"
-echo "Total Time: ${TOTAL_TIME}s ($(echo "scale=1; $TOTAL_TIME / 60" | bc) minutes)"
-echo "Python Version: $PYTHON_VERSION"
-echo "Venv Python: $VENV_PYTHON_VERSION"
-echo "Flask Version: $FLASK_VERSION"
-echo "Memory Usage: +${MEMORY_DELTA}MB"
-echo "Disk Usage: +${DISK_DELTA}MB"
-echo "GPU Memory: +${GPU_MEMORY_DELTA}MB"
-echo "Peak Container Memory: $CONTAINER_MEMORY"
-echo "Peak Container CPU: $CONTAINER_CPU"
-echo ""
-echo "📊 Detailed benchmark saved to: $BENCHMARK_FILE"
-echo ""
+# Clean up old benchmark files, keep only the 3 most recent
+find "$BENCHMARK_DIR" -name "build_*.json" -type f | sort -r | tail -n +4 | xargs -r rm
 
-# Create a summary file
-SUMMARY_FILE="$BENCHMARK_DIR/latest_benchmark_summary.txt"
-cat > "$SUMMARY_FILE" << EOF
-DevContainer Build Benchmark - $(date)
-=====================================
-Build Success: $BUILD_SUCCESS
-Total Time: ${TOTAL_TIME}s
-Python Version: $PYTHON_VERSION
-Venv Python: $VENV_PYTHON_VERSION
-Flask Version: $FLASK_VERSION
-Memory Delta: +${MEMORY_DELTA}MB
-Disk Delta: +${DISK_DELTA}MB
-GPU Memory Delta: +${GPU_MEMORY_DELTA}MB
+# Output only the JSON content to stdout
+cat "$BENCHMARK_FILE"
 
-Performance Rating: $(if [ "$BUILD_SUCCESS" = "true" ] && (( $(echo "$TOTAL_TIME < 120" | bc -l) )); then echo "Excellent"; elif [ "$BUILD_SUCCESS" = "true" ] && (( $(echo "$TOTAL_TIME < 300" | bc -l) )); then echo "Good"; elif [ "$BUILD_SUCCESS" = "true" ]; then echo "Fair"; else echo "Failed"; fi)
-EOF
-
-echo "📋 Quick summary saved to: $SUMMARY_FILE"
-
+# Clean exit based on build success
 if [ "$BUILD_SUCCESS" = "true" ]; then
-    echo "✅ DevContainer build completed successfully!"
     exit 0
 else
-    echo "❌ DevContainer build failed!"
     exit 1
 fi
