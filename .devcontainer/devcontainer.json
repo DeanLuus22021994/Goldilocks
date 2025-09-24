@@ -1,10 +1,6 @@
 {
   "name": "Goldilocks Development Environment",
-  "build": {
-    "context": "..",
-    "dockerfile": "infrastructure/docker/tools.Dockerfile",
-    "target": "tools"
-  },
+  "image": "goldilocks:devcontainer",
   "workspaceFolder": "/workspace",
   "remoteUser": "app",
   "updateRemoteUserUID": true,
@@ -105,7 +101,7 @@
     }
   },
 
-  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postCreateCommand": "bash /workspaces/Goldilocks/.devcontainer/scripts/post-create.sh",
   "updateContentCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
   "forwardPorts": [9000],
