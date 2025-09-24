@@ -60,6 +60,83 @@
         "isDefault": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start Development Environment",
+      "type": "shell",
+      "command": "docker compose --profile dev up -d",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "Start full development environment (Flask + MariaDB + Adminer)",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start Production Environment",
+      "type": "shell",
+      "command": "docker compose --profile prod up -d",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "Start production environment (Flask + MariaDB)",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Start Database Only",
+      "type": "shell",
+      "command": "docker compose up -d goldilocks-db goldilocks-adminer",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "Start MariaDB database and Adminer for development",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Stop All Services",
+      "type": "shell",
+      "command": "docker compose down",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "Stop all Docker Compose services",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: View Logs",
+      "type": "shell",
+      "command": "docker compose logs -f",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "View logs from all running services",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Rebuild and Restart",
+      "type": "shell",
+      "command": "docker compose down && docker compose --profile dev up -d --build",
+      "options": {
+        "cwd": "infrastructure/docker"
+      },
+      "detail": "Rebuild images and restart development environment",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
