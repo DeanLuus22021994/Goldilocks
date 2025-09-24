@@ -351,8 +351,8 @@ INDEX_TEMPLATE = """
 """
 
 
-@main_bp.get("/")
-def index():
+@main_bp.route("/", methods=["GET"])
+def index() -> str:
     """Main application index page."""
     from flask import render_template_string
     return render_template_string(INDEX_TEMPLATE)

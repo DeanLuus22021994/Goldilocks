@@ -17,7 +17,7 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 from typing import Any
 
-from flask import Blueprint, jsonify
+from flask import Blueprint
 
 # Import fallback version
 try:
@@ -59,13 +59,13 @@ def create_error_response(
     return response
 
 
-@api_bp.get("/health")
+@api_bp.route("/health", methods=["GET"])
 def health() -> tuple[dict[str, str], int]:
     """Health check endpoint."""
     return {"status": "ok"}, 200
 
 
-@api_bp.get("/version")
+@api_bp.route("/version", methods=["GET"])
 def version() -> tuple[dict[str, Any], int]:
     """Version information endpoint."""
 

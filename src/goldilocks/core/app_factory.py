@@ -6,8 +6,9 @@ import os
 import time
 import uuid
 from logging import StreamHandler, getLogger
+from typing import Any
 
-from flask import Flask, g, request
+from flask import Flask, Response, g, request
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 
@@ -15,7 +16,7 @@ from goldilocks.api import api_bp
 from goldilocks.api.auth import auth_bp
 from goldilocks.api.main import main_bp
 from goldilocks.core import config
-from goldilocks.models.database import db
+from goldilocks.models.database import User, db
 from goldilocks.services.auth import AuthenticationService
 
 
@@ -23,9 +24,13 @@ class CorrelationIdFilter(logging.Filter):
     """Ensure every log record contains a correlation_id field."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        if not hasattr(g, "correlation_id"):
-            g.correlation_id = str(uuid.uuid4())
-        record.correlation_id = getattr(g, "correlation_id", "-")
+        try:
+            if not hasattr(g, "correlation_id"):
+                g.correlation_id = str(uuid.uuid4())
+            record.correlation_id = getattr(g, "correlation_id", "-")
+        except RuntimeError:
+            # Outside application context, use a placeholder
+            record.correlation_id = "-"
         return True
 
 
@@ -33,21 +38,10 @@ def setup_logging(app: Flask) -> None:
     """Set up structured logging for the application."""
     logger = getLogger("goldilocks")
     handler = StreamHandler()
-    handler.addFilter(CorrelationIdFilter())
 
-    # Use a single constant for the log format and keep lines under 79 chars
-    LOG_FORMAT = " ".join(
-        (
-            "%(asctime)s",
-            "%(levelname)s",
-            "%(name)s",
-            "%(correlation_id)s",
-            "%(message)s",
-        )
-    )
+    # Simple log format without correlation ID for now
+    LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
     formatter = logging.Formatter(LOG_FORMAT)
-
-    # Try to use JSON formatter if available
     try:
         jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
         JsonFormatter = jsonlogger_mod.JsonFormatter
@@ -87,7 +81,7 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
     login_manager.login_message_category = "info"
 
     @login_manager.user_loader
-    def load_user(user_id: str):
+    def load_user(user_id: str) -> User | None:
         """Load user by ID for Flask-Login."""
         return AuthenticationService.get_user_by_id(int(user_id))
 
@@ -98,13 +92,15 @@ def setup_request_handlers(app: Flask) -> None:
     """Set up request/response handlers."""
 
     @app.before_request
-    def add_correlation_id_and_timing():
+    def add_correlation_id_and_timing() -> None:
         """Add correlation ID and start timing for each request."""
-        g.correlation_id = str(uuid.uuid4())
+        # Use provided X-Request-ID header or generate new UUID
+        g.correlation_id = request.headers.get(
+            'X-Request-ID', str(uuid.uuid4()))
         g.start_time = time.perf_counter()
 
     @app.after_request
-    def add_response_headers(response):
+    def add_response_headers(response: Response) -> Response:
         """Add response headers including timing and correlation ID."""
         # Add timing header
         duration_ms = 0.0
@@ -131,7 +127,7 @@ def setup_request_handlers(app: Flask) -> None:
         return response
 
     @app.errorhandler(404)
-    def not_found(error):
+    def not_found(error: Any) -> tuple[dict[str, str], int]:
         """Handle 404 errors."""
         from flask import jsonify
         return jsonify({"message": "Not Found"}), 404

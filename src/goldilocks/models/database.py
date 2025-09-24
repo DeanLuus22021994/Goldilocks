@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 db = SQLAlchemy()
 
 
-class User(UserMixin, db.Model):
+class User(UserMixin, db.Model):  # type: ignore[misc]
     """User model for authentication and profile management."""
 
     __tablename__ = "users"
@@ -29,7 +29,8 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Renamed to avoid UserMixin conflict
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     role: Mapped[str] = mapped_column(
         Enum("user", "admin", "moderator", name="user_role"), default="user"
@@ -75,6 +76,10 @@ class User(UserMixin, db.Model):
         """Required by Flask-Login."""
         return str(self.id)
 
+    def is_active(self) -> bool:  # type: ignore[override]
+        """Override UserMixin property - required by Flask-Login."""
+        return self.active if self.active is not None else True
+
     def is_admin(self) -> bool:
         """Check if user has admin role."""
         return self.role == "admin"
@@ -100,7 +105,7 @@ class User(UserMixin, db.Model):
         return f"<User {self.username}>"
 
 
-class UserSession(db.Model):
+class UserSession(db.Model):  # type: ignore[misc]
     """User session model for authentication management."""
 
     __tablename__ = "user_sessions"
@@ -143,7 +148,7 @@ class UserSession(db.Model):
         return f"<UserSession {self.session_id}>"
 
 
-class UserProfile(db.Model):
+class UserProfile(db.Model):  # type: ignore[misc]
     """Extended user profile information."""
 
     __tablename__ = "user_profiles"
@@ -194,7 +199,7 @@ class UserProfile(db.Model):
         return f"<UserProfile {self.user_id}>"
 
 
-class ActivityLog(db.Model):
+class ActivityLog(db.Model):  # type: ignore[misc]
     """Activity logging for audit and analytics."""
 
     __tablename__ = "activity_logs"
@@ -206,7 +211,8 @@ class ActivityLog(db.Model):
     resource_id: Mapped[str | None] = mapped_column(String(255))
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
-    metadata: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON)  # Renamed to avoid SQLAlchemy conflict
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
@@ -232,7 +238,7 @@ class ActivityLog(db.Model):
         return f"<ActivityLog {self.action}>"
 
 
-class SystemSetting(db.Model):
+class SystemSetting(db.Model):  # type: ignore[misc]
     """System configuration settings."""
 
     __tablename__ = "system_settings"

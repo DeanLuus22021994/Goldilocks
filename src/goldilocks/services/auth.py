@@ -10,7 +10,7 @@ from flask import current_app, request
 from flask_login import current_user
 from sqlalchemy.exc import IntegrityError
 
-from goldilocks.models.database_simple import ActivityLog, User, UserProfile, UserSession, db
+from goldilocks.models.database import ActivityLog, User, UserProfile, UserSession, db
 
 
 class AuthenticationService:
