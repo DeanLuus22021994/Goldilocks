@@ -3,115 +3,29 @@
   "image": "goldilocks:devcontainer",
   "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "app",
-  "updateRemoteUserUID": true,
 
-  // Development environment variables
   "containerEnv": {
     "FLASK_APP": "src/goldilocks/app.py",
     "FLASK_ENV": "development",
     "FLASK_DEBUG": "1",
     "PYTHONPATH": "/workspaces/Goldilocks/src",
-    "PYTHONUNBUFFERED": "1",
-    "PYTHONDONTWRITEBYTECODE": "0",
-    "PIP_CACHE_DIR": "/home/app/.cache/pip",
-    "NPM_CONFIG_CACHE": "/home/app/.npm"
+    "PYTHONUNBUFFERED": "1"
   },
 
-  // Remote environment variables from host
-  "remoteEnv": {
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
-  },
-
-  // Volume mounts for persistent caching and performance
   "mounts": [
     "source=goldilocks-venv,target=/opt/venv,type=volume",
-    "source=goldilocks-node-modules,target=/workspaces/Goldilocks/node_modules,type=volume",
-    "source=goldilocks-bytecode,target=/workspaces/Goldilocks/__pycache__,type=volume",
-    "source=pip-cache,target=/home/app/.cache/pip,type=volume",
-    "source=npm-cache,target=/home/app/.npm,type=volume",
-    "source=pytest-cache,target=/workspaces/Goldilocks/.pytest_cache,type=volume",
-    "source=mypy-cache,target=/workspaces/Goldilocks/.mypy_cache,type=volume",
-    "source=ruff-cache,target=/workspaces/Goldilocks/.ruff_cache,type=volume",
     "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume"
   ],
 
-  // Minimal host requirements
-  "hostRequirements": {
-    "cpus": 1,
-    "memory": "2gb",
-    "storage": "8gb",
-    "gpu": "optional"
-  },
-
-  // No additional features needed - everything is in the Docker image
-
   "customizations": {
     "vscode": {
-      "extensions": [
-        "github.copilot",
-        "GitHub.copilot-chat",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "esbenp.prettier-vscode",
-        "usernamehw.errorlens",
-        "christian-kohler.path-intellisense"
-      ],
+      "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
       "settings": {
-        "python.defaultInterpreterPath": "/opt/venv/bin/python",
-        "python.terminal.activateEnvironment": true,
-        "python.analysis.typeCheckingMode": "strict",
-        "[python]": {
-          "editor.defaultFormatter": "charliermarsh.ruff",
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.organizeImports.ruff": "always",
-            "source.fixAll.ruff": "always"
-          },
-          "editor.rulers": [120],
-          "editor.tabSize": 4
-        },
-        "[json]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[jsonc]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[html]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[css]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "ruff.enable": true,
-        "files.watcherExclude": {
-          "**/node_modules/**": true,
-          "**/.venv/**": true,
-          "**/__pycache__/**": true,
-          "**/.pytest_cache/**": true,
-          "**/.mypy_cache/**": true,
-          "**/.ruff_cache/**": true
-        },
-        "terminal.integrated.env.linux": {
-          "PYTHONUNBUFFERED": "1",
-          "PYTHONDONTWRITEBYTECODE": "0",
-          "PATH": "/opt/venv/bin:${env:PATH}"
-        }
+        "python.defaultInterpreterPath": "/opt/venv/bin/python"
       }
     }
   },
 
-  "postCreateCommand": "bash /workspaces/Goldilocks/.devcontainer/scripts/post-create.sh",
-  "updateContentCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
-
   "forwardPorts": [9000],
-  "portsAttributes": {
-    "9000": {
-      "label": "Goldilocks Flask App",
-      "onAutoForward": "openBrowser"
-    }
-  },
-
-  "runArgs": ["-p", "9000:9000"],
   "shutdownAction": "stopContainer"
 }
