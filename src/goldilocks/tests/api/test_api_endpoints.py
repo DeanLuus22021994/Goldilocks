@@ -153,8 +153,7 @@ class TestAPIBlueprint:
 
     def test_api_blueprint_is_registered(self, app: Flask) -> None:
         """Test that API blueprint is properly registered."""
-        blueprints = [bp.name for bp in app.iter_blueprints()
-                      ]  # type: ignore[misc]
+        blueprints = list(app.blueprints.keys())
         assert "api" in blueprints
 
     def test_api_blueprint_url_rules(self, app: Flask) -> None:
@@ -173,4 +172,5 @@ class TestAPIBlueprint:
                 # Should not support POST/PUT/DELETE by default
                 assert "POST" not in rule.methods
                 assert "PUT" not in rule.methods
+                assert "DELETE" not in rule.methods
                 assert "DELETE" not in rule.methods
