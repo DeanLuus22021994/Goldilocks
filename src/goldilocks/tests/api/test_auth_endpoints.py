@@ -1,5 +1,9 @@
 """Tests for authentication API endpoints."""
 
+from __future__ import annotations
+
+from typing import Any
+
 from flask import Flask
 from flask.testing import FlaskClient
 
@@ -10,7 +14,7 @@ from goldilocks.models.forms import LoginForm, RegisterForm
 class TestAuthenticationEndpoints:
     """Test suite for authentication endpoints."""
 
-    def test_login_page_renders_successfully(self, client: FlaskClient) -> None:
+    def test_login_page_renders_successfully(self, client: FlaskClient[Any]) -> None:
         """Test that login page renders with form."""
         response = client.get("/auth/login")
         assert response.status_code == 200
@@ -19,7 +23,7 @@ class TestAuthenticationEndpoints:
         assert b"password" in response.data
 
     def test_login_with_valid_credentials(
-        self, client: FlaskClient, test_user: User
+        self, client: FlaskClient[Any], test_user: User
     ) -> None:
         """Test login with valid user credentials."""
         # Create test user in database
@@ -37,7 +41,7 @@ class TestAuthenticationEndpoints:
         # Should redirect to dashboard or home
         assert response.status_code in [200, 302]
 
-    def test_login_with_invalid_credentials(self, client: FlaskClient) -> None:
+    def test_login_with_invalid_credentials(self, client: FlaskClient[Any]) -> None:
         """Test login with invalid credentials."""
         response = client.post("/auth/login", data={
             "email": "nonexistent@example.com",
@@ -57,7 +61,7 @@ class TestAuthenticationEndpoints:
         # For now, just check it returns a valid response
         assert response.status_code in [200, 302]
 
-    def test_register_page_renders_successfully(self, client: FlaskClient) -> None:
+    def test_register_page_renders_successfully(self, client: FlaskClient[Any]) -> None:
         """Test that registration page renders with form."""
         response = client.get("/auth/register")
         assert response.status_code == 200
@@ -66,7 +70,7 @@ class TestAuthenticationEndpoints:
         assert b"email" in response.data
         assert b"password" in response.data
 
-    def test_register_with_valid_data(self, client: FlaskClient) -> None:
+    def test_register_with_valid_data(self, client: FlaskClient[Any]) -> None:
         """Test user registration with valid data."""
         user_data = {
             "username": "newuser",
@@ -84,7 +88,7 @@ class TestAuthenticationEndpoints:
         assert response.status_code in [200, 302]
 
     def test_register_with_duplicate_email(
-        self, client: FlaskClient, test_user: User
+        self, client: FlaskClient[Any], test_user: User
     ) -> None:
         """Test registration with already existing email."""
         with client.application.app_context():
@@ -106,7 +110,7 @@ class TestAuthenticationEndpoints:
         # Should stay on registration page with error
         assert response.status_code == 200
 
-    def test_register_with_password_mismatch(self, client: FlaskClient) -> None:
+    def test_register_with_password_mismatch(self, client: FlaskClient[Any]) -> None:
         """Test registration with password confirmation mismatch."""
         user_data = {
             "username": "testuser",
@@ -123,37 +127,37 @@ class TestAuthenticationEndpoints:
         # Should stay on registration page with validation error
         assert response.status_code == 200
 
-    def test_logout_endpoint(self, client: FlaskClient) -> None:
+    def test_logout_endpoint(self, client: FlaskClient[Any]) -> None:
         """Test user logout functionality."""
         response = client.get("/auth/logout")
         # Should redirect to login or home page
         assert response.status_code == 302
 
-    def test_dashboard_requires_authentication(self, client: FlaskClient) -> None:
+    def test_dashboard_requires_authentication(self, client: FlaskClient[Any]) -> None:
         """Test that dashboard requires user authentication."""
         response = client.get("/auth/dashboard")
         # Should redirect to login page
         assert response.status_code == 302
 
-    def test_dashboard_for_authenticated_user(self, client: FlaskClient) -> None:
+    def test_dashboard_for_authenticated_user(self, client: FlaskClient[Any]) -> None:
         """Test dashboard access - would need proper auth setup."""
         response = client.get("/auth/dashboard")
         # Should redirect to login when not authenticated
         assert response.status_code == 302
 
-    def test_profile_requires_authentication(self, client: FlaskClient) -> None:
+    def test_profile_requires_authentication(self, client: FlaskClient[Any]) -> None:
         """Test that profile page requires authentication."""
         response = client.get("/auth/profile")
         # Should redirect to login
         assert response.status_code == 302
 
-    def test_profile_page_for_authenticated_user(self, client: FlaskClient) -> None:
+    def test_profile_page_for_authenticated_user(self, client: FlaskClient[Any]) -> None:
         """Test profile page access - would need proper auth setup."""
         response = client.get("/auth/profile")
         # Should redirect to login when not authenticated
         assert response.status_code == 302
 
-    def _get_csrf_token(self, client: FlaskClient, endpoint: str) -> str:
+    def _get_csrf_token(self, client: FlaskClient[Any], endpoint: str) -> str:
         """Helper method to get CSRF token from a form page."""
         # In a real implementation, this would parse the HTML for the CSRF token
         return "test_csrf_token"
@@ -222,7 +226,7 @@ class TestAuthenticationForms:
 class TestAuthenticationSecurity:
     """Test suite for authentication security features."""
 
-    def test_csrf_protection_on_forms(self, client: FlaskClient) -> None:
+    def test_csrf_protection_on_forms(self, client: FlaskClient[Any]) -> None:
         """Test that forms are protected against CSRF attacks."""
         # Try to submit login form without CSRF token
         response = client.post("/auth/login", data={
@@ -248,7 +252,7 @@ class TestAuthenticationSecurity:
             assert test_user.check_password(password)
             assert not test_user.check_password("wrongpassword")
 
-    def test_session_security(self, client: FlaskClient) -> None:
+    def test_session_security(self, client: FlaskClient[Any]) -> None:
         """Test session security configurations."""
         with client.application.app_context():
             # Check that secure session configurations are set

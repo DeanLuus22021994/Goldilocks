@@ -1,5 +1,9 @@
 """Tests for API endpoints."""
 
+from __future__ import annotations
+
+from typing import Any
+
 from flask import Flask
 from flask.testing import FlaskClient
 
@@ -7,7 +11,7 @@ from flask.testing import FlaskClient
 class TestAPIEndpoints:
     """Test suite for core API endpoints."""
 
-    def test_health_endpoint_returns_ok_status(self, client: FlaskClient) -> None:
+    def test_health_endpoint_returns_ok_status(self, client: FlaskClient[Any]) -> None:
         """Test that health endpoint returns OK status."""
         response = client.get("/health")
         assert response.status_code == 200
@@ -15,8 +19,8 @@ class TestAPIEndpoints:
         data = response.get_json()
         assert data == {"status": "ok"}
 
-    def test_health_endpoint_with_correlation_id(
-        self, client: FlaskClient, correlation_id_header: dict[str, str]
+    def test_health_endpoint_includes_correlation_id(
+        self, client: FlaskClient[Any], correlation_id_header: dict[str, str]
     ) -> None:
         """Test that health endpoint handles correlation ID properly."""
         response = client.get("/health", headers=correlation_id_header)
@@ -24,8 +28,8 @@ class TestAPIEndpoints:
         expected_id = correlation_id_header["X-Request-ID"]
         assert response.headers.get("X-Request-ID") == expected_id
 
-    def test_version_endpoint_returns_expected_structure(
-        self, client: FlaskClient
+    def test_version_endpoint_returns_app_info(
+        self, client: FlaskClient[Any]
     ) -> None:
         """Test that version endpoint returns expected data structure."""
         response = client.get("/version")
@@ -56,7 +60,7 @@ class TestAPIEndpoints:
         assert all(part.isdigit() for part in parts)
 
     def test_version_endpoint_with_correlation_id(
-        self, client: FlaskClient, correlation_id_header: dict[str, str]
+        self, client: FlaskClient[Any], correlation_id_header: dict[str, str]
     ) -> None:
         """Test version endpoint with correlation ID header."""
         response = client.get("/version", headers=correlation_id_header)
@@ -64,7 +68,7 @@ class TestAPIEndpoints:
         expected_id = correlation_id_header["X-Request-ID"]
         assert response.headers.get("X-Request-ID") == expected_id
 
-    def test_api_endpoints_include_timing_headers(self, client: FlaskClient) -> None:
+    def test_api_endpoints_include_timing_headers(self, client: FlaskClient[Any]) -> None:
         """Test that API endpoints include response timing headers."""
         response = client.get("/health")
         assert "X-Response-Time-ms" in response.headers
@@ -73,7 +77,7 @@ class TestAPIEndpoints:
         # Should be a valid float
         assert float(timing) >= 0.0
 
-    def test_api_endpoints_content_type_headers(self, client: FlaskClient) -> None:
+    def test_api_endpoints_content_type_headers(self, client: FlaskClient[Any]) -> None:
         """Test that API endpoints return proper content-type headers."""
         response = client.get("/health")
         assert response.content_type.startswith("application/json")
@@ -81,7 +85,7 @@ class TestAPIEndpoints:
         response = client.get("/version")
         assert response.content_type.startswith("application/json")
 
-    def test_nonexistent_api_endpoint_returns_404(self, client: FlaskClient) -> None:
+    def test_nonexistent_api_endpoint_returns_404(self, client: FlaskClient[Any]) -> None:
         """Test that nonexistent API endpoints return 404 with JSON error."""
         response = client.get("/api/nonexistent")
         assert response.status_code == 404

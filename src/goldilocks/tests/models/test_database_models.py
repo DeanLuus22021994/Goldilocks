@@ -56,14 +56,14 @@ class TestUserModel:
             user = User(email="test@example.com", username="testuser")
 
             # Default should be active
-            assert user.is_active() is True
+            assert user.is_active is True
 
             # Should handle explicit active status
             user.active = False
-            assert user.is_active() is False
+            assert user.is_active is False
 
             user.active = True
-            assert user.is_active() is True
+            assert user.is_active is True
 
     def test_user_admin_status(self, app: Flask) -> None:
         """Test user admin role functionality."""

@@ -1,6 +1,9 @@
 """Tests for the Flask application factory."""
 
+from __future__ import annotations
+
 import tempfile
+from typing import Any
 from unittest.mock import patch
 
 from flask import Flask
@@ -163,7 +166,7 @@ class TestApplicationConfiguration:
 class TestRequestHandling:
     """Test suite for request handling functionality."""
 
-    def test_correlation_id_header_handling(self, client: FlaskClient) -> None:
+    def test_correlation_id_header_handling(self, client: FlaskClient[Any]) -> None:
         """Test that correlation ID headers are properly handled."""
         test_id = "test-correlation-123"
 
@@ -172,7 +175,7 @@ class TestRequestHandling:
         # Should echo back the same correlation ID
         assert response.headers.get("X-Request-ID") == test_id
 
-    def test_timing_header_included(self, client: FlaskClient) -> None:
+    def test_timing_header_included(self, client: FlaskClient[Any]) -> None:
         """Test that timing headers are included in responses."""
         response = client.get("/health")
 
@@ -194,7 +197,7 @@ class TestRequestHandling:
         assert correlation_id is not None
         assert len(correlation_id) > 10  # UUIDs are long
 
-    def test_404_error_handling(self, client: FlaskClient) -> None:
+    def test_404_error_handling(self, client: FlaskClient[Any]) -> None:
         """Test that 404 errors are properly handled."""
         response = client.get("/nonexistent-endpoint")
 
@@ -204,7 +207,7 @@ class TestRequestHandling:
         data = response.get_json()
         assert data == {"message": "Not Found"}
 
-    def test_error_responses_include_headers(self, client: FlaskClient) -> None:
+    def test_error_responses_include_headers(self, client: FlaskClient[Any]) -> None:
         """Test that error responses include standard headers."""
         response = client.get("/nonexistent-endpoint")
 

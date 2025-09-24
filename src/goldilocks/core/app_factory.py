@@ -135,14 +135,21 @@ def setup_request_handlers(app: Flask) -> None:
 
 def create_app(config_name: str = "default") -> Flask:
     """Create and configure Flask application."""
-    # Get the path to the frontend static directory
+    # Get the path to the frontend static directory and templates directory
     BASE_DIR = os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__))))
     STATIC_FOLDER = os.path.join(BASE_DIR, "frontend", "static")
 
-    # Create Flask app
-    app = Flask(__name__, static_folder=STATIC_FOLDER,
-                static_url_path="/static")
+    # Get the templates directory from goldilocks package
+    GOLDILOCKS_DIR = os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__)))
+    TEMPLATES_FOLDER = os.path.join(GOLDILOCKS_DIR, "templates")
+
+    # Create Flask app with static and template folders
+    app = Flask(__name__,
+                static_folder=STATIC_FOLDER,
+                static_url_path="/static",
+                template_folder=TEMPLATES_FOLDER)
 
     # Load configuration
     config_obj = config.get(config_name, config["default"])

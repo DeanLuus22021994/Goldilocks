@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, cast
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -70,13 +70,14 @@ class User(UserMixin, db.Model):  # type: ignore[misc]
 
     def check_password(self, password: str) -> bool:
         """Check password against hash."""
-        return check_password_hash(self.password_hash, password)
+        return cast(bool, check_password_hash(self.password_hash, password))
 
     def get_id(self) -> str:
         """Required by Flask-Login."""
         return str(self.id)
 
-    def is_active(self) -> bool:  # type: ignore[override]
+    @property  # type: ignore[override]
+    def is_active(self) -> bool:
         """Override UserMixin property - required by Flask-Login."""
         return self.active if self.active is not None else True
 
