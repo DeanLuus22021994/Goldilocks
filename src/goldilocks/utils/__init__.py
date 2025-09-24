@@ -18,8 +18,15 @@ import time
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-__all__: list[str] = ["timer", "safe_get", "format_duration",
-                      "retry", "validate_email", "sanitize_filename", "generate_slug"]
+__all__: list[str] = [
+    "timer",
+    "safe_get",
+    "format_duration",
+    "retry",
+    "validate_email",
+    "sanitize_filename",
+    "generate_slug",
+]
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -81,7 +88,10 @@ def retry(max_attempts: int = 3, delay: float = 1.0) -> Callable[[F], F]:
 def validate_email(email: str) -> bool:
     """Validate email address format."""
     # More strict regex that doesn't allow consecutive dots
-    pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$'
+    pattern = (
+        r'^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@'
+        r'[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$'
+    )
     if '..' in email:  # Explicitly reject consecutive dots
         return False
     return bool(re.match(pattern, email))
@@ -112,11 +122,13 @@ def generate_slug(text: str, max_length: int = 50) -> str:
     return slug or 'untitled'
 
 
-def truncate_string(text: str, max_length: int = 100, suffix: str = "...") -> str:
+def truncate_string(
+    text: str, max_length: int = 100, suffix: str = "..."
+) -> str:
     """Truncate string with ellipsis if longer than max_length."""
     if len(text) <= max_length:
         return text
-    return text[:max_length - len(suffix)] + suffix
+    return text[: max_length - len(suffix)] + suffix
 
 
 def is_safe_url(url: str) -> bool:

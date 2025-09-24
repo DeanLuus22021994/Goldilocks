@@ -40,4 +40,6 @@ def validate_data(data: dict[str, Any], required_fields: list[str]) -> None:
     """Validate that all required fields are present in data."""
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
-        raise ValidationError(f"Missing required fields: {', '.join(missing_fields)}")
+        raise ValidationError(
+            f"Missing required fields: {', '.join(missing_fields)}"
+        )

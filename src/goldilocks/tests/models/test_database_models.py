@@ -7,7 +7,14 @@ from flask import Flask
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from goldilocks.models.database import ActivityLog, SystemSetting, User, UserProfile, UserSession, db
+from goldilocks.models.database import (
+    ActivityLog,
+    SystemSetting,
+    User,
+    UserProfile,
+    UserSession,
+    db,
+)
 
 
 class TestUserModel:
@@ -21,7 +28,7 @@ class TestUserModel:
             user = User(
                 email="test@example.com",
                 username="testuser",
-                full_name="Test User"
+                full_name="Test User",
             )
             user.set_password("testpassword123")
 
@@ -74,8 +81,9 @@ class TestUserModel:
             assert user.is_admin() is False
 
             # Admin user
-            admin = User(email="admin@example.com",
-                         username="admin", role="admin")
+            admin = User(
+                email="admin@example.com", username="admin", role="admin"
+            )
             assert admin.is_admin() is True
 
     def test_user_get_id_for_flask_login(self, app: Flask) -> None:
@@ -101,7 +109,7 @@ class TestUserModel:
                 email="test@example.com",
                 username="testuser",
                 full_name="Test User",
-                role="user"
+                role="user",
             )
             user.set_password("password")
             db.session.add(user)
@@ -111,9 +119,17 @@ class TestUserModel:
 
             # Should contain expected keys
             expected_keys = {
-                "id", "uuid", "email", "username", "full_name",
-                "avatar_url", "is_active", "is_verified", "role",
-                "created_at", "updated_at"
+                "id",
+                "uuid",
+                "email",
+                "username",
+                "full_name",
+                "avatar_url",
+                "is_active",
+                "is_verified",
+                "role",
+                "created_at",
+                "updated_at",
             }
             assert set(user_dict.keys()).issuperset(expected_keys)
 
@@ -135,7 +151,7 @@ class TestUserModel:
 
             try:
                 db.session.commit()
-                assert False, "Should have raised IntegrityError"
+                raise AssertionError("Should have raised IntegrityError")
             except IntegrityError:
                 db.session.rollback()
 
@@ -146,7 +162,7 @@ class TestUserModel:
 
             try:
                 db.session.commit()
-                assert False, "Should have raised IntegrityError"
+                raise AssertionError("Should have raised IntegrityError")
             except IntegrityError:
                 db.session.rollback()
 
@@ -183,7 +199,7 @@ class TestUserSessionModel:
                 user_id=test_user.id,
                 ip_address="127.0.0.1",
                 user_agent="Test Browser",
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
 
             db.session.add(session)
@@ -194,7 +210,9 @@ class TestUserSessionModel:
             assert session.user_id == test_user.id
             assert session.ip_address == "127.0.0.1"
 
-    def test_user_session_expiration(self, app: Flask, test_user: User) -> None:
+    def test_user_session_expiration(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test session expiration functionality."""
         with app.app_context():
             db.create_all()
@@ -202,24 +220,28 @@ class TestUserSessionModel:
             db.session.commit()
 
             # Create expired session
-            expired_time = datetime.now(
-                timezone.utc).replace(year=2020)  # Past date
+            expired_time = datetime.now(timezone.utc).replace(
+                year=2020
+            )  # Past date
             session = UserSession(
                 session_id="expired_session",
                 user_id=test_user.id,
-                expires_at=expired_time
+                expires_at=expired_time,
             )
 
             assert session.is_expired() is True
 
             # Create future session
             future_time = datetime.now(timezone.utc).replace(
-                year=2030)  # Future date
+                year=2030
+            )  # Future date
             session.expires_at = future_time
 
             assert session.is_expired() is False
 
-    def test_user_session_relationship(self, app: Flask, test_user: User) -> None:
+    def test_user_session_relationship(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test relationship between user and session."""
         with app.app_context():
             db.create_all()
@@ -230,7 +252,7 @@ class TestUserSessionModel:
             session = UserSession(
                 session_id="test_session",
                 user_id=test_user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
 
             db.session.add(session)
@@ -258,7 +280,7 @@ class TestUserProfileModel:
                 location="Test City",
                 website="https://example.com",
                 company="Test Company",
-                job_title="Test Developer"
+                job_title="Test Developer",
             )
 
             db.session.add(profile)
@@ -269,7 +291,9 @@ class TestUserProfileModel:
             assert profile.location == "Test City"
             assert profile.website == "https://example.com"
 
-    def test_user_profile_relationship(self, app: Flask, test_user: User) -> None:
+    def test_user_profile_relationship(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test relationship between user and profile."""
         with app.app_context():
             db.create_all()
@@ -321,7 +345,7 @@ class TestActivityLogModel:
                 resource_type="test_resource",
                 resource_id="123",
                 ip_address="127.0.0.1",
-                metadata_json={"key": "value"}
+                metadata_json={"key": "value"},
             )
 
             db.session.add(log)
@@ -340,7 +364,7 @@ class TestActivityLogModel:
             log = ActivityLog(
                 action="anonymous_action",
                 resource_type="public_resource",
-                ip_address="192.168.1.1"
+                ip_address="192.168.1.1",
             )
 
             db.session.add(log)
@@ -363,7 +387,7 @@ class TestSystemSettingModel:
                 key_name="test_setting",
                 value_text="test_value",
                 value_type="string",
-                description="Test setting description"
+                description="Test setting description",
             )
 
             db.session.add(setting)
@@ -406,17 +430,19 @@ class TestSystemSettingModel:
             db.create_all()
 
             setting1 = SystemSetting(
-                key_name="duplicate_key", value_text="value1")
+                key_name="duplicate_key", value_text="value1"
+            )
             db.session.add(setting1)
             db.session.commit()
 
             setting2 = SystemSetting(
-                key_name="duplicate_key", value_text="value2")
+                key_name="duplicate_key", value_text="value2"
+            )
             db.session.add(setting2)
 
             try:
                 db.session.commit()
-                assert False, "Should have raised IntegrityError"
+                raise AssertionError("Should have raised IntegrityError")
             except IntegrityError:
                 db.session.rollback()
 
@@ -437,9 +463,7 @@ class TestDatabaseIntegration:
 
             # Create profile
             profile = UserProfile(
-                user_id=user.id,
-                bio="Test developer",
-                location="Test City"
+                user_id=user.id, bio="Test developer", location="Test City"
             )
             db.session.add(profile)
 
@@ -447,15 +471,12 @@ class TestDatabaseIntegration:
             session = UserSession(
                 session_id="test_session",
                 user_id=user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
             db.session.add(session)
 
             # Create activity log
-            log = ActivityLog(
-                user_id=user.id,
-                action="profile_created"
-            )
+            log = ActivityLog(user_id=user.id, action="profile_created")
             db.session.add(log)
 
             db.session.commit()
@@ -482,7 +503,7 @@ class TestDatabaseIntegration:
             session = UserSession(
                 session_id="test_session",
                 user_id=user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
             log = ActivityLog(user_id=user.id, action="test_action")
 
@@ -496,9 +517,21 @@ class TestDatabaseIntegration:
             db.session.commit()
 
             # Verify cascaded deletion
-            assert db.session.execute(select(UserProfile).filter_by(
-                user_id=user_id)).first() is None
-            assert db.session.execute(select(UserSession).filter_by(
-                user_id=user_id)).first() is None
-            assert db.session.execute(select(ActivityLog).filter_by(
-                user_id=user_id)).first() is None
+            assert (
+                db.session.execute(
+                    select(UserProfile).filter_by(user_id=user_id)
+                ).first()
+                is None
+            )
+            assert (
+                db.session.execute(
+                    select(UserSession).filter_by(user_id=user_id)
+                ).first()
+                is None
+            )
+            assert (
+                db.session.execute(
+                    select(ActivityLog).filter_by(user_id=user_id)
+                ).first()
+                is None
+            )

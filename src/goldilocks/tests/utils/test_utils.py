@@ -78,7 +78,7 @@ class TestUtilityFunctions:
             "test@example.com",
             "user.name@domain.co.uk",
             "user+tag@example.org",
-            "123@numbers.net"
+            "123@numbers.net",
         ]
 
         for email in valid_emails:
@@ -92,7 +92,7 @@ class TestUtilityFunctions:
             "user@",
             "user@domain",
             "user..double.dot@domain.com",
-            ""
+            "",
         ]
 
         for email in invalid_emails:
@@ -162,12 +162,7 @@ class TestUtilityFunctions:
 
     def test_is_safe_url_safe(self) -> None:
         """Test is_safe_url with safe URLs."""
-        safe_urls = [
-            "/path/to/resource",
-            "/user/profile",
-            "/dashboard",
-            "/"
-        ]
+        safe_urls = ["/path/to/resource", "/user/profile", "/dashboard", "/"]
 
         for url in safe_urls:
             assert is_safe_url(url), f"Should be safe: {url}"
@@ -179,7 +174,7 @@ class TestUtilityFunctions:
             "http://external.com",
             "https://malicious.site",
             "",
-            "javascript:alert('xss')"
+            "javascript:alert('xss')",
         ]
 
         for url in unsafe_urls:
@@ -247,7 +242,7 @@ class TestRetryDecorator:
 
         try:
             failing_function()
-            assert False, "Should have raised exception"
+            raise AssertionError("Should have raised exception")
         except ValueError as e:
             assert str(e) == "Always fails"
             assert call_count == 2
@@ -297,7 +292,7 @@ class TestTimerDecorator:
         with patch('builtins.print'):
             try:
                 failing_function()
-                assert False, "Should have raised exception"
+                raise AssertionError("Should have raised exception")
             except ValueError as e:
                 assert str(e) == "Test exception"
 
@@ -319,7 +314,9 @@ class TestUtilityIntegration:
 
     def test_filename_sanitization_and_truncation(self) -> None:
         """Test filename sanitization combined with truncation."""
-        dangerous_long_filename = "Very<>Long|File?Name*With/Dangerous\\Characters.txt"
+        dangerous_long_filename = (
+            "Very<>Long|File?Name*With/Dangerous\\Characters.txt"
+        )
 
         # Sanitize first
         clean_filename = sanitize_filename(dangerous_long_filename)
@@ -332,7 +329,10 @@ class TestUtilityIntegration:
 
     def test_slug_generation_with_truncation(self) -> None:
         """Test slug generation with built-in truncation."""
-        long_title = "This is an extremely long blog post title that needs to be converted to a URL-friendly slug"
+        long_title = (
+            "This is an extremely long blog post title that needs to be "
+            "converted to a URL-friendly slug"
+        )
 
         slug = generate_slug(long_title, max_length=30)
 

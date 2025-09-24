@@ -18,10 +18,12 @@ class Config:
     """Base configuration class."""
 
     SECRET_KEY = os.environ.get(
-        "SECRET_KEY", "dev-secret-key-change-in-production")
+        "SECRET_KEY", "dev-secret-key-change-in-production"
+    )
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@localhost:3306/goldilocks"
+        "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@"
+        "localhost:3306/goldilocks",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -66,7 +68,7 @@ config = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
     "testing": TestingConfig,
-    "default": DevelopmentConfig
+    "default": DevelopmentConfig,
 }
 
 

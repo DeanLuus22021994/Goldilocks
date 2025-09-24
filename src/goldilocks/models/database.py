@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 # from flask_login import UserMixin  # removed to avoid subclassing Any
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, String, Text, event
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Enum,
+    ForeignKey,
+    String,
+    Text,
+    event,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -23,8 +33,9 @@ db = SQLAlchemy(model_class=Base)
 
 # Typed wrappers for werkzeug functions to satisfy mypy
 _generate_password_hash: Callable[..., str] = cast(Any, generate_password_hash)
-_check_password_hash: Callable[[str, str],
-                               bool] = cast(Any, check_password_hash)
+_check_password_hash: Callable[[str, str], bool] = cast(
+    Any, check_password_hash
+)
 
 
 class User(Base):  # ← Type checker happy, fully modern
@@ -35,9 +46,11 @@ class User(Base):  # ← Type checker happy, fully modern
     id: Mapped[int] = mapped_column(primary_key=True)
     uuid: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False)
+        String(255), unique=True, nullable=False
+    )
     username: Mapped[str] = mapped_column(
-        String(64), unique=True, nullable=False)
+        String(64), unique=True, nullable=False
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
@@ -56,16 +69,20 @@ class User(Base):  # ← Type checker happy, fully modern
         onupdate=lambda: datetime.now(timezone.utc),
     )
     last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True))
+        DateTime(timezone=True)
+    )
 
     # Relationships
-    sessions: Mapped[list["UserSession"]] = relationship(
+    sessions: Mapped[list[UserSession]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
     )
-    profile: Mapped["UserProfile | None"] = relationship(
-        "UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    profile: Mapped[UserProfile | None] = relationship(
+        "UserProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
-    activity_logs: Mapped[list["ActivityLog"]] = relationship(
+    activity_logs: Mapped[list[ActivityLog]] = relationship(
         "ActivityLog", back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -78,7 +95,8 @@ class User(Base):  # ← Type checker happy, fully modern
     def set_password(self, password: str) -> None:
         """Set password hash."""
         self.password_hash = _generate_password_hash(
-            password, method="pbkdf2:sha256")
+            password, method="pbkdf2:sha256"
+        )
 
     def check_password(self, password: str) -> bool:
         """Check password against hash."""
@@ -114,9 +132,15 @@ class User(Base):  # ← Type checker happy, fully modern
             "is_active": self.is_active,
             "is_verified": self.is_verified,
             "role": self.role,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "last_login_at": self.last_login_at.isoformat() if self.last_login_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
+            "last_login_at": (
+                self.last_login_at.isoformat() if self.last_login_at else None
+            ),
         }
 
     def __repr__(self) -> str:
@@ -134,16 +158,19 @@ class UserSession(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     session_id: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False)
+        String(255), unique=True, nullable=False
+    )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=False)
+        ForeignKey("users.id"), nullable=False
+    )
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False)
+        DateTime(timezone=True), nullable=False
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
@@ -164,8 +191,12 @@ class UserSession(Base):
             "session_id": self.session_id,
             "user_id": self.user_id,
             "ip_address": self.ip_address,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "expires_at": (
+                self.expires_at.isoformat() if self.expires_at else None
+            ),
             "is_active": self.is_active,
             "is_expired": self.is_expired(),
         }
@@ -181,7 +212,8 @@ class UserProfile(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), unique=True, nullable=False)
+        ForeignKey("users.id"), unique=True, nullable=False
+    )
     bio: Mapped[str | None] = mapped_column(Text)
     location: Mapped[str | None] = mapped_column(String(255))
     website: Mapped[str | None] = mapped_column(String(500))
@@ -221,8 +253,12 @@ class UserProfile(Base):
             "timezone": self.timezone,
             "language": self.language,
             "theme": self.theme,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
         }
 
     def __repr__(self) -> str:
@@ -242,14 +278,16 @@ class ActivityLog(Base):
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
     metadata_json: Mapped[dict[str, Any] | None] = mapped_column(
-        JSON)  # Renamed to avoid SQLAlchemy conflict
+        JSON
+    )  # Renamed to avoid SQLAlchemy conflict
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships
     user: Mapped[User | None] = relationship(
-        "User", back_populates="activity_logs")
+        "User", back_populates="activity_logs"
+    )
 
     def __init__(self, **kwargs: Any) -> None:
         """Initialize ActivityLog with proper parameter handling."""
@@ -268,7 +306,9 @@ class ActivityLog(Base):
             "resource_id": self.resource_id,
             "ip_address": self.ip_address,
             "metadata": self.metadata_json,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
         }
 
     def __repr__(self) -> str:
@@ -282,10 +322,12 @@ class SystemSetting(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     key_name: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False)
+        String(255), unique=True, nullable=False
+    )
     value_text: Mapped[str | None] = mapped_column(Text)
     value_type: Mapped[str] = mapped_column(
-        Enum("string", "integer", "boolean", "json", name="setting_type"), default="string"
+        Enum("string", "integer", "boolean", "json", name="setting_type"),
+        default="string",
     )
     description: Mapped[str | None] = mapped_column(Text)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -344,8 +386,12 @@ class SystemSetting(Base):
             "value_type": self.value_type,
             "description": self.description,
             "is_public": self.is_public,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": (
+                self.created_at.isoformat() if self.created_at else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat() if self.updated_at else None
+            ),
         }
 
     def __repr__(self) -> str:

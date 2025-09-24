@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
-"""Clean up temporary Python files and caches.
+"""Clean up ALL temporary Python files and caches - CRITICAL CLEANUP.
 
-This script safely removes:
+This script aggressively removes:
 - Python bytecode cache (__pycache__ directories)
-- Compiled Python files (.pyc, .pyo)
-- Pytest cache
-- Coverage data files
-- Type checking cache (mypy)
-- IDE cache files
-- Temporary test files
+- Compiled Python files (.pyc, .pyo, .pyd)
+- Virtual environments (.venv, venv, env)
+- All linter caches (ruff, flake8, pylint, black, isort)
+- Type checking cache (mypy, pyright, pylance)
+- Testing cache (pytest, coverage, tox)
+- IDE cache files (VS Code, PyCharm, etc.)
+- Package manager caches (pip, poetry, conda)
+- Jupyter notebook checkpoints
+- Build and distribution artifacts
+- All temporary and swap files
 
-Usage: python clean.py
+Usage: python clean.py [--force]
+Use --force to skip confirmations for destructive operations.
 """
 
+import argparse
 import os
 import shutil
 import sys
@@ -26,7 +32,7 @@ def remove_directory(path: Path, description: str) -> int:
             shutil.rmtree(path)
             print(f"✅ Removed {description}: {path}")
             return 1
-        except Exception as e:
+        except OSError as e:
             print(f"❌ Failed to remove {description}: {path} - {e}")
             return 0
     return 0
@@ -39,7 +45,7 @@ def remove_file(path: Path, description: str) -> int:
             path.unlink()
             print(f"✅ Removed {description}: {path}")
             return 1
-        except Exception as e:
+        except OSError as e:
             print(f"❌ Failed to remove {description}: {path} - {e}")
             return 0
     return 0
@@ -90,6 +96,57 @@ def clean_test_cache() -> int:
     return count
 
 
+def clean_virtual_environments() -> int:
+    """Clean virtual environment directories."""
+    count = 0
+    root = Path(".")
+
+    print("🐍 Cleaning virtual environments...")
+
+    # Common virtual environment directory names
+    venv_names = [".venv", "venv", "env", ".env", "virtualenv", ".virtualenv"]
+
+    for venv_name in venv_names:
+        venv_path = root / venv_name
+        if venv_path.exists() and venv_path.is_dir():
+            # Check if it's actually a virtual environment
+            if (
+                (venv_path / "pyvenv.cfg").exists()
+                or (venv_path / "Scripts" / "python.exe").exists()
+                or (venv_path / "bin" / "python").exists()
+            ):
+                count += remove_directory(
+                    venv_path, f"virtual environment ({venv_name})"
+                )
+
+    return count
+
+
+def clean_linter_caches() -> int:
+    """Clean linter and formatter cache files."""
+    count = 0
+    root = Path(".")
+
+    print("🔧 Cleaning linter and formatter caches...")
+
+    # Linter and formatter caches
+    linter_caches = [
+        (".ruff_cache", "Ruff cache"),
+        (".flake8_cache", "Flake8 cache"),
+        (".pylint_cache", "Pylint cache"),
+        (".black_cache", "Black cache"),
+        (".isort_cache", "isort cache"),
+        (".bandit", "Bandit cache"),
+        (".pre-commit", "pre-commit cache"),
+    ]
+
+    for cache_dir, description in linter_caches:
+        cache_path = root / cache_dir
+        count += remove_directory(cache_path, description)
+
+    return count
+
+
 def clean_type_checking_cache() -> int:
     """Clean type checking cache files."""
     count = 0
@@ -104,6 +161,10 @@ def clean_type_checking_cache() -> int:
     # Remove pyright cache
     pyright_cache = root / ".pyright"
     count += remove_directory(pyright_cache, "pyright cache")
+
+    # Remove pylance cache
+    pylance_cache = root / ".pylance"
+    count += remove_directory(pylance_cache, "Pylance cache")
 
     return count
 
@@ -129,6 +190,28 @@ def clean_build_artifacts() -> int:
     return count
 
 
+def clean_package_manager_caches() -> int:
+    """Clean package manager caches."""
+    count = 0
+    root = Path(".")
+
+    print("📦 Cleaning package manager caches...")  # fixed corrupted emoji
+
+    # pip cache (usually in user directory, but check local)
+    pip_cache = root / ".pip_cache"
+    count += remove_directory(pip_cache, "pip cache")
+
+    # poetry cache
+    poetry_cache = root / ".poetry_cache"
+    count += remove_directory(poetry_cache, "Poetry cache")
+
+    # conda cache
+    conda_cache = root / ".conda"
+    count += remove_directory(conda_cache, "Conda cache")
+
+    return count
+
+
 def clean_ide_files() -> int:
     """Clean IDE-specific temporary files."""
     count = 0
@@ -136,50 +219,108 @@ def clean_ide_files() -> int:
 
     print("💻 Cleaning IDE temporary files...")
 
-    # VS Code settings that might cause issues (but keep main settings)
-    vscode_dir = root / ".vscode"
-    if vscode_dir.exists():
-        # Only remove specific cache/temp files, not all .vscode
-        for temp_file in ["*.log", "*.tmp"]:
-            for file_path in vscode_dir.rglob(temp_file):
-                count += remove_file(file_path, "VS Code temp file")
+    # VS Code caches and temp files
+    vscode_caches = [
+        ".vscode/.ropeproject",
+        ".vscode/settings.json.bak",
+        ".vscode/launch.json.bak",
+    ]
+
+    for cache_path in vscode_caches:
+        cache_file = root / cache_path
+        if cache_file.exists():
+            if cache_file.is_dir():
+                count += remove_directory(cache_file, "VS Code cache")
+            else:
+                count += remove_file(cache_file, "VS Code backup file")
+
+    # PyCharm project files (.idea)
+    for idea_dir in root.rglob(".idea"):
+        if idea_dir.is_dir():
+            count += remove_directory(idea_dir, "PyCharm .idea directory")
 
     # Remove Python language server cache
     pylsp_cache = root / ".pylsp"
     count += remove_directory(pylsp_cache, "Python LSP cache")
 
+    # Remove rope project cache
+    rope_cache = root / ".ropeproject"
+    count += remove_directory(rope_cache, "Rope project cache")
+
     return count
 
 
 def clean_temporary_files() -> int:
-    """Clean various temporary files."""
+    """Clean temporary and swap files."""
     count = 0
     root = Path(".")
 
-    print("🗂️  Cleaning temporary files...")
+    print("🗑️  Cleaning temporary files...")
 
-    # Remove common temp files
+    # Remove common temporary file patterns
     temp_patterns = [
         "*.tmp",
         "*.temp",
+        "*.bak",
+        "*.swp",
+        "*.swo",
         "*~",
         ".DS_Store",
         "Thumbs.db",
-        "*.swp",
-        "*.swo",
-        ".vscode-profile-*"
+        "desktop.ini",
     ]
 
     for pattern in temp_patterns:
         for temp_file in root.rglob(pattern):
-            if temp_file.is_file():  # Only remove files, not directories
+            if temp_file.is_file():
                 count += remove_file(temp_file, f"temporary file ({pattern})")
 
     return count
 
 
+def clean_jupyter_files() -> int:
+    """Clean Jupyter notebook checkpoints and temporary files."""
+    count = 0
+    root = Path(".")
+
+    print("📓 Cleaning Jupyter files...")
+
+    # Remove Jupyter checkpoints
+    for checkpoint_dir in root.rglob(".ipynb_checkpoints"):
+        count += remove_directory(checkpoint_dir, "Jupyter checkpoint")
+
+    # Remove Jupyter lab workspaces
+    jupyter_lab_dir = root / ".jupyter"
+    count += remove_directory(jupyter_lab_dir, "Jupyter lab workspace")
+
+    return count
+
+
+def _confirm(action: str, force: bool) -> bool:
+    """Ask for confirmation unless force is True."""
+    if force:
+        return True
+    try:
+        reply = input(f"{action} Proceed? [y/N]: ").strip().lower()
+        return reply in ("y", "yes")
+    except (EOFError, KeyboardInterrupt):
+        print("\n⚠️  Operation cancelled.")
+        return False
+
+
 def main() -> None:
     """Main cleanup function."""
+    parser = argparse.ArgumentParser(
+        description="Aggressively clean Python caches and temp files."
+    )
+    parser.add_argument(
+        "--force",
+        "-f",
+        action="store_true",
+        help="Skip confirmations for destructive operations",
+    )
+    args = parser.parse_args()
+
     print("🚀 Starting Python environment cleanup...")
     print(f"📁 Working directory: {os.getcwd()}")
     print()
@@ -187,13 +328,29 @@ def main() -> None:
     total_removed = 0
 
     try:
-        # Run all cleanup functions
+        # Core safe cleanups
         total_removed += clean_python_cache()
         total_removed += clean_test_cache()
+        total_removed += clean_linter_caches()
         total_removed += clean_type_checking_cache()
         total_removed += clean_build_artifacts()
         total_removed += clean_ide_files()
         total_removed += clean_temporary_files()
+        total_removed += clean_jupyter_files()
+
+        # Destructive operations (confirmation-gated)
+        if _confirm("🐍 Remove detected virtual environments.", args.force):
+            total_removed += clean_virtual_environments()
+        else:
+            print("⏭️  Skipped virtual environments.")
+
+        if _confirm(
+            "📦 Remove local package manager caches (pip/poetry/conda).",
+            args.force,
+        ):
+            total_removed += clean_package_manager_caches()
+        else:
+            print("⏭️  Skipped package manager caches.")
 
         print()
         print("🎉 Cleanup completed successfully!")
@@ -207,7 +364,7 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\n⚠️  Cleanup interrupted by user")
         sys.exit(1)
-    except Exception as e:
+    except OSError as e:
         print(f"\n❌ Cleanup failed with error: {e}")
         sys.exit(1)
 

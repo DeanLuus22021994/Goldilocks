@@ -8,7 +8,7 @@ from typing import Any
 
 from flask import current_app, request
 from flask_login import current_user
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from goldilocks.models.database import (
     ActivityLog,
@@ -32,7 +32,6 @@ class AuthenticationService:
     ) -> tuple[User | None, str | None]:
         """Create a new user account."""
         try:
-            # Check if user already exists
             existing_user = (
                 db.session.query(User)
                 .filter((User.email == email) | (User.username == username))
@@ -44,7 +43,6 @@ class AuthenticationService:
                 else:
                     return None, "This username is already taken"
 
-            # Create new user
             user = User(
                 email=email.lower().strip(),
                 username=username.strip(),
@@ -54,13 +52,11 @@ class AuthenticationService:
             user.set_password(password)
 
             db.session.add(user)
-            db.session.flush()  # Get user ID
+            db.session.flush()
 
-            # Create user profile
             profile = UserProfile(user_id=user.id)
             db.session.add(profile)
 
-            # Log activity
             AuthenticationService.log_activity(
                 user_id=user.id,
                 action="user_registered",
@@ -72,9 +68,15 @@ class AuthenticationService:
 
         except IntegrityError as e:
             db.session.rollback()
-            current_app.logger.error(f"Database error creating user: {e}")
+            current_app.logger.error(
+                f"Database integrity error creating user: {e}"
+            )
             return None, "An error occurred while creating your account"
-        except Exception as e:
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            current_app.logger.error(f"Database error creating user: {e}")
+            return None, "A database error occurred"
+        except Exception as e:  # pylint: disable=broad-exception-caught
             db.session.rollback()
             current_app.logger.error(f"Unexpected error creating user: {e}")
             return None, "An unexpected error occurred"
@@ -85,7 +87,6 @@ class AuthenticationService:
     ) -> tuple[User | None, str | None]:
         """Authenticate user with email/username and password."""
         try:
-            # Find user by email or username
             user = (
                 db.session.query(User)
                 .filter(
@@ -102,7 +103,6 @@ class AuthenticationService:
                 return None, "Your account has been deactivated"
 
             if not user.check_password(password):
-                # Log failed login attempt
                 AuthenticationService.log_activity(
                     user_id=user.id,
                     action="login_failed",
@@ -113,10 +113,8 @@ class AuthenticationService:
                 )
                 return None, "Invalid email/username or password"
 
-            # Update last login
             user.last_login_at = datetime.now(timezone.utc)
 
-            # Log successful login
             AuthenticationService.log_activity(
                 user_id=user.id,
                 action="login_success",
@@ -126,9 +124,13 @@ class AuthenticationService:
             db.session.commit()
             return user, None
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Authentication error: {e}")
+            current_app.logger.error(f"Authentication database error: {e}")
+            return None, "A database error occurred during authentication"
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(f"Authentication unexpected error: {e}")
             return None, "An error occurred during authentication"
 
     @staticmethod
@@ -165,9 +167,17 @@ class AuthenticationService:
                 db.session.commit()
                 return True
             return False
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error invalidating session: {e}")
+            current_app.logger.error(
+                f"Database error invalidating session: {e}"
+            )
+            return False
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(
+                f"Unexpected error invalidating session: {e}"
+            )
             return False
 
     @staticmethod
@@ -179,19 +189,27 @@ class AuthenticationService:
             )
             db.session.commit()
             return True
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error invalidating user sessions: {e}")
+            current_app.logger.error(
+                f"Database error invalidating user sessions: {e}"
+            )
+            return False
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(
+                f"Unexpected error invalidating user sessions: {e}"
+            )
             return False
 
     @staticmethod
     def get_user_by_id(user_id: int) -> User | None:
-        """Get user by ID."""
+        """Get a user by their ID."""
         return db.session.query(User).filter_by(id=user_id).first()
 
     @staticmethod
     def get_user_by_email(email: str) -> User | None:
-        """Get user by email."""
+        """Get a user by their email address."""
         return (
             db.session.query(User)
             .filter_by(email=email.lower().strip())
@@ -200,7 +218,7 @@ class AuthenticationService:
 
     @staticmethod
     def get_user_by_username(username: str) -> User | None:
-        """Get user by username."""
+        """Get a user by their username."""
         return (
             db.session.query(User).filter_by(username=username.strip()).first()
         )
@@ -221,11 +239,9 @@ class AuthenticationService:
             if not user:
                 return False, "User not found"
 
-            # Update user basic info
             if full_name is not None:
                 user.full_name = full_name.strip() if full_name else None
 
-            # Update or create profile
             profile = user.profile
             if not profile:
                 profile = UserProfile(user_id=user_id)
@@ -242,7 +258,6 @@ class AuthenticationService:
             if job_title is not None:
                 profile.job_title = job_title.strip() if job_title else None
 
-            # Log activity
             AuthenticationService.log_activity(
                 user_id=user_id,
                 action="profile_updated",
@@ -258,9 +273,16 @@ class AuthenticationService:
             db.session.commit()
             return True, None
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error updating profile: {e}")
+            current_app.logger.error(f"Database error updating profile: {e}")
+            return (
+                False,
+                "A database error occurred while updating your profile",
+            )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(f"Unexpected error updating profile: {e}")
             return False, "An error occurred while updating your profile"
 
     @staticmethod
@@ -278,7 +300,6 @@ class AuthenticationService:
 
             user.set_password(new_password)
 
-            # Invalidate all sessions except current one
             current_session_id = getattr(current_user, "_session_id", None)
             query = db.session.query(UserSession).filter_by(user_id=user_id)
             if current_session_id:
@@ -287,7 +308,6 @@ class AuthenticationService:
                 )
             query.update({"is_active": False})
 
-            # Log activity
             AuthenticationService.log_activity(
                 user_id=user_id,
                 action="password_changed",
@@ -297,14 +317,23 @@ class AuthenticationService:
             db.session.commit()
             return True, None
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error changing password: {e}")
+            current_app.logger.error(f"Database error changing password: {e}")
+            return (
+                False,
+                "A database error occurred while changing your password",
+            )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(
+                f"Unexpected error changing password: {e}"
+            )
             return False, "An error occurred while changing your password"
 
     @staticmethod
     def get_user_stats() -> dict[str, Any]:
-        """Get user statistics for dashboard."""
+        """Get statistics about users in the system."""
         try:
             total_users = db.session.query(User).count()
             active_users = (
@@ -334,8 +363,19 @@ class AuthenticationService:
                 "recent_logins": recent_logins,
             }
 
-        except Exception as e:
-            current_app.logger.error(f"Error getting user stats: {e}")
+        except SQLAlchemyError as e:
+            current_app.logger.error(f"Database error getting user stats: {e}")
+            return {
+                "total_users": 0,
+                "active_users": 0,
+                "verified_users": 0,
+                "admin_users": 0,
+                "recent_logins": 0,
+            }
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            current_app.logger.error(
+                f"Unexpected error getting user stats: {e}"
+            )
             return {
                 "total_users": 0,
                 "active_users": 0,
@@ -352,7 +392,7 @@ class AuthenticationService:
         resource_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
-        """Log user activity."""
+        """Log user activity to the activity log."""
         try:
             activity = ActivityLog(
                 user_id=user_id,
@@ -368,13 +408,16 @@ class AuthenticationService:
             db.session.add(activity)
             db.session.commit()
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error logging activity: {e}")
+            current_app.logger.error(f"Database error logging activity: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(f"Unexpected error logging activity: {e}")
 
     @staticmethod
     def cleanup_expired_sessions() -> int:
-        """Clean up expired sessions."""
+        """Clean up expired user sessions and return the count cleaned."""
         try:
             count = (
                 db.session.query(UserSession)
@@ -384,7 +427,15 @@ class AuthenticationService:
             db.session.commit()
             return count
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
-            current_app.logger.error(f"Error cleaning up sessions: {e}")
+            current_app.logger.error(
+                f"Database error cleaning up sessions: {e}"
+            )
+            return 0
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            db.session.rollback()
+            current_app.logger.error(
+                f"Unexpected error cleaning up sessions: {e}"
+            )
             return 0

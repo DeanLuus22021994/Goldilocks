@@ -7,7 +7,13 @@ from unittest.mock import patch
 from flask import Flask
 from sqlalchemy.exc import IntegrityError
 
-from goldilocks.models.database import ActivityLog, User, UserProfile, UserSession, db
+from goldilocks.models.database import (
+    ActivityLog,
+    User,
+    UserProfile,
+    UserSession,
+    db,
+)
 from goldilocks.services.auth import AuthenticationService
 
 
@@ -23,7 +29,7 @@ class TestAuthenticationServiceUserManagement:
                 email="test@example.com",
                 username="testuser",
                 password="TestPassword123",
-                full_name="Test User"
+                full_name="Test User",
             )
 
             assert user is not None
@@ -36,7 +42,9 @@ class TestAuthenticationServiceUserManagement:
             # Should create associated profile
             assert user.profile is not None
 
-    def test_create_user_duplicate_email(self, app: Flask, test_user: User) -> None:
+    def test_create_user_duplicate_email(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test user creation with duplicate email."""
         with app.app_context():
             db.create_all()
@@ -48,14 +56,16 @@ class TestAuthenticationServiceUserManagement:
             user, error = AuthenticationService.create_user(
                 email=test_user.email,
                 username="differentuser",
-                password="TestPassword123"
+                password="TestPassword123",
             )
 
             assert user is None
             assert error is not None
             assert "already exists" in error.lower()
 
-    def test_create_user_duplicate_username(self, app: Flask, test_user: User) -> None:
+    def test_create_user_duplicate_username(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test user creation with duplicate username."""
         with app.app_context():
             db.create_all()
@@ -67,7 +77,7 @@ class TestAuthenticationServiceUserManagement:
             user, error = AuthenticationService.create_user(
                 email="different@example.com",
                 username=test_user.username,
-                password="TestPassword123"
+                password="TestPassword123",
             )
 
             assert user is None
@@ -79,15 +89,14 @@ class TestAuthenticationServiceUserManagement:
         with app.app_context():
             db.create_all()
 
-            user, error = AuthenticationService.create_user(
+            user, _ = AuthenticationService.create_user(
                 email="admin@example.com",
                 username="admin",
                 password="AdminPassword123",
-                role="admin"
+                role="admin",
             )
 
             assert user is not None
-            assert error is None
             assert user.role == "admin"
             assert user.is_admin() is True
 
@@ -96,35 +105,41 @@ class TestAuthenticationServiceUserManagement:
         with app.app_context():
             db.create_all()
 
-            user, error = AuthenticationService.create_user(
+            user, _ = AuthenticationService.create_user(
                 email="test@example.com",
                 username="testuser",
-                password="TestPassword123"
+                password="TestPassword123",
             )
 
             assert user is not None
 
             # Check activity log
-            activity = db.session.query(ActivityLog).filter_by(
-                user_id=user.id,
-                action="user_registered"
-            ).first()
+            activity = (
+                db.session.query(ActivityLog)
+                .filter_by(user_id=user.id, action="user_registered")
+                .first()
+            )
 
             assert activity is not None
 
     @patch('goldilocks.services.auth.db.session')
-    def test_create_user_handles_database_errors(self, mock_session: Any, app: Flask) -> None:
+    def test_create_user_handles_database_errors(
+        self, mock_session: Any, app: Flask
+    ) -> None:
         """Test that database errors are handled gracefully."""
         with app.app_context():
             # Mock database error
             mock_session.commit.side_effect = IntegrityError(
-                "test", "test", Exception("test error"))
+                "test", "test", Exception("test error")
+            )
 
 
 class TestAuthenticationServiceAuthentication:
     """Test suite for authentication functionality."""
 
-    def test_authenticate_user_with_email(self, app: Flask, test_user: User) -> None:
+    def test_authenticate_user_with_email(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test user authentication using email."""
         with app.app_context():
             db.create_all()
@@ -135,8 +150,7 @@ class TestAuthenticationServiceAuthentication:
             db.session.commit()
 
             user, error = AuthenticationService.authenticate_user(
-                test_user.email,
-                "TestPassword123"
+                test_user.email, "TestPassword123"
             )
 
             assert user is not None
@@ -144,7 +158,9 @@ class TestAuthenticationServiceAuthentication:
             assert user.id == test_user.id
             assert user.last_login_at is not None
 
-    def test_authenticate_user_with_username(self, app: Flask, test_user: User) -> None:
+    def test_authenticate_user_with_username(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test user authentication using username."""
         with app.app_context():
             db.create_all()
@@ -155,32 +171,54 @@ class TestAuthenticationServiceAuthentication:
             db.session.commit()
 
             user, error = AuthenticationService.authenticate_user(
-                test_user.username,
-                "TestPassword123"
+                test_user.username, "TestPassword123"
             )
 
             assert user is not None
             assert error is None
             assert user.id == test_user.id
 
-    def test_authenticate_user_wrong_password(self, app: Flask, test_user: User) -> None:
+    def test_authenticate_user_wrong_password(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test authentication with wrong password."""
         with app.app_context():
             db.create_all()
 
-            # Set up test user
-            test_user.set_password("TestPassword123")
+            # Create test user
+            test_user.set_password("correct_password")
             db.session.add(test_user)
             db.session.commit()
 
+            # Try to authenticate with wrong password
             user, error = AuthenticationService.authenticate_user(
-                test_user.email,
-                "WrongPassword"
+                test_user.email, "wrong_password"
             )
 
             assert user is None
-            assert error is not None
-            assert "invalid" in error.lower() or "incorrect" in error.lower()
+            assert error == "Invalid email/username or password"
+
+            # Check activity log
+            activity = (
+                db.session.query(ActivityLog)
+                .filter_by(user_id=test_user.id, action="login_failed")
+                .first()
+            )
+            assert activity is not None
+            assert activity.metadata_json is not None
+            assert activity.metadata_json["reason"] == "invalid_password"
+
+    def test_authenticate_user_nonexistent_user(self, app: Flask) -> None:
+        """Test authentication with nonexistent user."""
+        with app.app_context():
+            db.create_all()
+
+            user, error = AuthenticationService.authenticate_user(
+                "nonexistent@example.com", "password"
+            )
+
+            assert user is None
+            assert error == "Invalid email/username or password"
 
     def test_authenticate_nonexistent_user(self, app: Flask) -> None:
         """Test authentication with nonexistent user."""
@@ -188,35 +226,36 @@ class TestAuthenticationServiceAuthentication:
             db.create_all()
 
             user, error = AuthenticationService.authenticate_user(
-                "nonexistent@example.com",
-                "Password123"
+                "nonexistent@example.com", "password"
             )
 
             assert user is None
-            assert error is not None
-            assert "not found" in error.lower() or "invalid" in error.lower()
+            assert error == "Invalid email/username or password"
 
-    def test_authenticate_inactive_user(self, app: Flask, test_user: User) -> None:
+    def test_authenticate_inactive_user(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test authentication with inactive user."""
         with app.app_context():
             db.create_all()
 
-            # Set up inactive user
+            # Create test user and deactivate
             test_user.set_password("TestPassword123")
             test_user.active = False
             db.session.add(test_user)
             db.session.commit()
 
+            # Try to authenticate
             user, error = AuthenticationService.authenticate_user(
-                test_user.email,
-                "TestPassword123"
+                test_user.email, "TestPassword123"
             )
 
             assert user is None
-            assert error is not None
-            assert "inactive" in error.lower() or "disabled" in error.lower()
+            assert error == "Your account has been deactivated"
 
-    def test_authenticate_logs_successful_login(self, app: Flask, test_user: User) -> None:
+    def test_authenticate_logs_successful_login(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test that successful authentication is logged."""
         with app.app_context():
             db.create_all()
@@ -226,18 +265,18 @@ class TestAuthenticationServiceAuthentication:
             db.session.add(test_user)
             db.session.commit()
 
-            user, error = AuthenticationService.authenticate_user(
-                test_user.email,
-                "TestPassword123"
+            user, _ = AuthenticationService.authenticate_user(
+                test_user.email, "TestPassword123"
             )
 
             assert user is not None
 
             # Check activity log
-            activity = db.session.query(ActivityLog).filter_by(
-                user_id=user.id,
-                action="login_success"
-            ).first()
+            activity = (
+                db.session.query(ActivityLog)
+                .filter_by(user_id=user.id, action="login_success")
+                .first()
+            )
 
             assert activity is not None
 
@@ -246,7 +285,9 @@ class TestAuthenticationServiceSessionManagement:
     """Test suite for session management functionality."""
 
     @patch('goldilocks.services.auth.request')
-    def test_create_session(self, mock_request: Any, app: Flask, test_user: User) -> None:
+    def test_create_session(
+        self, mock_request: Any, app: Flask, test_user: User
+    ) -> None:
         """Test creating user session."""
         with app.app_context():
             db.create_all()
@@ -264,14 +305,19 @@ class TestAuthenticationServiceSessionManagement:
             assert len(session_id) > 10  # Should be a long random string
 
             # Verify session in database
-            session = db.session.query(UserSession).filter_by(
-                session_id=session_id).first()
+            session = (
+                db.session.query(UserSession)
+                .filter_by(session_id=session_id)
+                .first()
+            )
             assert session is not None
             assert session.user_id == test_user.id
             assert session.ip_address == "127.0.0.1"
 
     @patch('goldilocks.services.auth.request')
-    def test_create_session_with_remember_me(self, mock_request: Any, app: Flask, test_user: User) -> None:
+    def test_create_session_with_remember_me(
+        self, mock_request: Any, app: Flask, test_user: User
+    ) -> None:
         """Test creating session with remember me option."""
         with app.app_context():
             db.create_all()
@@ -284,15 +330,17 @@ class TestAuthenticationServiceSessionManagement:
             db.session.commit()
 
             session_id = AuthenticationService.create_session(
-                test_user.id,
-                remember_me=True
+                test_user.id, remember_me=True
             )
 
             assert session_id is not None
 
             # Verify session has longer expiration
-            session = db.session.query(UserSession).filter_by(
-                session_id=session_id).first()
+            session = (
+                db.session.query(UserSession)
+                .filter_by(session_id=session_id)
+                .first()
+            )
             assert session is not None
 
             # Should expire more than 24 hours from now (remember me = 30 days)
@@ -311,21 +359,24 @@ class TestAuthenticationServiceSessionManagement:
             session = UserSession(
                 session_id="test_session_123",
                 user_id=test_user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
             db.session.add(session)
             db.session.commit()
 
             # Invalidate session
             result = AuthenticationService.invalidate_session(
-                "test_session_123")
+                "test_session_123"
+            )
 
             assert result is True
 
             # Verify session is inactive
-            updated_session = db.session.query(UserSession).filter_by(
-                session_id="test_session_123"
-            ).first()
+            updated_session = (
+                db.session.query(UserSession)
+                .filter_by(session_id="test_session_123")
+                .first()
+            )
             assert updated_session is not None
             assert updated_session.is_active is False
 
@@ -335,11 +386,14 @@ class TestAuthenticationServiceSessionManagement:
             db.create_all()
 
             result = AuthenticationService.invalidate_session(
-                "nonexistent_session")
+                "nonexistent_session"
+            )
 
             assert result is False
 
-    def test_invalidate_all_user_sessions(self, app: Flask, test_user: User) -> None:
+    def test_invalidate_all_user_sessions(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test invalidating all sessions for a user."""
         with app.app_context():
             db.create_all()
@@ -351,12 +405,12 @@ class TestAuthenticationServiceSessionManagement:
             session1 = UserSession(
                 session_id="session1",
                 user_id=test_user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
             session2 = UserSession(
                 session_id="session2",
                 user_id=test_user.id,
-                expires_at=datetime.now(timezone.utc)
+                expires_at=datetime.now(timezone.utc),
             )
 
             db.session.add_all([session1, session2])
@@ -364,13 +418,17 @@ class TestAuthenticationServiceSessionManagement:
 
             # Invalidate all user sessions
             result = AuthenticationService.invalidate_all_user_sessions(
-                test_user.id)
+                test_user.id
+            )
 
             assert result is True
 
             # Verify all sessions are inactive
-            sessions = db.session.query(UserSession).filter_by(
-                user_id=test_user.id).all()
+            sessions = (
+                db.session.query(UserSession)
+                .filter_by(user_id=test_user.id)
+                .all()
+            )
             for session in sessions:
                 assert session.is_active is False
 
@@ -410,12 +468,15 @@ class TestAuthenticationServiceUserRetrieval:
             db.session.commit()
 
             retrieved_user = AuthenticationService.get_user_by_email(
-                test_user.email)
+                test_user.email
+            )
 
             assert retrieved_user is not None
             assert retrieved_user.email == test_user.email
 
-    def test_get_user_by_email_case_insensitive(self, app: Flask, test_user: User) -> None:
+    def test_get_user_by_email_case_insensitive(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test that email lookup is case insensitive."""
         with app.app_context():
             db.create_all()
@@ -440,7 +501,8 @@ class TestAuthenticationServiceUserRetrieval:
             db.session.commit()
 
             retrieved_user = AuthenticationService.get_user_by_username(
-                test_user.username)
+                test_user.username
+            )
 
             assert retrieved_user is not None
             assert retrieved_user.username == test_user.username
@@ -468,7 +530,7 @@ class TestAuthenticationServiceProfileManagement:
                 full_name="Updated Name",
                 bio="Updated bio",
                 location="New Location",
-                company="New Company"
+                company="New Company",
             )
 
             assert success is True
@@ -491,8 +553,7 @@ class TestAuthenticationServiceProfileManagement:
             db.create_all()
 
             success, error = AuthenticationService.update_user_profile(
-                99999,
-                full_name="Test Name"
+                99999, full_name="Test Name"
             )
 
             assert success is False
@@ -503,7 +564,9 @@ class TestAuthenticationServiceProfileManagement:
 class TestAuthenticationServicePasswordManagement:
     """Test suite for password management functionality."""
 
-    def test_change_password_success(self, app: Flask, test_user: User) -> None:
+    def test_change_password_success(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test successful password change."""
         with app.app_context():
             db.create_all()
@@ -513,9 +576,7 @@ class TestAuthenticationServicePasswordManagement:
             db.session.commit()
 
             success, error = AuthenticationService.change_password(
-                test_user.id,
-                "OldPassword123",
-                "NewPassword123"
+                test_user.id, "OldPassword123", "NewPassword123"
             )
 
             assert success is True
@@ -527,7 +588,9 @@ class TestAuthenticationServicePasswordManagement:
             assert updated_user.check_password("NewPassword123")
             assert not updated_user.check_password("OldPassword123")
 
-    def test_change_password_wrong_current_password(self, app: Flask, test_user: User) -> None:
+    def test_change_password_wrong_current_password(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test password change with wrong current password."""
         with app.app_context():
             db.create_all()
@@ -537,9 +600,7 @@ class TestAuthenticationServicePasswordManagement:
             db.session.commit()
 
             success, error = AuthenticationService.change_password(
-                test_user.id,
-                "WrongPassword",
-                "NewPassword123"
+                test_user.id, "WrongPassword", "NewPassword123"
             )
 
             assert success is False
@@ -552,9 +613,7 @@ class TestAuthenticationServicePasswordManagement:
             db.create_all()
 
             success, error = AuthenticationService.change_password(
-                99999,
-                "OldPassword123",
-                "NewPassword123"
+                99999, "OldPassword123", "NewPassword123"
             )
 
             assert success is False
@@ -570,12 +629,15 @@ class TestAuthenticationServiceUtilities:
             db.create_all()
 
             # Create some test users
-            user1 = User(email="user1@example.com",
-                         username="user1", active=True)
-            user2 = User(email="user2@example.com",
-                         username="user2", active=False)
-            admin = User(email="admin@example.com",
-                         username="admin", role="admin")
+            user1 = User(
+                email="user1@example.com", username="user1", active=True
+            )
+            user2 = User(
+                email="user2@example.com", username="user2", active=False
+            )
+            admin = User(
+                email="admin@example.com", username="admin", role="admin"
+            )
 
             db.session.add_all([user1, user2, admin])
             db.session.commit()
@@ -604,20 +666,23 @@ class TestAuthenticationServiceUtilities:
                 user_id=test_user.id,
                 resource_type="test_resource",
                 resource_id="123",
-                metadata={"key": "value"}
+                metadata={"key": "value"},
             )
 
             # Verify activity was logged
-            activity = db.session.query(ActivityLog).filter_by(
-                user_id=test_user.id,
-                action="test_action"
-            ).first()
+            activity = (
+                db.session.query(ActivityLog)
+                .filter_by(user_id=test_user.id, action="test_action")
+                .first()
+            )
 
             assert activity is not None
             assert activity.resource_type == "test_resource"
             assert activity.resource_id == "123"
 
-    def test_cleanup_expired_sessions(self, app: Flask, test_user: User) -> None:
+    def test_cleanup_expired_sessions(
+        self, app: Flask, test_user: User
+    ) -> None:
         """Test cleaning up expired sessions."""
         with app.app_context():
             db.create_all()
@@ -630,7 +695,8 @@ class TestAuthenticationServiceUtilities:
                 session_id="expired_session",
                 user_id=test_user.id,
                 expires_at=datetime.now(timezone.utc).replace(
-                    year=2020)  # Past date
+                    year=2020
+                ),  # Past date
             )
 
             # Create active session
@@ -638,7 +704,8 @@ class TestAuthenticationServiceUtilities:
                 session_id="active_session",
                 user_id=test_user.id,
                 expires_at=datetime.now(timezone.utc).replace(
-                    year=2030)  # Future date
+                    year=2030
+                ),  # Future date
             )
 
             db.session.add_all([expired_session, active_session])
@@ -650,13 +717,17 @@ class TestAuthenticationServiceUtilities:
             assert count >= 1
 
             # Verify expired session was removed
-            expired = db.session.query(UserSession).filter_by(
-                session_id="expired_session"
-            ).first()
+            expired = (
+                db.session.query(UserSession)
+                .filter_by(session_id="expired_session")
+                .first()
+            )
             assert expired is None
 
             # Verify active session remains
-            active = db.session.query(UserSession).filter_by(
-                session_id="active_session"
-            ).first()
+            active = (
+                db.session.query(UserSession)
+                .filter_by(session_id="active_session")
+                .first()
+            )
             assert active is not None

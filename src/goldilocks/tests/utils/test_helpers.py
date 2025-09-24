@@ -29,9 +29,9 @@ def test_app() -> Generator[Flask]:
 
 
 @pytest.fixture
-def test_client(test_app: Flask) -> FlaskClient:
+def test_client(flask_app: Flask) -> FlaskClient:
     """Create test client."""
-    return test_app.test_client()
+    return flask_app.test_client()
 
 
 @pytest.fixture
@@ -57,9 +57,9 @@ def admin_user() -> User:
 
 
 @pytest.fixture
-def authenticated_user(test_app: Flask) -> User:
+def authenticated_user(app: Flask) -> User:
     """Create an authenticated test user."""
-    with test_app.app_context():
+    with app.app_context():
         user = User()
         user.email = "auth@example.com"
         user.username = "authuser"
@@ -99,7 +99,7 @@ class APITestMixin:
 
     @staticmethod
     def make_authenticated_request(
-        test_client: FlaskClient,
+        client: FlaskClient,
         endpoint: str,
         _user: User,  # Not used in simplified implementation
         method: str = "GET",
@@ -109,14 +109,14 @@ class APITestMixin:
         # This would need proper session/auth implementation
         # For now, just make the request
         if method.upper() == "GET":
-            return test_client.get(endpoint, **kwargs)
+            return client.get(endpoint, **kwargs)
         elif method.upper() == "POST":
-            return test_client.post(endpoint, **kwargs)
+            return client.post(endpoint, **kwargs)
         else:
             raise ValueError(f"Unsupported method: {method}")
 
     @staticmethod
-    def get_csrf_token(_test_client: FlaskClient, _endpoint: str) -> str:
+    def get_csrf_token(_client: FlaskClient, _endpoint: str) -> str:
         """Extract CSRF token from a form page."""
         # Simplified implementation for testing
         return "test_csrf_token"
