@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import tempfile
-from typing import Any
 from unittest.mock import patch
 
 from flask import Flask
 from flask.testing import FlaskClient
 
-from goldilocks.core.app_factory import create_app, setup_extensions, setup_logging, setup_request_handlers
+from goldilocks.core.app_factory import (
+    create_app,
+    setup_extensions,
+    setup_logging,
+    setup_request_handlers,
+)
 
 
 class TestAppFactory:
@@ -50,6 +54,7 @@ class TestAppFactory:
 
         with app.app_context():
             from goldilocks.models.database import db
+
             # Database should be initialized
             assert db is not None
             assert hasattr(db, 'create_all')
@@ -74,7 +79,10 @@ class TestAppFactory:
         """Test app creation with custom static folder path."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Mock the static folder path
-            with patch('goldilocks.core.app_factory.os.path.join', return_value=temp_dir):
+            with patch(
+                'goldilocks.core.app_factory.os.path.join',
+                return_value=temp_dir,
+            ):
                 app = create_app("testing")
                 # Should not raise any exceptions
                 assert isinstance(app, Flask)
@@ -99,6 +107,7 @@ class TestSetupFunctions:
 
         # Logging should be configured
         import logging
+
         logger = logging.getLogger("goldilocks")
         assert logger.level == logging.INFO
 
@@ -134,7 +143,7 @@ class TestApplicationConfiguration:
             'SECRET_KEY',
             'SQLALCHEMY_DATABASE_URI',
             'SQLALCHEMY_TRACK_MODIFICATIONS',
-            'WTF_CSRF_ENABLED'
+            'WTF_CSRF_ENABLED',
         ]
 
         for config_key in required_configs:
@@ -166,7 +175,7 @@ class TestApplicationConfiguration:
 class TestRequestHandling:
     """Test suite for request handling functionality."""
 
-    def test_correlation_id_header_handling(self, client: FlaskClient[Any]) -> None:
+    def test_correlation_id_header_handling(self, client: FlaskClient) -> None:
         """Test that correlation ID headers are properly handled."""
         test_id = "test-correlation-123"
 
@@ -175,7 +184,7 @@ class TestRequestHandling:
         # Should echo back the same correlation ID
         assert response.headers.get("X-Request-ID") == test_id
 
-    def test_timing_header_included(self, client: FlaskClient[Any]) -> None:
+    def test_timing_header_included(self, client: FlaskClient) -> None:
         """Test that timing headers are included in responses."""
         response = client.get("/health")
 
@@ -187,7 +196,7 @@ class TestRequestHandling:
         assert float(timing) >= 0.0
 
     def test_correlation_id_generated_when_not_provided(
-        self, client: FlaskClient[Any]
+        self, client: FlaskClient
     ) -> None:
         """Test that correlation ID is generated when not provided."""
         response = client.get("/health")
@@ -197,7 +206,7 @@ class TestRequestHandling:
         assert correlation_id is not None
         assert len(correlation_id) > 10  # UUIDs are long
 
-    def test_404_error_handling(self, client: FlaskClient[Any]) -> None:
+    def test_404_error_handling(self, client: FlaskClient) -> None:
         """Test that 404 errors are properly handled."""
         response = client.get("/nonexistent-endpoint")
 
@@ -207,7 +216,9 @@ class TestRequestHandling:
         data = response.get_json()
         assert data == {"message": "Not Found"}
 
-    def test_error_responses_include_headers(self, client: FlaskClient[Any]) -> None:
+    def test_error_responses_include_headers(
+        self, client: FlaskClient
+    ) -> None:
         """Test that error responses include standard headers."""
         response = client.get("/nonexistent-endpoint")
 
@@ -246,7 +257,7 @@ class TestApplicationIntegration:
             test_user = User(
                 email="test@example.com",
                 username="testuser",
-                full_name="Test User"
+                full_name="Test User",
             )
             test_user.set_password("testpassword")
 
@@ -254,8 +265,11 @@ class TestApplicationIntegration:
             db.session.commit()
 
             # Should be able to query the user
-            queried_user = db.session.query(User).filter_by(
-                email="test@example.com").first()
+            queried_user = (
+                db.session.query(User)
+                .filter_by(email="test@example.com")
+                .first()
+            )
             assert queried_user is not None
             assert queried_user.username == "testuser"
 
@@ -275,10 +289,10 @@ class TestApplicationIntegration:
 
         with app.test_client() as client:
             # POST requests without CSRF token should fail
-            response = client.post("/auth/login", data={
-                "email": "test@example.com",
-                "password": "password"
-            })
+            response = client.post(
+                "/auth/login",
+                data={"email": "test@example.com", "password": "password"},
+            )
 
             # Should return 400 due to missing CSRF token
             assert response.status_code == 400

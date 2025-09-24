@@ -35,7 +35,7 @@ def app_fixture() -> Flask:
 
 
 @pytest.fixture()
-def client(app: Flask) -> FlaskClient:  # type: ignore[type-arg]
+def client(app: Flask) -> FlaskClient:
     """Lightweight test client per test for isolation."""
     return app.test_client()
 

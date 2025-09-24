@@ -11,7 +11,8 @@ def test_template_system_works(app: Flask) -> None:
         assert response.status_code == 200
         assert b"Goldilocks Flask App" in response.data
 
-        # Test that template inheritance works (should contain base layout elements)
+        # Test that template inheritance works (should contain base
+        # layout elements)
         assert b"<!DOCTYPE html>" in response.data
         assert b"<html" in response.data
 
@@ -30,7 +31,7 @@ def test_template_folder_configured(app: Flask) -> None:
     # Check that the template folder points to frontend/static/templates
     template_folder = app.template_folder
     assert template_folder is not None
-    assert "frontend/static/templates" in template_folder
+    assert "frontend/static/templates" in str(template_folder)
 
 
 def test_static_files_accessible(app: Flask) -> None:

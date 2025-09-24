@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from flask import Flask
 from flask.testing import FlaskClient
 
@@ -11,7 +9,9 @@ from flask.testing import FlaskClient
 class TestAPIEndpoints:
     """Test suite for core API endpoints."""
 
-    def test_health_endpoint_returns_ok_status(self, client: FlaskClient[Any]) -> None:
+    def test_health_endpoint_returns_ok_status(
+        self, client: FlaskClient
+    ) -> None:
         """Test that health endpoint returns OK status."""
         response = client.get("/health")
         assert response.status_code == 200
@@ -20,7 +20,7 @@ class TestAPIEndpoints:
         assert data == {"status": "ok"}
 
     def test_health_endpoint_includes_correlation_id(
-        self, client: FlaskClient[Any], correlation_id_header: dict[str, str]
+        self, client: FlaskClient, correlation_id_header: dict[str, str]
     ) -> None:
         """Test that health endpoint handles correlation ID properly."""
         response = client.get("/health", headers=correlation_id_header)
@@ -29,7 +29,7 @@ class TestAPIEndpoints:
         assert response.headers.get("X-Request-ID") == expected_id
 
     def test_version_endpoint_returns_app_info(
-        self, client: FlaskClient[Any]
+        self, client: FlaskClient
     ) -> None:
         """Test that version endpoint returns expected data structure."""
         response = client.get("/version")
@@ -47,14 +47,15 @@ class TestAPIEndpoints:
         assert isinstance(data["platform"], str)
 
     def test_version_endpoint_python_version_format(
-        self, client: FlaskClient[Any]
+        self, client: FlaskClient
     ) -> None:
         """Test that Python version follows expected format."""
         response = client.get("/version")
         data = response.get_json()
 
         python_version = data["python"]
-        # Should be in format "3.14.0" (rc versions may have additional parts like "rc3")
+        # Should be in format "3.14.0" (rc versions may have additional
+        # parts like "rc3")
         parts = python_version.split(".")
         assert len(parts) >= 3  # Allow for versions like 3.14.0rc3
         assert parts[0] == "3"  # Major version
@@ -63,7 +64,7 @@ class TestAPIEndpoints:
         assert parts[2][0].isdigit()  # Should start with a digit
 
     def test_version_endpoint_with_correlation_id(
-        self, client: FlaskClient[Any], correlation_id_header: dict[str, str]
+        self, client: FlaskClient, correlation_id_header: dict[str, str]
     ) -> None:
         """Test version endpoint with correlation ID header."""
         response = client.get("/version", headers=correlation_id_header)
@@ -71,7 +72,9 @@ class TestAPIEndpoints:
         expected_id = correlation_id_header["X-Request-ID"]
         assert response.headers.get("X-Request-ID") == expected_id
 
-    def test_api_endpoints_include_timing_headers(self, client: FlaskClient[Any]) -> None:
+    def test_api_endpoints_include_timing_headers(
+        self, client: FlaskClient
+    ) -> None:
         """Test that API endpoints include response timing headers."""
         response = client.get("/health")
         assert "X-Response-Time-ms" in response.headers
@@ -80,7 +83,9 @@ class TestAPIEndpoints:
         # Should be a valid float
         assert float(timing) >= 0.0
 
-    def test_api_endpoints_content_type_headers(self, client: FlaskClient[Any]) -> None:
+    def test_api_endpoints_content_type_headers(
+        self, client: FlaskClient
+    ) -> None:
         """Test that API endpoints return proper content-type headers."""
         response = client.get("/health")
         assert response.content_type.startswith("application/json")
@@ -88,7 +93,9 @@ class TestAPIEndpoints:
         response = client.get("/version")
         assert response.content_type.startswith("application/json")
 
-    def test_nonexistent_api_endpoint_returns_404(self, client: FlaskClient[Any]) -> None:
+    def test_nonexistent_api_endpoint_returns_404(
+        self, client: FlaskClient
+    ) -> None:
         """Test that nonexistent API endpoints return 404 with JSON error."""
         response = client.get("/api/nonexistent")
         assert response.status_code == 404
@@ -171,9 +178,10 @@ class TestAPIBlueprint:
         """Test that API endpoints support expected HTTP methods."""
         for rule in app.url_map.iter_rules():
             if rule.rule in ["/health", "/version"]:
-                assert "GET" in rule.methods
+                methods = rule.methods or set()
+                assert "GET" in methods
                 # Should not support POST/PUT/DELETE by default
-                assert "POST" not in rule.methods
-                assert "PUT" not in rule.methods
-                assert "DELETE" not in rule.methods
-                assert "DELETE" not in rule.methods
+                assert "POST" not in methods
+                assert "PUT" not in methods
+                assert "DELETE" not in methods
+                assert "DELETE" not in methods
