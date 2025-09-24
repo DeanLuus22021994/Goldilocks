@@ -39,8 +39,7 @@ class TestAppFactory:
         """Test that all blueprints are registered."""
         app = create_app("testing")
 
-        # type: ignore[misc]
-        blueprint_names = [bp.name for bp in app.iter_blueprints()]
+        blueprint_names = list(app.blueprints.keys())
         expected_blueprints = {"main", "auth", "api"}
 
         assert expected_blueprints.issubset(set(blueprint_names))
@@ -282,4 +281,5 @@ class TestApplicationIntegration:
             })
 
             # Should return 400 due to missing CSRF token
+            assert response.status_code == 400
             assert response.status_code == 400
