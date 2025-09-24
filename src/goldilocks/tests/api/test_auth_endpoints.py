@@ -53,7 +53,7 @@ class TestAuthenticationEndpoints:
         assert response.status_code in [200, 302]
 
     def test_login_redirects_authenticated_user(
-        self, client: FlaskClient
+        self, client: FlaskClient[Any]
     ) -> None:
         """Test that authenticated users are redirected from login page."""
         # This test would require proper session setup in a real implementation

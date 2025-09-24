@@ -76,10 +76,10 @@ class User(UserMixin, db.Model):  # type: ignore[misc]
         """Required by Flask-Login."""
         return str(self.id)
 
-    @property  # type: ignore[override]
-    def is_active(self) -> bool:
-        """Override UserMixin property - required by Flask-Login."""
-        return self.active if self.active is not None else True
+    @property
+    def is_active(self) -> bool:  # type: ignore[override]
+        """Check if user account is active (required by UserMixin)."""
+        return self.active
 
     def is_admin(self) -> bool:
         """Check if user has admin role."""
@@ -127,6 +127,10 @@ class UserSession(db.Model):  # type: ignore[misc]
 
     # Relationships
     user: Mapped[User] = relationship("User", back_populates="sessions")
+
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize UserSession with proper parameter handling."""
+        super().__init__(**kwargs)
 
     def is_expired(self) -> bool:
         """Check if session is expired."""
@@ -179,6 +183,10 @@ class UserProfile(db.Model):  # type: ignore[misc]
     # Relationships
     user: Mapped[User] = relationship("User", back_populates="profile")
 
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize UserProfile with proper parameter handling."""
+        super().__init__(**kwargs)
+
     def to_dict(self) -> dict[str, Any]:
         """Convert profile to dictionary."""
         return {
@@ -222,6 +230,13 @@ class ActivityLog(db.Model):  # type: ignore[misc]
     user: Mapped[User | None] = relationship(
         "User", back_populates="activity_logs")
 
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize ActivityLog with proper parameter handling."""
+        # Handle metadata parameter -> metadata_json mapping
+        if 'metadata' in kwargs:
+            kwargs['metadata_json'] = kwargs.pop('metadata')
+        super().__init__(**kwargs)
+
     def to_dict(self) -> dict[str, Any]:
         """Convert activity log to dictionary."""
         return {
@@ -231,7 +246,7 @@ class ActivityLog(db.Model):  # type: ignore[misc]
             "resource_type": self.resource_type,
             "resource_id": self.resource_id,
             "ip_address": self.ip_address,
-            "metadata": self.metadata,
+            "metadata": self.metadata_json,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

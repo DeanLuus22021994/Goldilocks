@@ -459,11 +459,12 @@ class TestDatabaseIntegration:
             db.session.commit()
 
             # Test all relationships
+            assert user.profile is not None
             assert user.profile.bio == "Test developer"
             assert len(list(user.sessions)) == 1
             assert len(list(user.activity_logs)) == 1
-            assert user.sessions.first().session_id == "test_session"
-            assert user.activity_logs.first().action == "profile_created"
+            assert user.sessions[0].session_id == "test_session"
+            assert user.activity_logs[0].action == "profile_created"
 
     def test_cascade_deletion(self, app: Flask) -> None:
         """Test that related records are properly deleted."""

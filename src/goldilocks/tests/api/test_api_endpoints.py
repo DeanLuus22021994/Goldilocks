@@ -47,7 +47,7 @@ class TestAPIEndpoints:
         assert isinstance(data["platform"], str)
 
     def test_version_endpoint_python_version_format(
-        self, client: FlaskClient
+        self, client: FlaskClient[Any]
     ) -> None:
         """Test that Python version follows expected format."""
         response = client.get("/version")
@@ -153,7 +153,8 @@ class TestAPIBlueprint:
 
     def test_api_blueprint_is_registered(self, app: Flask) -> None:
         """Test that API blueprint is properly registered."""
-        blueprints = [bp.name for bp in app.iter_blueprints()]
+        blueprints = [bp.name for bp in app.iter_blueprints()
+                      ]  # type: ignore[misc]
         assert "api" in blueprints
 
     def test_api_blueprint_url_rules(self, app: Flask) -> None:

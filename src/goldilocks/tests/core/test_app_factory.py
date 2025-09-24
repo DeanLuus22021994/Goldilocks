@@ -39,6 +39,7 @@ class TestAppFactory:
         """Test that all blueprints are registered."""
         app = create_app("testing")
 
+        # type: ignore[misc]
         blueprint_names = [bp.name for bp in app.iter_blueprints()]
         expected_blueprints = {"main", "auth", "api"}
 
@@ -187,7 +188,7 @@ class TestRequestHandling:
         assert float(timing) >= 0.0
 
     def test_correlation_id_generated_when_not_provided(
-        self, client: FlaskClient
+        self, client: FlaskClient[Any]
     ) -> None:
         """Test that correlation ID is generated when not provided."""
         response = client.get("/health")

@@ -2,6 +2,7 @@
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.wrappers import Response
 
 from goldilocks.models.forms import LoginForm, ProfileForm, RegisterForm
 from goldilocks.services.auth import AuthenticationService
@@ -11,7 +12,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> str | Response:
     """User login page and handler."""
     if current_user.is_authenticated:
         return redirect(url_for("auth.dashboard"))
@@ -41,7 +42,7 @@ def login():
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
-def register():
+def register() -> str | Response:
     """User registration page and handler."""
     if current_user.is_authenticated:
         return redirect(url_for("auth.dashboard"))
@@ -61,7 +62,7 @@ def register():
             email=email,  # type: ignore[arg-type]
             username=username,  # type: ignore[arg-type]
             password=password,  # type: ignore[arg-type]
-            full_name=full_name,  # type: ignore[arg-type]
+            full_name=full_name,
         )
 
         if user:
@@ -76,8 +77,8 @@ def register():
 
 
 @auth_bp.route("/logout")
-@login_required
-def logout():
+@login_required  # type: ignore[misc]
+def logout() -> Response:
     """User logout handler."""
     user_id = current_user.id
     logout_user()
@@ -87,15 +88,15 @@ def logout():
 
 
 @auth_bp.route("/dashboard")
-@login_required
-def dashboard():
+@login_required  # type: ignore[misc]
+def dashboard() -> str:
     """User dashboard page."""
     return render_template("auth/dashboard.html")
 
 
 @auth_bp.route("/profile", methods=["GET", "POST"])
-@login_required
-def profile():
+@login_required  # type: ignore[misc]
+def profile() -> str | Response:
     """User profile page and update handler."""
     form = ProfileForm()
 
