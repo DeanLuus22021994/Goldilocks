@@ -18,7 +18,7 @@ testpaths = ["src/goldilocks/tests"]
 addopts = "-q --cov=goldilocks --cov-report=term-missing"
 
 [tool.mypy]
-python_version = "3.14.0"
+python_version = "3.13.7"
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true

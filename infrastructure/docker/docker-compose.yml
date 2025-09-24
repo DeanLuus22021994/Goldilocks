@@ -1,4 +1,19 @@
 services:
+  # Frontend tooling service - separate Node.js container
+  goldilocks-frontend:
+    image: node:22-alpine
+    container_name: goldilocks-frontend
+    restart: unless-stopped
+    volumes:
+      - ../..:/workspace:cached
+      - goldilocks-node-modules:/workspace/node_modules
+      - npm-cache:/home/node/.npm
+    working_dir: /workspace
+    command: ["tail", "-f", "/dev/null"] # Keep container running
+    networks:
+      - goldilocks-network
+    profiles: ["dev", "frontend"]
+
   # MariaDB database service - optimized for edge computing
   goldilocks-db:
     image: mariadb:11.2
@@ -61,24 +76,29 @@ services:
 
   # Development service with tools and hot reload
   goldilocks-dev:
-    image: goldilocks:devcontainer
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
+      target: devcontainer
+      cache_from:
+        - goldilocks:devcontainer
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     container_name: goldilocks-dev
     restart: unless-stopped
     command: flask run --host 0.0.0.0 --port 9000
     volumes:
       - ../..:/workspaces/Goldilocks:cached
       - goldilocks-venv:/opt/venv
-      - goldilocks-node-modules:/workspaces/Goldilocks/node_modules
       - goldilocks-bytecode-cache:/workspaces/Goldilocks/__pycache__
       - pip-cache:/home/app/.cache/pip
-      - npm-cache:/home/app/.npm
       - pre-commit-cache:/home/app/.cache/pre-commit
       - mypy-cache:/home/app/.mypy_cache
       - pytest-cache:/home/app/.cache/pytest
       - ruff-cache:/home/app/.cache/ruff
       - buildx-cache:/tmp/.buildx-cache
     environment:
-      - FLASK_APP=src/goldilocks/app.py
+      - FLASK_APP=app
       - FLASK_ENV=development
       - FLASK_DEBUG=1
       - PYTHONPATH=/workspaces/Goldilocks/src
@@ -105,7 +125,14 @@ services:
 
   # Production service with minimal footprint
   goldilocks-prod:
-    image: goldilocks-flask:latest
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
+      target: runtime
+      cache_from:
+        - goldilocks:runtime
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     container_name: goldilocks-prod
     restart: unless-stopped
     volumes:
@@ -125,7 +152,7 @@ services:
   goldilocks-builder:
     build:
       context: ../..
-      dockerfile: infrastructure/docker/build.Dockerfile
+      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
       target: builder
       cache_from:
         - goldilocks:builder
@@ -144,89 +171,46 @@ volumes:
   # Virtual environment cache - persistent across rebuilds
   goldilocks-venv:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/goldilocks-venv
 
   # Node modules cache
   goldilocks-node-modules:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/goldilocks-node-modules
 
   # Python bytecode cache
   goldilocks-bytecode-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/goldilocks-bytecode
 
   # Build cache for instant rebuilds
   goldilocks-build-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/goldilocks-build-cache
 
   # Application data
   goldilocks-data:
+    driver: local
 
   # Package manager caches
   pip-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/pip-cache
 
   npm-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/npm-cache
 
   # Development tool caches
   pre-commit-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/pre-commit-cache
 
   mypy-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/mypy-cache
 
   pytest-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/pytest-cache
 
   ruff-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/ruff-cache
 
   # BuildKit cache for multi-stage builds
   buildx-cache:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /tmp/buildx-cache
 
 networks:
   goldilocks-network:

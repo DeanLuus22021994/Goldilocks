@@ -1,5 +1,5 @@
 # Simple optimized Dockerfile for Goldilocks Flask App
-FROM python:3.14.0rc3-trixie AS base
+FROM python:3.13.7-trixie AS base
 
 # Set build arguments for cache optimization
 ARG BUILDKIT_INLINE_CACHE=1

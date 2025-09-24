@@ -36,3 +36,4 @@ node_modules/
 # Dev container caches
 pip-log.txt
 .cache/
+node_modules/

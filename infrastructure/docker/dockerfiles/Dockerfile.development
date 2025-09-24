@@ -1,0 +1,10 @@
+# Development Dockerfile - Full tools for development
+FROM goldilocks:devcontainer AS development
+
+# Development environment
+ENV FLASK_ENV=development \
+  FLASK_DEBUG=1 \
+  PYTHONPATH="/workspaces/Goldilocks/src"
+
+# Development command with hot reload
+CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0", "--port", "9000", "--reload", "--debugger"]

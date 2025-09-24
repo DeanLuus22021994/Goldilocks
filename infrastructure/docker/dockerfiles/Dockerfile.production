@@ -1,0 +1,23 @@
+# Production Dockerfile - Minimal and optimized
+FROM goldilocks:runtime AS production
+
+LABEL maintainer="Goldilocks Team"
+LABEL version="1.0.0"
+LABEL description="Goldilocks Flask Application - Production"
+
+# Production environment variables
+ENV FLASK_ENV=production \
+  FLASK_DEBUG=0 \
+  WORKERS=2 \
+  WORKER_CLASS=sync \
+  TIMEOUT=30
+
+# Production command
+CMD ["python", "-m", "gunicorn", \
+  "--bind", "0.0.0.0:9000", \
+  "--workers", "2", \
+  "--worker-class", "sync", \
+  "--timeout", "30", \
+  "--access-logfile", "-", \
+  "--error-logfile", "-", \
+  "src.goldilocks.app:app"]
