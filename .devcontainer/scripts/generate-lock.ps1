@@ -179,16 +179,21 @@ $LockContent = @{
   lockfile   = @{
     devcontainer = @{
       hash     = $DevContainerHash
-      image    = "goldilocks:devcontainer"
+      image    = "python:3.14.0rc3-trixie"
       features = @{
         git = @{
           version = $GitVersion
-          source  = "apt-install"
+          source  = "devcontainer-feature"
           hash    = "manual"
         }
         "github-cli" = @{
           version = $GitHubCLIVersion
-          source  = "apt-install"
+          source  = "devcontainer-feature"
+          hash    = "manual"
+        }
+        "common-utils" = @{
+          version = "latest"
+          source  = "devcontainer-feature"
           hash    = "manual"
         }
       }
@@ -215,15 +220,20 @@ $LockContent = @{
       package_json_hash = $PackageJsonHash
     }
     system       = @{
-      base_image   = "goldilocks:devcontainer"
-      base_hash    = "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
-      apt_packages = @("git", "gh")
+      base_image   = "python:3.14.0rc3-trixie"
+      base_hash    = "sha256:8c17246cc6188fef54132e735a5f229947b4578033790f8c23d15ae24fe68563"
+      optimization_features = @("BuildKit", "GPU-acceleration", "persistent-volumes", "bytecode-precompilation")
       cache_paths  = @(
-        "/home/app/.cache/pip",
-        "/home/app/.npm",
-        "/home/app/.cache/uv",
-        "/home/app/.vscode-server",
-        "/home/app/.vscode-server/extensions"
+        "/tmp/pip-cache",
+        "/tmp/pre-commit-cache",
+        "/tmp/mypy-cache",
+        "/tmp/ruff-cache",
+        "/tmp/pytest-cache",
+        "/tmp/build-cache",
+        "/tmp/bytecode-cache",
+        "/opt/precompiled",
+        "/root/.vscode-server",
+        "/root/.vscode-server/extensions"
       )
     }
   }
