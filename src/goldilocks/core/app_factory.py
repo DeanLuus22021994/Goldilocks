@@ -1,5 +1,7 @@
 """Flask application factory and configuration setup."""
 
+from __future__ import annotations
+
 import importlib
 import logging
 import os
@@ -35,17 +37,17 @@ class CorrelationIdFilter(logging.Filter):
 
 
 def setup_logging(app: Flask) -> None:
-    """Set up structured logging for the application."""
+    """Set up structured logging with modern Python features."""
     logger = getLogger("goldilocks")
     handler = StreamHandler()
 
-    # Simple log format without correlation ID for now
-    LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
-    formatter = logging.Formatter(LOG_FORMAT)
+    # Modern log format for Python 3.13
+    log_format = "%(asctime)s %(levelname)s %(name)s %(message)s"
+    formatter = logging.Formatter(log_format)
     try:
         jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
-        JsonFormatter = jsonlogger_mod.JsonFormatter
-        formatter = JsonFormatter(LOG_FORMAT)
+        json_formatter = jsonlogger_mod.JsonFormatter
+        formatter = json_formatter(log_format)
     except (ImportError, AttributeError):
         pass
 
@@ -76,12 +78,12 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
     # Initialize login manager
     login_manager = LoginManager()
     login_manager.init_app(app)
-    # Work around typing issue in Flask-Login stubs by using setattr
-    setattr(login_manager, "login_view", "auth.login")
+    # Configure login manager properties
+    login_manager.login_view = "auth.login"
     login_manager.login_message = "Please log in to access this page"
     login_manager.login_message_category = "info"
 
-    @login_manager.user_loader  # type: ignore[misc]
+    @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
         """Load user by ID for Flask-Login."""
         return AuthenticationService.get_user_by_id(int(user_id))
@@ -90,20 +92,19 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
 
 
 def setup_request_handlers(app: Flask) -> None:
-    """Set up request/response handlers."""
+    """Set up request/response handlers with modern timing."""
 
     @app.before_request
     def add_correlation_id_and_timing() -> None:
         """Add correlation ID and start timing for each request."""
         # Use provided X-Request-ID header or generate new UUID
-        g.correlation_id = request.headers.get(
-            'X-Request-ID', str(uuid.uuid4()))
-        g.start_time = time.perf_counter()
+        g.correlation_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
+        g.start_time = time.perf_counter()  # More precise timing
 
     @app.after_request
     def add_response_headers(response: Response) -> Response:
         """Add response headers including timing and correlation ID."""
-        # Add timing header
+        # Add timing header with precise measurements
         duration_ms = 0.0
         if hasattr(g, "start_time"):
             duration_ms = (time.perf_counter() - g.start_time) * 1000
@@ -113,7 +114,7 @@ def setup_request_handlers(app: Flask) -> None:
         if hasattr(g, "correlation_id"):
             response.headers["X-Request-ID"] = g.correlation_id
 
-        # Log the request
+        # Log the request with structured logging
         logger = getLogger("goldilocks")
         logger.info(
             "request",
@@ -122,37 +123,36 @@ def setup_request_handlers(app: Flask) -> None:
                 "method": request.method,
                 "status": response.status_code,
                 "duration_ms": f"{duration_ms:.2f}",
-            }
+            },
         )
 
         return response
 
     @app.errorhandler(404)
-    def not_found(error: Any) -> tuple[dict[str, str], int]:
-        """Handle 404 errors."""
-        from flask import jsonify
-        return jsonify({"message": "Not Found"}), 404
+    def not_found(_error: Any) -> tuple[dict[str, str], int]:
+        """Handle 404 errors with proper typing."""
+        response_data = {"message": "Not Found"}
+        return response_data, 404
 
 
 def create_app(config_name: str = "default") -> Flask:
-    """Create and configure Flask application."""
+    """Create and configure Flask application with modern Python 3.13.7."""
     # Get the path to the project root directory
     # app_factory.py is in src/goldilocks/core/app_factory.py
     # We need to go up 3 levels to get to project root
-    BASE_DIR = os.path.dirname(os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    STATIC_FOLDER = os.path.join(BASE_DIR, "frontend", "static")
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    static_folder = os.path.join(base_dir, "frontend", "static")
 
     # Templates are now located in frontend/static/templates
-    TEMPLATES_FOLDER = os.path.join(STATIC_FOLDER, "templates")
+    templates_folder = os.path.join(static_folder, "templates")
 
     # Create Flask app with static and template folders
-    app = Flask(__name__,
-                static_folder=STATIC_FOLDER,
-                static_url_path="/static",
-                template_folder=TEMPLATES_FOLDER)
-
-    # Load configuration
+    app = Flask(
+        __name__,
+        static_folder=static_folder,
+        static_url_path="/static",
+        template_folder=templates_folder,
+    )  # Load configuration
     config_obj = config.get(config_name, config["default"])
     app.config.from_object(config_obj)
 
@@ -163,7 +163,7 @@ def create_app(config_name: str = "default") -> Flask:
     db.init_app(app)
 
     # Set up extensions
-    csrf, login_manager = setup_extensions(app)
+    _csrf, _login_manager = setup_extensions(app)
 
     # Set up request handlers
     setup_request_handlers(app)
@@ -178,6 +178,6 @@ def create_app(config_name: str = "default") -> Flask:
         try:
             db.create_all()
         except Exception as e:
-            app.logger.warning(f"Could not create database tables: {e}")
+            app.logger.warning("Could not create database tables: %s", e)
 
     return app

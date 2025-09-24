@@ -2,7 +2,8 @@
 # Combines builder and tools stages in one file to avoid dependency issues
 
 # Build stage - Compile Python bytecode and install dependencies
-FROM python:3.14.0rc3-trixie AS builder
+# Modern Python 3.13.7 DevContainer - Secure Base Image
+FROM python:3.13.7-slim-bookworm AS builder
 
 # Set build arguments
 ARG BUILDKIT_INLINE_CACHE=1

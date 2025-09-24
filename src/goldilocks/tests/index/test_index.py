@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from flask import Response
 from flask.testing import FlaskClient
 
 
 def test_index_serves_html_and_headers(
-    client: FlaskClient[Response],
+    client: FlaskClient,
     correlation_id_header: dict[str, str],
 ) -> None:
     """Ensure index serves HTML and sets timing and correlation headers."""
