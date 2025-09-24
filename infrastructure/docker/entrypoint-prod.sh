@@ -6,7 +6,6 @@ set -e
 echo "🚀 Starting Goldilocks production server..."
 
 # Activate virtual environment
-# shellcheck source=/dev/null
 source /opt/venv/bin/activate
 
 # Set production environment variables

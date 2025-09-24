@@ -1,46 +1,34 @@
 services:
   # Development service with tools and hot reload
   goldilocks-dev:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/tools.Dockerfile
-      target: tools
-      cache_from:
-        - goldilocks:dev-tools
-      args:
-        BUILDKIT_INLINE_CACHE: 1
+    image: goldilocks:devcontainer
     container_name: goldilocks-dev
     restart: unless-stopped
+    command: flask run --host 0.0.0.0 --port 9000
     volumes:
-      - ../..:/workspace:cached
+      - ../..:/workspaces/Goldilocks:cached
       - goldilocks-venv:/opt/venv
-      - goldilocks-node-modules:/workspace/node_modules
-      - goldilocks-bytecode:/workspace/__pycache__
+      - goldilocks-node-modules:/workspaces/Goldilocks/node_modules
+      - goldilocks-bytecode:/workspaces/Goldilocks/__pycache__
       - pip-cache:/home/app/.cache/pip
       - npm-cache:/home/app/.npm
     environment:
+      - FLASK_APP=src/goldilocks/app.py
       - FLASK_ENV=development
       - FLASK_DEBUG=1
-      - PYTHONPATH=/workspace/src
+      - PYTHONPATH=/workspaces/Goldilocks/src
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=0
     ports:
       - "9000:9000"
-    working_dir: /workspace
+    working_dir: /workspaces/Goldilocks
     networks:
       - goldilocks-network
     profiles: ["dev"]
 
   # Production service with minimal footprint
   goldilocks-prod:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/runtime.Dockerfile
-      target: runtime
-      cache_from:
-        - goldilocks:runtime
-      args:
-        BUILDKIT_INLINE_CACHE: 1
+    image: goldilocks-flask:latest
     container_name: goldilocks-prod
     restart: unless-stopped
     volumes:
