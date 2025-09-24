@@ -2,7 +2,7 @@
   "name": "Goldilocks Ultra-Performance DevContainer",
   "build": {
     "context": "..",
-    "dockerfile": "infrastructure/docker/dockerfiles/Dockerfile.multi-stage",
+    "dockerfile": "../infrastructure/docker/dockerfiles/Dockerfile.multi-stage",
     "target": "devcontainer",
     "args": {
       "PYTHON_VERSION": "3.14.0rc3-trixie",
