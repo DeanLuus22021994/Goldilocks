@@ -1,7 +1,16 @@
 # Devcontainer lock file generator and cache manager (PowerShell version)
 # This script creates and updates devcontainer-lock.json for build reproducibility
 
+param(
+  [switch]$Force
+)
+
 $LockFile = ".devcontainer/devcontainer-lock.json"
+# Ensure the lock file directory exists
+$LockDir = Split-Path -Parent $LockFile
+if (-not (Test-Path $LockDir)) {
+  New-Item -ItemType Directory -Path $LockDir -Force:$Force | Out-Null
+}
 
 Write-Host "🔒 Generating devcontainer lock file..." -ForegroundColor Blue
 
@@ -34,6 +43,9 @@ $RequirementsHash = Get-FileHash256 "requirements.txt"
 
 # Get package.json hash
 $PackageJsonHash = Get-FileHash256 "package.json"
+
+# Get pyproject.toml hash
+$PyprojectTomlHash = Get-FileHash256 "pyproject.toml"
 
 # Get Python packages from requirements.txt
 $PythonPackages = @{}
@@ -68,6 +80,31 @@ if (Test-Path "package.json") {
     }
   } catch {
     Write-Warning "Could not parse package.json"
+  }
+}
+
+# Get TOML packages from pyproject.toml
+$TomlPackages = @{}
+if (Test-Path "pyproject.toml") {
+  try {
+    # Parse pyproject.toml for dependencies - basic parsing
+    $tomlContent = Get-Content "pyproject.toml" -Raw
+    if ($tomlContent -match '(?s)\[tool\.poetry\.dependencies\](.*?)(?=\[|\z)') {
+      $deps = $matches[1]
+      $deps -split "`n" | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+          $parts = $line -split "=", 2
+          if ($parts.Count -eq 2) {
+            $name = $parts[0].Trim()
+            $version = $parts[1].Trim().Trim('"').Trim("'")
+            $TomlPackages[$name] = $version
+          }
+        }
+      }
+    }
+  } catch {
+    Write-Warning "Could not parse pyproject.toml"
   }
 }
 
@@ -142,6 +179,9 @@ $LockContent = @{
       }
       packages          = $PythonPackages
       requirements_hash = $RequirementsHash
+      toml_packages     = $TomlPackages
+      pyproject_hash    = $PyprojectTomlHash
+      python_sha256     = "646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
     }
     node         = @{
       version           = $NodeVersion
@@ -153,8 +193,8 @@ $LockContent = @{
       package_json_hash = $PackageJsonHash
     }
     system       = @{
-      base_image   = "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm"
-      base_hash    = "sha256:placeholder"
+      base_image   = "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie"
+      base_hash    = "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
       apt_packages = @()
       cache_paths  = @(
         "/home/vscode/.cache/pip",
@@ -201,12 +241,13 @@ $LockContent = @{
 }
 
 # Convert to JSON and save
-$LockContent | ConvertTo-Json -Depth 10 | Set-Content -Path $LockFile -Encoding UTF8
+$LockContent | ConvertTo-Json -Depth 10 | Set-Content -Path $LockFile -Encoding UTF8 -Force:$Force
 
 Write-Host "✅ Lock file generated: $LockFile" -ForegroundColor Green
 Write-Host "🔍 Summary:" -ForegroundColor Cyan
 Write-Host "  - DevContainer hash: $DevContainerHash" -ForegroundColor Gray
 Write-Host "  - Requirements hash: $RequirementsHash" -ForegroundColor Gray
 Write-Host "  - Package.json hash: $PackageJsonHash" -ForegroundColor Gray
+Write-Host "  - Pyproject.toml hash: $PyprojectTomlHash" -ForegroundColor Gray
 Write-Host "  - Python version: $PythonVersion" -ForegroundColor Gray
 Write-Host "  - Node version: $NodeVersion" -ForegroundColor Gray

@@ -41,6 +41,12 @@ if [[ -f "package.json" ]]; then
     PACKAGE_JSON_HASH=$(hash_file "package.json")
 fi
 
+# Get pyproject.toml hash
+PYPROJECT_TOML_HASH=""
+if [[ -f "pyproject.toml" ]]; then
+    PYPROJECT_TOML_HASH=$(hash_file "pyproject.toml")
+fi
+
 # Get Python packages from requirements.txt
 PYTHON_PACKAGES="{}"
 if [[ -f "requirements.txt" ]]; then
@@ -80,6 +86,34 @@ except:
 ")
 fi
 
+# Get TOML packages from pyproject.toml
+TOML_PACKAGES="{}"
+if [[ -f "pyproject.toml" ]]; then
+    TOML_PACKAGES=$(python3 -c "
+import json
+import re
+packages = {}
+try:
+    with open('pyproject.toml', 'r') as f:
+        content = f.read()
+        # Basic parsing for [tool.poetry.dependencies] section
+        match = re.search(r'\[tool\.poetry\.dependencies\](.*?)(?=\[|\Z)', content, re.DOTALL)
+        if match:
+            deps_section = match.group(1)
+            for line in deps_section.split('\n'):
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    parts = line.split('=', 1)
+                    if len(parts) == 2:
+                        name = parts[0].strip()
+                        version = parts[1].strip().strip('\"').strip(\"'\")
+                        packages[name] = version
+except:
+    pass
+print(json.dumps(packages, indent=2))
+")
+fi
+
 # Get Docker version
 DOCKER_VERSION=""
 if command -v docker &> /dev/null; then
@@ -113,7 +147,10 @@ cat > "$LOCK_FILE" << EOF
         "hash": "sha256:placeholder"
       },
       "packages": $PYTHON_PACKAGES,
-      "requirements_hash": "$REQUIREMENTS_HASH"
+      "requirements_hash": "$REQUIREMENTS_HASH",
+      "toml_packages": $TOML_PACKAGES,
+      "pyproject_hash": "$PYPROJECT_TOML_HASH",
+      "python_sha256": "646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
     },
     "node": {
       "version": "$(node --version 2>/dev/null | sed 's/v//' || echo 'not-installed')",
@@ -126,7 +163,7 @@ cat > "$LOCK_FILE" << EOF
     },
     "system": {
       "base_image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
-      "base_hash": "sha256:placeholder",
+      "base_hash": "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd",
       "apt_packages": [],
       "cache_paths": [
         "/home/vscode/.cache/pip",
@@ -178,5 +215,6 @@ echo "🔍 Summary:"
 echo "  - DevContainer hash: $DEVCONTAINER_HASH"
 echo "  - Requirements hash: $REQUIREMENTS_HASH"
 echo "  - Package.json hash: $PACKAGE_JSON_HASH"
+echo "  - Pyproject.toml hash: $PYPROJECT_TOML_HASH"
 echo "  - Python version: $(python3 --version | cut -d' ' -f2)"
 echo "  - Node version: $(node --version 2>/dev/null || echo 'not-installed')"

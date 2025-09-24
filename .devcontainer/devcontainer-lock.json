@@ -1,44 +1,108 @@
 {
-  "features": {
-    "ghcr.io/devcontainers/features/azure-cli:1": {
-      "version": "1.2.8",
-      "resolved": "ghcr.io/devcontainers/features/azure-cli@sha256:72b2809bb9849ddf7cae1866827cdaff8b003cd671bda505ca727614cae110f7",
-      "integrity": "sha256:72b2809bb9849ddf7cae1866827cdaff8b003cd671bda505ca727614cae110f7"
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "version": "1.0.0",
+  "generated": "2025-09-24T08:49:37.419Z",
+  "lockfile": {
+    "devcontainer": {
+      "hash": "b1c7ac610b12d56e474823d31ccb0dd57a07b7e423938f145055458ebf950662",
+      "image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
+      "features": {
+        "node": {
+          "version": "22",
+          "hash": "sha256:placeholder"
+        }
+      }
     },
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "version": "2.5.4",
-      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:00fd45550f578d9d515044d9e2226e908dbc3d7aa6fcb9dee4d8bdb60be114cf",
-      "integrity": "sha256:00fd45550f578d9d515044d9e2226e908dbc3d7aa6fcb9dee4d8bdb60be114cf"
+    "python": {
+      "version": "3.11.13",
+      "pip": {
+        "version": "",
+        "hash": "sha256:placeholder"
+      },
+      "packages": {
+  "Flask": "3.1.2",
+  "gunicorn": "23.0.0",
+  "python-json-logger": "3.2.1",
+  "SQLAlchemy": "2.0.36",
+  "Flask-SQLAlchemy": "3.1.1",
+  "PyMySQL": "1.1.1",
+  "cryptography": "44.0.0",
+  "bcrypt": "4.2.1",
+  "Flask-Login": "0.6.3",
+  "Flask-WTF": "1.2.2",
+  "WTForms": "3.2.1",
+  "email-validator": "2.2.0",
+  "pytest": "8.3.4",
+  "pytest-xdist": "3.6.1",
+  "pytest-cov": "6.0.0",
+  "coverage": "7.6.10",
+  "mypy": "1.14.0",
+  "pre-commit": "4.0.1",
+  "flake8": "7.1.1",
+  "flake8-bugbear": "24.10.31",
+  "black": "24.10.0",
+  "isort": "5.13.2"
+},
+      "requirements_hash": "d7b69bb47645422aedba83989359d197b4f2dc95bd2a34686dbf9ff9c493eb8a",
+      "toml_packages": {},
+      "pyproject_hash": "be49a6e57ab6cd2a7288aeccd405fc27ef48cddf5ce54f1f7e92916639d154f9",
+      "python_sha256": "646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "2.12.4",
-      "resolved": "ghcr.io/devcontainers/features/docker-in-docker@sha256:7f32d985aac6929b4f37cf8a0bdb9196473e9e192281a3d708207a70633f83df",
-      "integrity": "sha256:7f32d985aac6929b4f37cf8a0bdb9196473e9e192281a3d708207a70633f83df"
+    "node": {
+      "version": "18.20.4",
+      "npm": {
+        "version": "9.2.0",
+        "hash": "sha256:placeholder"
+      },
+      "packages": {
+  "cypress": "13.15.0"
+},
+      "package_json_hash": "8bc767f458552aaa39fd7a771d76cacc5b9cc9924bda4558dcdbb506011c44e6"
     },
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "1.3.4",
-      "resolved": "ghcr.io/devcontainers/features/git@sha256:f24645e64ad39a596131a50ec96f7d5cf7a2a87544cce772dd4b7182a233e98a",
-      "integrity": "sha256:f24645e64ad39a596131a50ec96f7d5cf7a2a87544cce772dd4b7182a233e98a"
-    },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "1.0.15",
-      "resolved": "ghcr.io/devcontainers/features/github-cli@sha256:1ad1ec1a806cc9926c84ca5b147427bba03b97e14e91f9df89af83726039ecaf",
-      "integrity": "sha256:1ad1ec1a806cc9926c84ca5b147427bba03b97e14e91f9df89af83726039ecaf"
-    },
-    "ghcr.io/devcontainers/features/nvidia-cuda:2.0.0": {
-      "version": "2.0.0",
-      "resolved": "ghcr.io/devcontainers/features/nvidia-cuda@sha256:666f60e5df6b6d90402a983f7829fc26b621f0113e1f1c6647928528831bb8d5",
-      "integrity": "sha256:666f60e5df6b6d90402a983f7829fc26b621f0113e1f1c6647928528831bb8d5"
-    },
-    "ghcr.io/devcontainers/features/powershell:1": {
-      "version": "1.5.1",
-      "resolved": "ghcr.io/devcontainers/features/powershell@sha256:df7baa89598c93bfd15808641d9ec9eb03e0ccdf52e5de4cbbce9ab2d9755d18",
-      "integrity": "sha256:df7baa89598c93bfd15808641d9ec9eb03e0ccdf52e5de4cbbce9ab2d9755d18"
-    },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "1.7.1",
-      "resolved": "ghcr.io/devcontainers/features/python@sha256:cf9b6d879790a594b459845b207c5e1762a0c8f954bb8033ff396e497f9c301b",
-      "integrity": "sha256:cf9b6d879790a594b459845b207c5e1762a0c8f954bb8033ff396e497f9c301b"
+    "system": {
+      "base_image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
+      "base_hash": "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd",
+      "apt_packages": [],
+      "cache_paths": [
+        "/home/vscode/.cache/pip",
+        "/home/vscode/.npm",
+        "/home/vscode/.cache/uv",
+        "/home/vscode/.vscode-server",
+        "/home/vscode/.vscode-server/extensions"
+      ]
     }
+  },
+  "cache": {
+    "volumes": {
+      "goldilocks-venv": {
+        "created": "2025-09-24T08:49:37.419Z",
+        "size": "",
+        "python_version": "3.11.13"
+      },
+      "goldilocks-node-modules": {
+        "created": "2025-09-24T08:49:37.419Z",
+        "size": "83M",
+        "node_version": "18.20.4"
+      },
+      "goldilocks-bytecode": {
+        "created": "2025-09-24T08:49:37.419Z",
+        "size": "83M",
+        "python_optimize": 2
+      },
+      "pip-cache": {
+        "created": "2025-09-24T08:49:37.419Z",
+        "size": ""
+      },
+      "npm-cache": {
+        "created": "2025-09-24T08:49:37.419Z",
+        "size": ""
+      }
+    }
+  },
+  "build_info": {
+    "os": "Linux",
+    "docker_version": "28.4.0",
+    "build_time": "2025-09-24T08:49:37.419Z",
+    "cache_hit_rate": 0
   }
 }
