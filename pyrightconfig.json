@@ -1,17 +1,12 @@
 {
-  "include": [
-    "src",
-    "*.py"
-  ],
+  "include": ["src", "*.py"],
   "exclude": [
     "**/__pycache__",
     "**/.pytest_cache",
     "**/.mypy_cache",
     "**/.ruff_cache"
   ],
-  "extraPaths": [
-    "./src"
-  ],
+  "extraPaths": ["./src"],
   "pythonVersion": "3.13",
   "pythonPlatform": "Windows",
   "typeCheckingMode": "basic",

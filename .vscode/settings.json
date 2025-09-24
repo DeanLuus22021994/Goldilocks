@@ -36,5 +36,7 @@
   "python.analysis.diagnosticMode": "workspace",
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "pylance.insidersChannel": "off",
-  "python.analysis.typeCheckingMode": "basic"
+  "python.analysis.typeCheckingMode": "basic",
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": []
 }
