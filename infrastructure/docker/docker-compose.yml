@@ -9,9 +9,14 @@ services:
       - ../..:/workspaces/Goldilocks:cached
       - goldilocks-venv:/opt/venv
       - goldilocks-node-modules:/workspaces/Goldilocks/node_modules
-      - goldilocks-bytecode:/workspaces/Goldilocks/__pycache__
+      - goldilocks-bytecode-cache:/workspaces/Goldilocks/__pycache__
       - pip-cache:/home/app/.cache/pip
       - npm-cache:/home/app/.npm
+      - pre-commit-cache:/home/app/.cache/pre-commit
+      - mypy-cache:/home/app/.mypy_cache
+      - pytest-cache:/home/app/.cache/pytest
+      - ruff-cache:/home/app/.cache/ruff
+      - buildx-cache:/tmp/.buildx-cache
     environment:
       - FLASK_APP=src/goldilocks/app.py
       - FLASK_ENV=development
@@ -19,6 +24,8 @@ services:
       - PYTHONPATH=/workspaces/Goldilocks/src
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=0
+      - DOCKER_BUILDKIT=1
+      - BUILDKIT_PROGRESS=plain
     ports:
       - "9000:9000"
     working_dir: /workspaces/Goldilocks
@@ -60,13 +67,92 @@ services:
     profiles: ["build"]
 
 volumes:
+  # Virtual environment cache - persistent across rebuilds
   goldilocks-venv:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/goldilocks-venv
+
+  # Node modules cache
   goldilocks-node-modules:
-  goldilocks-bytecode:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/goldilocks-node-modules
+
+  # Python bytecode cache
+  goldilocks-bytecode-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/goldilocks-bytecode
+
+  # Build cache for instant rebuilds
   goldilocks-build-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/goldilocks-build-cache
+
+  # Application data
   goldilocks-data:
+
+  # Package manager caches
   pip-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/pip-cache
+
   npm-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/npm-cache
+
+  # Development tool caches
+  pre-commit-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/pre-commit-cache
+
+  mypy-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/mypy-cache
+
+  pytest-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/pytest-cache
+
+  ruff-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/ruff-cache
+
+  # BuildKit cache for multi-stage builds
+  buildx-cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/buildx-cache
 
 networks:
   goldilocks-network:

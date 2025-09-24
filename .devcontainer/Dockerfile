@@ -97,9 +97,27 @@ RUN chmod +x /entrypoint-dev.sh
 # Set up PATH to include venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Create startup script to fix permissions
+RUN echo '#!/bin/bash\n\
+  # Fix git permissions on startup\n\
+  if [ -d "/workspaces/Goldilocks/.git" ]; then\n\
+  sudo chown -R app:app /workspaces/Goldilocks/.git/\n\
+  sudo chmod -R u+w /workspaces/Goldilocks/.git/\n\
+  fi\n\
+  exec "$@"' > /usr/local/bin/fix-permissions.sh
+
+RUN chmod +x /usr/local/bin/fix-permissions.sh
+
+# Install sudo for the permission fix script
+RUN apt-get update && apt-get install -y --no-install-recommends sudo \
+  && echo 'app ALL=(ALL) NOPASSWD: /bin/chown, /bin/chmod' >> /etc/sudoers \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
 USER app
 EXPOSE 9000
 WORKDIR /workspaces/Goldilocks
 
-# Use bash as default shell for development
+# Use permission-fixing entrypoint
+ENTRYPOINT ["/usr/local/bin/fix-permissions.sh"]
 CMD ["/bin/bash"]

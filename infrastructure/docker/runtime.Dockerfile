@@ -1,6 +1,10 @@
 # Production runtime stage - Minimal image with only runtime dependencies
 FROM python:3.13-slim-bookworm AS runtime
 
+# Set build arguments
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 # Set runtime environment variables
 ENV PYTHONUNBUFFERED=1 \
   PYTHONDONTWRITEBYTECODE=1 \
@@ -9,12 +13,13 @@ ENV PYTHONUNBUFFERED=1 \
   FLASK_APP=goldilocks.app \
   FLASK_ENV=production
 
-# Install only runtime system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install only runtime system dependencies with cache mount
+RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update && apt-get install -y --no-install-recommends \
   sqlite3 \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /var/cache/apt/*
+  curl \
+  && apt-get clean
 
 # Create app user
 RUN useradd --create-home --no-log-init --shell /bin/bash app

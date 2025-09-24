@@ -14,18 +14,35 @@
 
   "mounts": [
     "source=goldilocks-venv,target=/opt/venv,type=volume",
-    "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume"
+    "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume",
+    "source=pip-cache,target=/home/app/.cache/pip,type=volume",
+    "source=npm-cache,target=/home/app/.npm,type=volume",
+    "source=pre-commit-cache,target=/home/app/.cache/pre-commit,type=volume",
+    "source=mypy-cache,target=/home/app/.mypy_cache,type=volume"
   ],
+
+  "initializeCommand": "docker volume create goldilocks-venv && docker volume create vscode-server-cache && docker volume create pip-cache && docker volume create npm-cache && docker volume create pre-commit-cache && docker volume create mypy-cache",
+
+  "postCreateCommand": "sudo chown -R app:app /workspaces/Goldilocks && sudo chmod -R u+w /workspaces/Goldilocks/.git",
 
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
       "settings": {
-        "python.defaultInterpreterPath": "/opt/venv/bin/python"
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "git.repositorySearchDepth": 1,
+        "git.autoRepositoryDetection": true
       }
     }
   },
 
   "forwardPorts": [9000],
-  "shutdownAction": "stopContainer"
+  "shutdownAction": "stopContainer",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": false,
+      "version": "latest"
+    }
+  }
 }

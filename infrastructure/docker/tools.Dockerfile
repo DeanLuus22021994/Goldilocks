@@ -1,8 +1,10 @@
 # Development tools stage - Add testing, linting, and development utilities
 FROM builder AS tools
 
-# Install development dependencies
-RUN /opt/venv/bin/pip install \
+# Install development dependencies with cache mount
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
+  --mount=type=cache,target=/opt/venv,sharing=locked,id=venv-tools-${TARGETPLATFORM:-linux/amd64} \
+  /opt/venv/bin/pip install \
   pytest \
   pytest-cov \
   pytest-xdist \
@@ -16,25 +18,28 @@ RUN /opt/venv/bin/pip install \
   safety \
   httpx
 
-# Install Node.js for frontend tooling (minimal installation)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install Node.js for frontend tooling with cache mount
+RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update && apt-get install -y --no-install-recommends \
   nodejs \
   npm \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get clean
 
 # Copy development configuration files
 COPY .pre-commit-config.yaml pyproject.toml ./
 COPY package.json package-lock.json* ./
 
-# Install Node.js dependencies if package.json exists
-RUN if [ -f "package.json" ]; then npm ci --only=production; fi
+# Install Node.js dependencies with cache mount
+RUN --mount=type=cache,target=/root/.npm,sharing=locked \
+  if [ -f "package.json" ]; then npm ci --only=production; fi
 
 # Tests are already copied as part of src/ in the base stage
 # No separate test copy needed since tests are in src/goldilocks/tests/
 
-# Set up pre-commit hooks
-RUN /opt/venv/bin/pre-commit install-hooks || true
+# Set up pre-commit hooks with cache mount
+RUN --mount=type=cache,target=/root/.cache/pre-commit,sharing=locked \
+  /opt/venv/bin/pre-commit install-hooks || true
 
 # Create development entrypoint
 COPY infrastructure/docker/entrypoint-dev.sh /entrypoint-dev.sh

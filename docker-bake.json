@@ -1,0 +1,109 @@
+{
+  "group": {
+    "default": {
+      "targets": ["devcontainer", "builder", "tools", "runtime", "production"]
+    },
+    "development": {
+      "targets": ["devcontainer", "tools"]
+    },
+    "production": {
+      "targets": ["builder", "runtime", "production"]
+    }
+  },
+  "target": {
+    "builder": {
+      "dockerfile": "infrastructure/docker/build.Dockerfile",
+      "target": "builder",
+      "tags": ["goldilocks:builder"],
+      "cache-from": [
+        "type=registry,ref=goldilocks:builder",
+        "type=local,src=/tmp/.buildx-cache-builder"
+      ],
+      "cache-to": [
+        "type=local,dest=/tmp/.buildx-cache-builder,mode=max",
+        "type=inline"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64"],
+      "args": {
+        "BUILDKIT_INLINE_CACHE": "1",
+        "PIP_NO_CACHE_DIR": "0",
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1"
+      }
+    },
+    "tools": {
+      "dockerfile": "infrastructure/docker/tools.Dockerfile",
+      "target": "tools",
+      "tags": ["goldilocks:tools", "goldilocks:devcontainer"],
+      "contexts": {
+        "builder": "target:builder"
+      },
+      "cache-from": [
+        "type=registry,ref=goldilocks:tools",
+        "type=local,src=/tmp/.buildx-cache-tools"
+      ],
+      "cache-to": [
+        "type=local,dest=/tmp/.buildx-cache-tools,mode=max",
+        "type=inline"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64"]
+    },
+    "runtime": {
+      "dockerfile": "infrastructure/docker/runtime.Dockerfile",
+      "target": "runtime",
+      "tags": ["goldilocks:runtime"],
+      "contexts": {
+        "builder": "target:builder"
+      },
+      "cache-from": [
+        "type=registry,ref=goldilocks:runtime",
+        "type=local,src=/tmp/.buildx-cache-runtime"
+      ],
+      "cache-to": [
+        "type=local,dest=/tmp/.buildx-cache-runtime,mode=max",
+        "type=inline"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64"]
+    },
+    "production": {
+      "dockerfile": "infrastructure/docker/Dockerfile",
+      "tags": ["goldilocks:latest", "goldilocks-flask:latest"],
+      "contexts": {
+        "runtime": "target:runtime"
+      },
+      "cache-from": [
+        "type=registry,ref=goldilocks:latest",
+        "type=local,src=/tmp/.buildx-cache-production"
+      ],
+      "cache-to": [
+        "type=local,dest=/tmp/.buildx-cache-production,mode=max",
+        "type=inline"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64"]
+    },
+    "devcontainer": {
+      "dockerfile": ".devcontainer/Dockerfile",
+      "target": "tools",
+      "tags": ["goldilocks:devcontainer"],
+      "cache-from": [
+        "type=registry,ref=goldilocks:devcontainer",
+        "type=local,src=/tmp/.buildx-cache-devcontainer"
+      ],
+      "cache-to": [
+        "type=local,dest=/tmp/.buildx-cache-devcontainer,mode=max",
+        "type=inline"
+      ],
+      "platforms": ["linux/amd64"]
+    }
+  },
+  "variable": {
+    "PYTHON_VERSION": {
+      "default": "3.13"
+    },
+    "ALPINE_VERSION": {
+      "default": "3.19"
+    },
+    "BUILDKIT_INLINE_CACHE": {
+      "default": "1"
+    }
+  }
+}
