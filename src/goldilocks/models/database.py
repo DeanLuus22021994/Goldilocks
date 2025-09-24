@@ -4,18 +4,30 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any, cast
+from typing import Any, Callable, cast
 
-from flask_login import UserMixin
+# from flask_login import UserMixin  # removed to avoid subclassing Any
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON, Boolean, DateTime, Enum, String, Text, event
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-db = SQLAlchemy()
+
+# Introduce a typed declarative base and use it with Flask-SQLAlchemy
+class Base(DeclarativeBase):
+    pass
 
 
-class User(UserMixin, db.Model):  # type: ignore[name-defined]
+# db = SQLAlchemy()
+db = SQLAlchemy(model_class=Base)
+
+# Typed wrappers for werkzeug functions to satisfy mypy
+_generate_password_hash: Callable[..., str] = cast(Any, generate_password_hash)
+_check_password_hash: Callable[[str, str],
+                               bool] = cast(Any, check_password_hash)
+
+
+class User(db.Model):
     """User model for authentication and profile management."""
 
     __tablename__ = "users"
@@ -47,13 +59,13 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         DateTime(timezone=True))
 
     # Relationships
-    sessions: Mapped[list[UserSession]] = relationship(
+    sessions: Mapped[list["UserSession"]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
     )
-    profile: Mapped[UserProfile | None] = relationship(
+    profile: Mapped["UserProfile | None"] = relationship(
         "UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
-    activity_logs: Mapped[list[ActivityLog]] = relationship(
+    activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog", back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -65,25 +77,30 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
 
     def set_password(self, password: str) -> None:
         """Set password hash."""
-        self.password_hash = generate_password_hash(
+        self.password_hash = _generate_password_hash(
             password, method="pbkdf2:sha256")
 
     def check_password(self, password: str) -> bool:
         """Check password against hash."""
-        return cast(bool, check_password_hash(self.password_hash, password))
+        return _check_password_hash(self.password_hash, password)
 
     def get_id(self) -> str:
         """Required by Flask-Login."""
         return str(self.id)
 
     @property
-    def is_active(self) -> bool:  # type: ignore[override]
-        """Check if user account is active (required by UserMixin)."""
+    def is_active(self) -> bool:
+        """Check if user account is active (required by Flask-Login)."""
         return self.active
 
-    def is_admin(self) -> bool:
-        """Check if user has admin role."""
-        return self.role == "admin"
+    # Minimal Flask-Login interface without UserMixin
+    @property
+    def is_authenticated(self) -> bool:
+        return True
+
+    @property
+    def is_anonymous(self) -> bool:
+        return False
 
     def to_dict(self) -> dict[str, Any]:
         """Convert user to dictionary for JSON serialization."""
@@ -106,7 +123,7 @@ class User(UserMixin, db.Model):  # type: ignore[name-defined]
         return f"<User {self.username}>"
 
 
-class UserSession(db.Model):  # type: ignore[name-defined]
+class UserSession(db.Model):
     """User session model for authentication management."""
 
     __tablename__ = "user_sessions"
@@ -153,7 +170,7 @@ class UserSession(db.Model):  # type: ignore[name-defined]
         return f"<UserSession {self.session_id}>"
 
 
-class UserProfile(db.Model):  # type: ignore[name-defined]
+class UserProfile(db.Model):
     """Extended user profile information."""
 
     __tablename__ = "user_profiles"
@@ -208,7 +225,7 @@ class UserProfile(db.Model):  # type: ignore[name-defined]
         return f"<UserProfile {self.user_id}>"
 
 
-class ActivityLog(db.Model):  # type: ignore[name-defined]
+class ActivityLog(db.Model):
     """Activity logging for audit and analytics."""
 
     __tablename__ = "activity_logs"
@@ -254,7 +271,7 @@ class ActivityLog(db.Model):  # type: ignore[name-defined]
         return f"<ActivityLog {self.action}>"
 
 
-class SystemSetting(db.Model):  # type: ignore[name-defined]
+class SystemSetting(db.Model):
     """System configuration settings."""
 
     __tablename__ = "system_settings"
@@ -333,7 +350,7 @@ class SystemSetting(db.Model):  # type: ignore[name-defined]
 
 # Event listeners for automatic UUID generation
 @event.listens_for(User, "before_insert")
-def generate_uuid(mapper: Any, connection: Any, target: User) -> None:
+def generate_uuid(_mapper: Any, _connection: Any, target: User) -> None:
     """Generate UUID for new users if not provided."""
     if not target.uuid:
         target.uuid = str(uuid.uuid4())

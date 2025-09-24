@@ -76,7 +76,8 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
     # Initialize login manager
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"  # type: ignore[assignment]
+    # Work around typing issue in Flask-Login stubs by using setattr
+    setattr(login_manager, "login_view", "auth.login")
     login_manager.login_message = "Please log in to access this page"
     login_manager.login_message_category = "info"
 
