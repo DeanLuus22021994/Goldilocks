@@ -282,6 +282,7 @@ class TestUserProfileModel:
 
             # Test relationship
             assert profile.user.id == test_user.id
+            assert test_user.profile is not None
             assert test_user.profile.id == profile.id
 
     def test_user_profile_defaults(self, app: Flask, test_user: User) -> None:

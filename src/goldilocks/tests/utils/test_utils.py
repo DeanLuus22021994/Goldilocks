@@ -240,7 +240,7 @@ class TestRetryDecorator:
         call_count = 0
 
         @retry(max_attempts=2, delay=0.01)
-        def failing_function():
+        def failing_function() -> None:
             nonlocal call_count
             call_count += 1
             raise ValueError("Always fails")
@@ -279,7 +279,7 @@ class TestTimerDecorator:
         """Test that timer decorator preserves function metadata."""
 
         @timer
-        def documented_function():
+        def documented_function() -> str:
             """This function has documentation."""
             return "result"
 

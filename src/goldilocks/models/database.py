@@ -277,6 +277,10 @@ class SystemSetting(db.Model):  # type: ignore[misc]
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize SystemSetting with proper parameter handling."""
+        super().__init__(**kwargs)
+
     def get_value(self) -> Any:
         """Get typed value based on value_type."""
         if self.value_text is None:
