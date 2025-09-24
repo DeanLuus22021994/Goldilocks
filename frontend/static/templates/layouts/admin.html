@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Admin - Goldilocks{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+
+    <!-- Load stylesheets -->
+    <link rel="stylesheet" href="/static/css/variables.css" />
+    <link rel="stylesheet" href="/static/css/theme.css" />
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/layout.css" />
+    <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/buttons.css" />
+    <link rel="stylesheet" href="/static/css/utilities.css" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="admin-layout">
+    <div class="admin-container">
+      <aside class="admin-sidebar">
+        <div class="sidebar-header">
+          <h2 class="brand">Admin Panel</h2>
+        </div>
+        <nav class="admin-nav">
+          {% block admin_nav %}
+          <a href="/admin/dashboard" class="nav-item">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="/admin/users" class="nav-item">
+            <span class="icon">👥</span>
+            <span>Users</span>
+          </a>
+          <a href="/admin/settings" class="nav-item">
+            <span class="icon">⚙️</span>
+            <span>Settings</span>
+          </a>
+          <a href="/admin/logs" class="nav-item">
+            <span class="icon">📝</span>
+            <span>Logs</span>
+          </a>
+          {% endblock %}
+        </nav>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-header">
+          <div class="header-content">
+            <h1>{% block page_title %}Admin Dashboard{% endblock %}</h1>
+            <div class="header-actions">
+              {% block header_actions %}
+              <button class="btn btn-secondary" data-toggle-theme>🌓</button>
+              {% endblock %}
+            </div>
+          </div>
+        </header>
+
+        <main class="admin-content">
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %} {% endwith %} {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+
+    <script src="/static/js/main.js" defer></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

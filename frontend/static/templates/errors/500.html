@@ -1,0 +1,65 @@
+{% extends "layouts/base.html" %} {% block title %}500 - Internal Server Error -
+Goldilocks{% endblock %} {% block content %}
+<section class="error-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-visual">
+        <div class="error-code">500</div>
+        <div class="error-icon">⚠️</div>
+      </div>
+      <div class="error-message">
+        <h1>Internal Server Error</h1>
+        <p class="error-description">
+          Something went wrong on our end. We're working to fix it.
+        </p>
+        <div class="error-actions">
+          <a href="/" class="btn btn-primary">
+            <span class="btn-icon">🏠</span>
+            Go Home
+          </a>
+          <button onclick="location.reload()" class="btn btn-secondary">
+            <span class="btn-icon">🔄</span>
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-details">
+      <details class="error-debug">
+        <summary>Technical Details</summary>
+        <div class="debug-info">
+          <p><strong>Error ID:</strong> <code data-error-id></code></p>
+          <p><strong>Timestamp:</strong> <code data-timestamp></code></p>
+          <p><strong>Path:</strong> <code>{{ request.path }}</code></p>
+          {% if current_user and current_user.is_authenticated %}
+          <p><strong>User:</strong> <code>{{ current_user.username }}</code></p>
+          {% endif %}
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Generate error ID and timestamp for debugging
+    const errorId = "ERR-" + Date.now().toString(36).toUpperCase();
+    const timestamp = new Date().toISOString();
+
+    const errorIdElement = document.querySelector("[data-error-id]");
+    const timestampElement = document.querySelector("[data-timestamp]");
+
+    if (errorIdElement) errorIdElement.textContent = errorId;
+    if (timestampElement) timestampElement.textContent = timestamp;
+
+    // Log error for debugging
+    console.error("500 Error:", {
+      errorId: errorId,
+      timestamp: timestamp,
+      path: "{{ request.path }}",
+      userAgent: navigator.userAgent,
+    });
+  });
+</script>
+{% endblock %}

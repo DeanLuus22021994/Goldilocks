@@ -1,0 +1,152 @@
+{% extends "layouts/clean.html" %} {% block title %}Service Unavailable -
+Goldilocks{% endblock %} {% block content %}
+<section class="maintenance-page">
+  <div class="maintenance-content">
+    <div class="maintenance-visual">
+      <div class="maintenance-icon">🔧</div>
+      <div class="maintenance-message">
+        <h1>Service Temporarily Unavailable</h1>
+        <p class="maintenance-description">
+          We're performing scheduled maintenance to improve your experience.
+          Please check back in a few minutes.
+        </p>
+      </div>
+    </div>
+
+    <div class="maintenance-status">
+      <div class="status-indicator">
+        <div class="status-dot pulsing"></div>
+        <span>Maintenance in progress...</span>
+      </div>
+      <div class="estimated-time">
+        <strong>Estimated completion:</strong>
+        <span id="maintenance-eta">Calculating...</span>
+      </div>
+    </div>
+
+    <div class="maintenance-actions">
+      <button onclick="location.reload()" class="btn btn-primary">
+        <span class="btn-icon">🔄</span>
+        Check Again
+      </button>
+      <a
+        href="https://status.example.com"
+        class="btn btn-secondary"
+        target="_blank"
+      >
+        <span class="btn-icon">📊</span>
+        Status Page
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_head %}
+<style>
+  .maintenance-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: var(--space-6);
+  }
+
+  .maintenance-visual {
+    margin-bottom: var(--space-6);
+  }
+
+  .maintenance-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+  }
+
+  .maintenance-message h1 {
+    margin: 0 0 var(--space-3);
+    font-size: 2rem;
+    color: var(--accent);
+  }
+
+  .maintenance-status {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    margin: var(--space-6) 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .status-dot.pulsing {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .estimated-time {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .maintenance-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    .maintenance-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+{% endblock %} {% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Calculate estimated maintenance completion time (example: 30 minutes from now)
+    const eta = new Date(Date.now() + 30 * 60 * 1000);
+    const etaElement = document.getElementById("maintenance-eta");
+
+    function updateETA() {
+      const now = new Date();
+      const remaining = eta - now;
+
+      if (remaining <= 0) {
+        etaElement.textContent = "Any moment now...";
+        return;
+      }
+
+      const minutes = Math.ceil(remaining / (1000 * 60));
+      etaElement.textContent = `~${minutes} minutes`;
+    }
+
+    updateETA();
+    setInterval(updateETA, 30000); // Update every 30 seconds
+  });
+</script>
+{% endblock %}

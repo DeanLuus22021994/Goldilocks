@@ -1,0 +1,117 @@
+{# Card Component Usage: {% include 'components/card.html' with {'title': 'Card
+Title', 'content': 'Card content here', 'actions': [...]} %} #}
+
+<div class="card{% if class %} {{ class }}{% endif %}">
+  {% if title or header %}
+  <div class="card-header">
+    {% if title %}
+    <h3 class="card-title">{{ title }}</h3>
+    {% endif %} {% if header %}{{ header }}{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="card-body">
+    {% if content %} {{ content|safe }} {% else %} {% block card_content %}{%
+    endblock %} {% endif %}
+  </div>
+
+  {% if actions or footer %}
+  <div class="card-footer">
+    {% if actions %}
+    <div class="card-actions">
+      {% for action in actions %} {% if action.href %}
+      <a
+        href="{{ action.href }}"
+        class="btn btn-{{ action.type or 'secondary' }}{% if action.class %} {{ action.class }}{% endif %}"
+      >
+        {% if action.icon %}<span class="btn-icon">{{ action.icon }}</span>{%
+        endif %} {{ action.text }}
+      </a>
+      {% else %}
+      <button
+        type="{{ action.type or 'button' }}"
+        class="btn btn-{{ action.variant or 'secondary' }}{% if action.class %} {{ action.class }}{% endif %}"
+        {%
+        if
+        action.onclick
+        %}onclick="{{ action.onclick }}"
+        {%
+        endif
+        %}
+      >
+        {% if action.icon %}<span class="btn-icon">{{ action.icon }}</span>{%
+        endif %} {{ action.text }}
+      </button>
+      {% endif %} {% endfor %}
+    </div>
+    {% endif %} {% if footer %}{{ footer }}{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--elev);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+    background: var(--card-header, var(--bg-subtle));
+  }
+
+  .card-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .card-body {
+    padding: var(--space-4);
+  }
+
+  .card-footer {
+    padding: var(--space-4);
+    border-top: 1px solid var(--border);
+    background: var(--card-footer, var(--bg-subtle));
+  }
+
+  .card-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .card-actions .btn {
+    margin: 0;
+  }
+
+  /* Card variants */
+  .card-elevated {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .card-flat {
+    box-shadow: none;
+  }
+
+  .card-bordered {
+    border-width: 2px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .card-actions {
+      flex-direction: column;
+    }
+
+    .card-actions .btn {
+      justify-content: center;
+    }
+  }
+</style>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Two Column - Goldilocks{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+
+    <!-- Load stylesheets -->
+    <link rel="stylesheet" href="/static/css/variables.css" />
+    <link rel="stylesheet" href="/static/css/theme.css" />
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/layout.css" />
+    <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/buttons.css" />
+    <link rel="stylesheet" href="/static/css/utilities.css" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="two-column-layout">
+    <div class="two-column-container">
+      <header class="two-column-header">
+        <div class="container">
+          <div class="header-flex">
+            <h1 class="brand">{% block brand %}Goldilocks{% endblock %}</h1>
+            <nav class="top-nav">
+              {% block top_nav %}
+              <a href="/" class="nav-link">Home</a>
+              <a href="/about" class="nav-link">About</a>
+              <a href="/contact" class="nav-link">Contact</a>
+              {% endblock %}
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <div class="two-column-content">
+        <div class="container">
+          <div class="two-column-grid">
+            <aside class="sidebar-column">
+              {% block sidebar %}
+              <div class="sidebar-widget">
+                <h3>Navigation</h3>
+                <ul class="sidebar-menu">
+                  <li><a href="/">Home</a></li>
+                  <li><a href="/health">Health</a></li>
+                  <li><a href="/version">Version</a></li>
+                </ul>
+              </div>
+              {% endblock %}
+            </aside>
+
+            <main class="main-column">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+              <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+              {% endif %} {% endwith %} {% block content %}{% endblock %}
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <footer class="two-column-footer">
+        <div class="container">
+          <div class="footer-content">
+            <span class="muted">© <span data-year></span> Goldilocks</span>
+            <span class="small">
+              <a href="/version">Version</a> ·
+              <a href="/">Home</a>
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script src="/static/js/main.js" defer></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

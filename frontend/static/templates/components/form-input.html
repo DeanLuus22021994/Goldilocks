@@ -1,0 +1,327 @@
+{# Form Input Component Usage: {% include 'components/form-input.html' with
+{'name': 'email', 'type': 'email', 'label': 'Email Address', 'required': true}
+%} #}
+
+<div class="form-group{% if errors %} has-error{% endif %}">
+  {% if label %}
+  <label
+    for="{{ name }}"
+    class="form-label{% if required %} required{% endif %}"
+  >
+    {{ label }} {% if required %}<span
+      class="required-indicator"
+      aria-label="required"
+      >*</span
+    >{% endif %}
+  </label>
+  {% endif %}
+
+  <div class="form-input-wrapper">
+    {% if type == 'textarea' %}
+    <textarea
+      id="{{ name }}"
+      name="{{ name }}"
+      class="form-control{% if errors %} is-invalid{% endif %}{% if class %} {{ class }}{% endif %}"
+      {%
+      if
+      placeholder
+      %}placeholder="{{ placeholder }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      required
+      %}required{%
+      endif
+      %}
+      {%
+      if
+      disabled
+      %}disabled{%
+      endif
+      %}
+      {%
+      if
+      readonly
+      %}readonly{%
+      endif
+      %}
+      {%
+      if
+      rows
+      %}rows="{{ rows }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      cols
+      %}cols="{{ cols }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      maxlength
+      %}maxlength="{{ maxlength }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      attrs
+      %}{%
+      for
+      attr,
+      val
+      in
+      attrs.items()
+      %}{{
+      attr
+      }}="{{ val }}"
+      {%
+      endfor
+      %}{%
+      endif
+      %}
+    >
+{{ value or '' }}</textarea
+    >
+    {% else %}
+    <input
+      type="{{ type or 'text' }}"
+      id="{{ name }}"
+      name="{{ name }}"
+      class="form-control{% if errors %} is-invalid{% endif %}{% if class %} {{ class }}{% endif %}"
+      {%
+      if
+      value
+      %}value="{{ value }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      placeholder
+      %}placeholder="{{ placeholder }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      required
+      %}required{%
+      endif
+      %}
+      {%
+      if
+      disabled
+      %}disabled{%
+      endif
+      %}
+      {%
+      if
+      readonly
+      %}readonly{%
+      endif
+      %}
+      {%
+      if
+      min
+      %}min="{{ min }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      max
+      %}max="{{ max }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      step
+      %}step="{{ step }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      pattern
+      %}pattern="{{ pattern }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      minlength
+      %}minlength="{{ minlength }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      maxlength
+      %}maxlength="{{ maxlength }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      autocomplete
+      %}autocomplete="{{ autocomplete }}"
+      {%
+      endif
+      %}
+      {%
+      if
+      attrs
+      %}{%
+      for
+      attr,
+      val
+      in
+      attrs.items()
+      %}{{
+      attr
+      }}="{{ val }}"
+      {%
+      endfor
+      %}{%
+      endif
+      %}
+    />
+    {% endif %} {% if icon %}
+    <div class="form-input-icon">{{ icon }}</div>
+    {% endif %}
+  </div>
+
+  {% if help_text %}
+  <div class="form-help-text">{{ help_text }}</div>
+  {% endif %} {% if errors %}
+  <div class="form-error-messages">
+    {% for error in errors %}
+    <div class="form-error">{{ error }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+  .form-group {
+    margin-bottom: var(--space-4);
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 500;
+    color: var(--fg);
+  }
+
+  .form-label.required {
+    position: relative;
+  }
+
+  .required-indicator {
+    color: var(--error, #dc3545);
+    margin-left: 2px;
+  }
+
+  .form-input-wrapper {
+    position: relative;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 59, 130, 246), 0.1);
+  }
+
+  .form-control:disabled {
+    background-color: var(--bg-subtle);
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .form-control.is-invalid {
+    border-color: var(--error, #dc3545);
+  }
+
+  .form-control.is-invalid:focus {
+    border-color: var(--error, #dc3545);
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  }
+
+  .form-input-icon {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .form-help-text {
+    margin-top: var(--space-1);
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .form-error-messages {
+    margin-top: var(--space-1);
+  }
+
+  .form-error {
+    font-size: 0.875rem;
+    color: var(--error, #dc3545);
+    margin-bottom: var(--space-1);
+  }
+
+  .form-error:last-child {
+    margin-bottom: 0;
+  }
+
+  .has-error .form-label {
+    color: var(--error, #dc3545);
+  }
+
+  /* Input variants */
+  .form-control-sm {
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.875rem;
+  }
+
+  .form-control-lg {
+    padding: var(--space-3) var(--space-4);
+    font-size: 1.125rem;
+  }
+
+  /* Textarea specific */
+  textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  textarea.form-control-sm {
+    min-height: 60px;
+  }
+
+  textarea.form-control-lg {
+    min-height: 120px;
+  }
+</style>

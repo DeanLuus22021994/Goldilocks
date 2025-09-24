@@ -1,0 +1,70 @@
+{% extends "layouts/base.html" %} {% block title %}403 - Access Forbidden -
+Goldilocks{% endblock %} {% block content %}
+<section class="error-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-visual">
+        <div class="error-code">403</div>
+        <div class="error-icon">🚫</div>
+      </div>
+      <div class="error-message">
+        <h1>Access Forbidden</h1>
+        <p class="error-description">
+          You don't have permission to access this resource.
+        </p>
+        <div class="error-actions">
+          {% if not current_user or not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+            <span class="btn-icon">🔑</span>
+            Sign In
+          </a>
+          {% endif %}
+          <a href="/" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span>
+            Go Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-help">
+      <div class="help-card">
+        <h3>Need Access?</h3>
+        <p>If you believe you should have access to this resource:</p>
+        <ul>
+          <li>Check that you're signed in with the correct account</li>
+          <li>Verify your account has the necessary permissions</li>
+          <li>Contact an administrator if you need elevated access</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_head %}
+<style>
+  .help-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    margin-top: var(--space-6);
+    text-align: left;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .help-card h3 {
+    margin-top: 0;
+    color: var(--accent);
+  }
+
+  .help-card ul {
+    margin: var(--space-3) 0 0;
+  }
+
+  .help-card li {
+    margin: var(--space-2) 0;
+  }
+</style>
+{% endblock %}

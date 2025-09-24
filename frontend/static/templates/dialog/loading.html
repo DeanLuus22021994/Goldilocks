@@ -1,0 +1,284 @@
+{# Loading Dialog Component Usage: {% include 'dialog/loading.html' with {'id':
+'loadingDialog', 'title': 'Processing...', 'message': 'Please wait while we
+process your request.'} %} #}
+
+<div
+  class="dialog-overlay"
+  id="{{ id or 'loadingDialog' }}"
+  style="display: none"
+>
+  <div class="dialog-container dialog-sm">
+    <div class="dialog-content">
+      <div class="dialog-body loading-dialog-body">
+        <div class="loading-dialog-content">
+          <div class="loading-spinner-large">
+            <div class="spinner-large"></div>
+          </div>
+          <h3 class="loading-title">{{ title or 'Processing...' }}</h3>
+          <p class="loading-message">
+            {{ message or 'Please wait while we process your request.' }}
+          </p>
+          {% if show_progress %}
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                id="{{ id or 'loadingDialog' }}Progress"
+                style="width: {{ progress or 0 }}%"
+              ></div>
+            </div>
+            <div class="progress-text">
+              <span id="{{ id or 'loadingDialog' }}ProgressText"
+                >{{ progress or 0 }}%</span
+              >
+            </div>
+          </div>
+          {% endif %} {% if cancellable %}
+          <div class="loading-actions">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              onclick="cancelLoading('{{ id or 'loadingDialog' }}')"
+            >
+              Cancel
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .loading-dialog-body {
+    padding: var(--space-6);
+    text-align: center;
+  }
+
+  .loading-dialog-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .loading-spinner-large {
+    display: flex;
+    justify-content: center;
+  }
+
+  .spinner-large {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  .loading-message {
+    margin: 0;
+    color: var(--muted);
+    max-width: 300px;
+    line-height: 1.5;
+  }
+
+  .progress-container {
+    width: 100%;
+    max-width: 250px;
+    margin-top: var(--space-2);
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--space-2);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .progress-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .loading-actions {
+    margin-top: var(--space-3);
+  }
+
+  /* Prevent closing this dialog by clicking overlay */
+  .loading-dialog-overlay {
+    pointer-events: none;
+  }
+
+  .loading-dialog-overlay .dialog-container {
+    pointer-events: auto;
+  }
+
+  /* Pulse animation variant */
+  .loading-dialog-pulse .spinner-large {
+    border: none;
+    background: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+</style>
+
+<script>
+  let loadingCancelCallback = null;
+
+  function openLoadingDialog(dialogId, options = {}) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      // Update content if options provided
+      if (options.title) {
+        const titleElement = dialog.querySelector(".loading-title");
+        if (titleElement) titleElement.textContent = options.title;
+      }
+
+      if (options.message) {
+        const messageElement = dialog.querySelector(".loading-message");
+        if (messageElement) messageElement.textContent = options.message;
+      }
+
+      if (options.progress !== undefined) {
+        updateLoadingProgress(dialogId, options.progress);
+      }
+
+      dialog.style.display = "flex";
+      dialog.classList.add("loading-dialog-overlay");
+      document.body.style.overflow = "hidden";
+
+      loadingCancelCallback = options.onCancel || null;
+    }
+  }
+
+  function closeLoadingDialog(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      dialog.style.display = "none";
+      dialog.classList.remove("loading-dialog-overlay");
+      document.body.style.overflow = "";
+      loadingCancelCallback = null;
+    }
+  }
+
+  function updateLoadingProgress(dialogId, progress) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      const progressFill = dialog.querySelector(".progress-fill");
+      const progressText = dialog.querySelector(".progress-text span");
+
+      if (progressFill) {
+        progressFill.style.width = progress + "%";
+      }
+
+      if (progressText) {
+        progressText.textContent = progress + "%";
+      }
+    }
+  }
+
+  function updateLoadingMessage(dialogId, message) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      const messageElement = dialog.querySelector(".loading-message");
+      if (messageElement) {
+        messageElement.textContent = message;
+      }
+    }
+  }
+
+  function cancelLoading(dialogId) {
+    if (loadingCancelCallback && typeof loadingCancelCallback === "function") {
+      loadingCancelCallback();
+    }
+    closeLoadingDialog(dialogId);
+  }
+
+  // Convenience function to show loading with promise
+  function showLoadingWithPromise(title, message, promise, options = {}) {
+    const loadingHtml = `
+        <div class="dialog-overlay loading-dialog-overlay" id="dynamicLoading" style="display: flex;">
+            <div class="dialog-container dialog-sm">
+                <div class="dialog-content">
+                    <div class="dialog-body loading-dialog-body">
+                        <div class="loading-dialog-content">
+                            <div class="loading-spinner-large">
+                                <div class="spinner-large"></div>
+                            </div>
+                            <h3 class="loading-title">${title}</h3>
+                            <p class="loading-message">${message}</p>
+                            ${
+                              options.cancellable
+                                ? '<div class="loading-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="cancelLoading(\'dynamicLoading\')">Cancel</button></div>'
+                                : ""
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const existingLoading = document.getElementById("dynamicLoading");
+    if (existingLoading) {
+      existingLoading.remove();
+    }
+
+    document.body.insertAdjacentHTML("beforeend", loadingHtml);
+    document.body.style.overflow = "hidden";
+
+    if (options.onCancel) {
+      loadingCancelCallback = options.onCancel;
+    }
+
+    promise
+      .then(() => {
+        closeLoadingDialog("dynamicLoading");
+      })
+      .catch((error) => {
+        closeLoadingDialog("dynamicLoading");
+        console.error("Loading promise error:", error);
+      });
+
+    return promise;
+  }
+</script>

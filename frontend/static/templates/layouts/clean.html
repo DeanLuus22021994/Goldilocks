@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="{% block description %}Goldilocks - Clean Layout{% endblock %}"
+    />
+    <title>{% block title %}Goldilocks{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+
+    <!-- Load stylesheets -->
+    <link rel="stylesheet" href="/static/css/variables.css" />
+    <link rel="stylesheet" href="/static/css/theme.css" />
+    <link rel="stylesheet" href="/static/css/base.css" />
+    <link rel="stylesheet" href="/static/css/layout.css" />
+    <link rel="stylesheet" href="/static/css/components.css" />
+    <link rel="stylesheet" href="/static/css/buttons.css" />
+    <link rel="stylesheet" href="/static/css/utilities.css" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <div class="clean-layout">
+      <header class="clean-header">
+        <div class="container">
+          {% block header_content %}
+          <h1 class="brand">Goldilocks</h1>
+          {% endblock %}
+        </div>
+      </header>
+
+      <main class="clean-main">
+        <div class="container">{% block content %}{% endblock %}</div>
+      </main>
+
+      <footer class="clean-footer">
+        <div class="container">
+          {% block footer_content %}
+          <p class="muted small">© <span data-year></span> Goldilocks</p>
+          {% endblock %}
+        </div>
+      </footer>
+    </div>
+
+    <script src="/static/js/main.js" defer></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

@@ -1,0 +1,121 @@
+{# Alert Dialog Component Usage: {% include 'dialog/alert.html' with {'id':
+'alertDialog', 'title': 'Alert', 'message': 'Something happened!', 'type':
+'info'} %} #}
+
+<div
+  class="dialog-overlay"
+  id="{{ id or 'alertDialog' }}"
+  style="display: none"
+>
+  <div class="dialog-container dialog-sm">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="dialog-icon dialog-icon-{{ type or 'info' }}">
+          {% if type == 'success' %}✅ {% elif type == 'error' or type ==
+          'danger' %}❌ {% elif type == 'warning' %}⚠️ {% elif type == 'info'
+          %}ℹ️ {% else %}{{ icon or 'ℹ️' }} {% endif %}
+        </div>
+        <h2 class="dialog-title">{{ title or 'Alert' }}</h2>
+        <button
+          type="button"
+          class="dialog-close"
+          onclick="closeAlertDialog('{{ id or 'alertDialog' }}')"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+        <p class="dialog-message">{{ message or 'Alert message' }}</p>
+        {% if details %}
+        <div class="dialog-details">{{ details|safe }}</div>
+        {% endif %}
+      </div>
+
+      <div class="dialog-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="closeAlertDialog('{{ id or 'alertDialog' }}')"
+          autofocus
+        >
+          {{ ok_text or 'OK' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openAlertDialog(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      dialog.style.display = "flex";
+      document.body.style.overflow = "hidden";
+
+      const okButton = dialog.querySelector(".btn-primary");
+      if (okButton) {
+        okButton.focus();
+      }
+    }
+  }
+
+  function closeAlertDialog(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      dialog.style.display = "none";
+      document.body.style.overflow = "";
+    }
+  }
+
+  // Convenience function to show alert
+  function showAlert(title, message, type = "info") {
+    const alertHtml = `
+        <div class="dialog-overlay" id="dynamicAlert" style="display: flex;">
+            <div class="dialog-container dialog-sm">
+                <div class="dialog-content">
+                    <div class="dialog-header">
+                        <div class="dialog-icon dialog-icon-${type}">
+                            ${
+                              type === "success"
+                                ? "✅"
+                                : type === "error"
+                                ? "❌"
+                                : type === "warning"
+                                ? "⚠️"
+                                : "ℹ️"
+                            }
+                        </div>
+                        <h2 class="dialog-title">${title}</h2>
+                        <button type="button" class="dialog-close" onclick="closeAlertDialog('dynamicAlert')" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="dialog-body">
+                        <p class="dialog-message">${message}</p>
+                    </div>
+                    <div class="dialog-footer">
+                        <button type="button" class="btn btn-primary" onclick="closeAlertDialog('dynamicAlert')" autofocus>OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const existingAlert = document.getElementById("dynamicAlert");
+    if (existingAlert) {
+      existingAlert.remove();
+    }
+
+    document.body.insertAdjacentHTML("beforeend", alertHtml);
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => {
+      const okButton = document.querySelector("#dynamicAlert .btn-primary");
+      if (okButton) {
+        okButton.focus();
+      }
+    }, 100);
+  }
+</script>

@@ -1,0 +1,244 @@
+{# Modal Component Usage: {% include 'components/modal.html' with {'id':
+'myModal', 'title': 'Modal Title', 'size': 'md'} %} #}
+
+<div class="modal-overlay" id="{{ id or 'modal' }}" style="display: none">
+  <div class="modal-container modal-{{ size or 'md' }}">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ title or 'Modal' }}</h2>
+        <button
+          type="button"
+          class="modal-close"
+          onclick="closeModal('{{ id or 'modal' }}')"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        {% if body %} {{ body|safe }} {% else %} {% block modal_body %}
+        <p>Modal content goes here...</p>
+        {% endblock %} {% endif %}
+      </div>
+
+      {% if show_footer %}
+      <div class="modal-footer">
+        {% if actions %} {% for action in actions %} {% if action.href %}
+        <a
+          href="{{ action.href }}"
+          class="btn btn-{{ action.type or 'secondary' }}"
+          >{{ action.text }}</a
+        >
+        {% else %}
+        <button
+          type="button"
+          class="btn btn-{{ action.type or 'secondary' }}"
+          {%
+          if
+          action.onclick
+          %}onclick="{{ action.onclick }}"
+          {%
+          endif
+          %}
+        >
+          {{ action.text }}
+        </button>
+        {% endif %} {% endfor %} {% else %}
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('{{ id or 'modal' }}')"
+        >
+          Close
+        </button>
+        <button type="button" class="btn btn-primary">Save Changes</button>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-container {
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-sm {
+    max-width: 300px;
+  }
+  .modal-md {
+    max-width: 500px;
+  }
+  .modal-lg {
+    max-width: 800px;
+  }
+  .modal-xl {
+    max-width: 1200px;
+  }
+
+  .modal-content {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0.7;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+  }
+
+  .modal-close:hover {
+    opacity: 1;
+    background: var(--bg-subtle);
+  }
+
+  .modal-body {
+    padding: var(--space-4);
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: var(--space-4);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+  }
+
+  /* Animation */
+  .modal-overlay {
+    animation: modalFadeIn 0.15s ease-out;
+  }
+
+  .modal-content {
+    animation: modalSlideIn 0.15s ease-out;
+  }
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modalSlideIn {
+    from {
+      transform: scale(0.95) translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .modal-container {
+      max-width: 95vw;
+      max-height: 95vh;
+    }
+
+    .modal-footer {
+      flex-direction: column;
+    }
+
+    .modal-footer .btn {
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+
+      // Focus trap
+      const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+  }
+
+  // Close modal when clicking overlay
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("modal-overlay")) {
+      closeModal(e.target.id);
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      const visibleModals = document.querySelectorAll(
+        '.modal-overlay[style*="flex"]'
+      );
+      visibleModals.forEach((modal) => closeModal(modal.id));
+    }
+  });
+</script>

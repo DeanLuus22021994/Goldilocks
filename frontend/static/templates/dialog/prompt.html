@@ -1,0 +1,216 @@
+{# Prompt Dialog Component Usage: {% include 'dialog/prompt.html' with {'id':
+'promptDialog', 'title': 'Enter Value', 'message': 'Please enter a value:',
+'input_type': 'text'} %} #}
+
+<div
+  class="dialog-overlay"
+  id="{{ id or 'promptDialog' }}"
+  style="display: none"
+>
+  <div class="dialog-container dialog-sm">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="dialog-icon dialog-icon-info">{{ icon or '❓' }}</div>
+        <h2 class="dialog-title">{{ title or 'Input Required' }}</h2>
+        <button
+          type="button"
+          class="dialog-close"
+          onclick="closePromptDialog('{{ id or 'promptDialog' }}')"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+        <p class="dialog-message">{{ message or 'Please enter a value:' }}</p>
+        <div class="prompt-input-group">
+          <label
+            for="{{ id or 'promptDialog' }}Input"
+            class="form-label visually-hidden"
+            >{{ label or 'Input value' }}</label
+          >
+          <input
+            type="{{ input_type or 'text' }}"
+            id="{{ id or 'promptDialog' }}Input"
+            class="form-control"
+            placeholder="{{ placeholder or '' }}"
+            {%
+            if
+            required
+            %}required{%
+            endif
+            %}
+            {%
+            if
+            min
+            %}min="{{ min }}"
+            {%
+            endif
+            %}
+            {%
+            if
+            max
+            %}max="{{ max }}"
+            {%
+            endif
+            %}
+            {%
+            if
+            pattern
+            %}pattern="{{ pattern }}"
+            {%
+            endif
+            %}
+          />
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closePromptDialog('{{ id or 'promptDialog' }}')"
+        >
+          {{ cancel_text or 'Cancel' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="submitPrompt('{{ id or 'promptDialog' }}')"
+        >
+          {{ ok_text or 'OK' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .prompt-input-group {
+    margin-top: var(--space-3);
+  }
+
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+</style>
+
+<script>
+  let promptCallback = null;
+
+  function openPromptDialog(dialogId, callback) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      dialog.style.display = "flex";
+      document.body.style.overflow = "hidden";
+      promptCallback = callback;
+
+      const input = dialog.querySelector("input");
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  }
+
+  function closePromptDialog(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      dialog.style.display = "none";
+      document.body.style.overflow = "";
+
+      const input = dialog.querySelector("input");
+      if (input) {
+        input.value = "";
+      }
+
+      promptCallback = null;
+    }
+  }
+
+  function submitPrompt(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+      const input = dialog.querySelector("input");
+      const value = input ? input.value.trim() : "";
+
+      if (input && input.hasAttribute("required") && !value) {
+        input.focus();
+        showAlert("Error", "This field is required.", "error");
+        return;
+      }
+
+      if (promptCallback && typeof promptCallback === "function") {
+        promptCallback(value);
+      }
+
+      closePromptDialog(dialogId);
+    }
+  }
+
+  // Handle Enter key in input
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      const dialog = e.target.closest(".dialog-overlay");
+      if (dialog && dialog.id.includes("prompt")) {
+        e.preventDefault();
+        submitPrompt(dialog.id);
+      }
+    }
+  });
+
+  // Convenience function to show prompt
+  function showPrompt(title, message, defaultValue = "", callback = null) {
+    const promptHtml = `
+        <div class="dialog-overlay" id="dynamicPrompt" style="display: flex;">
+            <div class="dialog-container dialog-sm">
+                <div class="dialog-content">
+                    <div class="dialog-header">
+                        <div class="dialog-icon dialog-icon-info">❓</div>
+                        <h2 class="dialog-title">${title}</h2>
+                        <button type="button" class="dialog-close" onclick="closePromptDialog('dynamicPrompt')" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="dialog-body">
+                        <p class="dialog-message">${message}</p>
+                        <div class="prompt-input-group">
+                            <input type="text" id="dynamicPromptInput" class="form-control" value="${defaultValue}">
+                        </div>
+                    </div>
+                    <div class="dialog-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closePromptDialog('dynamicPrompt')">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitPrompt('dynamicPrompt')">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const existingPrompt = document.getElementById("dynamicPrompt");
+    if (existingPrompt) {
+      existingPrompt.remove();
+    }
+
+    document.body.insertAdjacentHTML("beforeend", promptHtml);
+    document.body.style.overflow = "hidden";
+    promptCallback = callback;
+
+    setTimeout(() => {
+      const input = document.getElementById("dynamicPromptInput");
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 100);
+  }
+</script>

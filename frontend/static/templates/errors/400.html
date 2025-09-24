@@ -1,0 +1,41 @@
+{% extends "layouts/base.html" %} {% block title %}400 - Bad Request -
+Goldilocks{% endblock %} {% block content %}
+<section class="error-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-visual">
+        <div class="error-code">400</div>
+        <div class="error-icon">❌</div>
+      </div>
+      <div class="error-message">
+        <h1>Bad Request</h1>
+        <p class="error-description">
+          The request could not be understood by the server.
+        </p>
+        <div class="error-actions">
+          <button onclick="history.back()" class="btn btn-primary">
+            <span class="btn-icon">↩️</span>
+            Go Back
+          </button>
+          <a href="/" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span>
+            Go Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-help">
+      <div class="help-card">
+        <h3>Common Causes</h3>
+        <ul>
+          <li>Invalid or malformed request parameters</li>
+          <li>Missing required form fields</li>
+          <li>Incorrect data format or encoding</li>
+          <li>Request exceeded size limits</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
