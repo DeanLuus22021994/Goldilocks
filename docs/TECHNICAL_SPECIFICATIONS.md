@@ -41,7 +41,7 @@ Essential Commands:
 Build Commands:
 
 - ./infrastructure/docker/build.ps1 # Multi-stage Docker build
-- .devcontainer/scripts/generate-lock.ps1 # Update cache manifest
+- .devcontainer/scripts/generate-lock.sh # Update cache manifest
 
 ## File Locations
 

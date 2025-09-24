@@ -93,8 +93,7 @@
 
 - ✅ `.devcontainer/devcontainer.json` - Ultra-performance configuration
 - ✅ `infrastructure/docker/dockerfiles/Dockerfile.multi-stage` - Optimized build
-- ✅ `.devcontainer/scripts/generate-lock.sh` - Updated for new image
-- ✅ `.devcontainer/scripts/generate-lock.ps1` - Cross-platform support
+- ✅ `.devcontainer/scripts/generate-lock.sh` - Linux container compatibility
 
 ### Performance Tools
 

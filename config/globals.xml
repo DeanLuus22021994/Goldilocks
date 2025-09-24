@@ -243,7 +243,6 @@ This is the SINGLE SOURCE OF TRUTH for all version references in the Goldilocks 
 
             <script-targets>
                 <file path=".devcontainer/scripts/generate-lock.sh" search-pattern="python:1-3\.\d+-bookworm" />
-                <file path=".devcontainer/scripts/generate-lock.ps1" search-pattern="python:1-3\.\d+-bookworm" />
             </script-targets>
         </update-targets>
         <!-- #DOCUMENTATION #UPDATE-TARGETS #VERSION-REFERENCES -->
