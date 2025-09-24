@@ -1,15 +1,8 @@
 {
   "name": "Goldilocks Development Environment",
-  "build": {
-    "context": "..",
-    "dockerfile": "../infrastructure/docker/dockerfiles/Dockerfile.multi-stage",
-    "target": "devcontainer",
-    "args": {
-      "BUILDKIT_INLINE_CACHE": "1"
-    }
-  },
+  "image": "python:3.14.0rc3-trixie",
   "workspaceFolder": "/workspaces/Goldilocks",
-  "remoteUser": "app",
+  "remoteUser": "root",
 
   "hostRequirements": {
     "cpus": 4,
@@ -30,17 +23,13 @@
 
   "mounts": [
     "source=goldilocks-venv,target=/opt/venv,type=volume",
-    "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume",
+    "source=vscode-server-cache,target=/root/.vscode-server,type=volume",
     "source=goldilocks-cache,target=/tmp/goldilocks-cache,type=volume"
   ],
 
-  "initializeCommand": [
-    "pwsh",
-    "-c",
-    "docker volume create goldilocks-venv; docker volume create vscode-server-cache; docker volume create goldilocks-cache"
-  ],
+  "initializeCommand": "docker volume create goldilocks-venv && docker volume create vscode-server-cache && docker volume create goldilocks-cache",
 
-  "postCreateCommand": "bash infrastructure/scripts/bash/post-create.sh",
+  "postCreateCommand": "python -m venv /opt/venv && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install -r requirements.txt",
 
   "customizations": {
     "vscode": {
@@ -54,7 +43,9 @@
       "settings": {
         "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "python.terminal.activateEnvironment": true,
-        "python.analysis.typeCheckingMode": "strict"
+        "python.analysis.typeCheckingMode": "strict",
+        "git.repositorySearchDepth": 1,
+        "git.autoRepositoryDetection": true
       }
     }
   },
@@ -66,5 +57,22 @@
       "onAutoForward": "notify"
     }
   },
-  "shutdownAction": "stopContainer"
+  "shutdownAction": "stopContainer",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": false,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  }
 }

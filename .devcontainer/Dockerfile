@@ -3,7 +3,7 @@
 
 # Build stage - Compile Python bytecode and install dependencies
 # Modern Python 3.13.7 DevContainer - Secure Base Image
-FROM python:3.13.7-slim-bookworm AS builder
+FROM python:3.14.0rc3-trixie AS builder
 
 # Set build arguments
 ARG BUILDKIT_INLINE_CACHE=1
