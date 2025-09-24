@@ -1,8 +1,8 @@
 {
   "name": "Goldilocks Development Environment",
-  "image": "goldilocks:devcontainer",
+  "image": "python:3.14.0rc3-trixie",
   "workspaceFolder": "/workspaces/Goldilocks",
-  "remoteUser": "app",
+  "remoteUser": "root",
 
   "hostRequirements": {
     "gpu": "optional",
@@ -38,16 +38,16 @@
 
   "mounts": [
     "source=goldilocks-venv,target=/opt/venv,type=volume",
-    "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume",
-    "source=pip-cache,target=/home/app/.cache/pip,type=volume",
-    "source=npm-cache,target=/home/app/.npm,type=volume",
-    "source=pre-commit-cache,target=/home/app/.cache/pre-commit,type=volume",
-    "source=mypy-cache,target=/home/app/.mypy_cache,type=volume"
+    "source=vscode-server-cache,target=/root/.vscode-server,type=volume",
+    "source=pip-cache,target=/root/.cache/pip,type=volume",
+    "source=npm-cache,target=/root/.npm,type=volume",
+    "source=pre-commit-cache,target=/root/.cache/pre-commit,type=volume",
+    "source=mypy-cache,target=/root/.mypy_cache,type=volume"
   ],
 
   "initializeCommand": "docker volume create goldilocks-venv && docker volume create vscode-server-cache && docker volume create pip-cache && docker volume create npm-cache && docker volume create pre-commit-cache && docker volume create mypy-cache",
 
-  "postCreateCommand": "sudo chown -R app:app /workspaces/Goldilocks && sudo chmod -R u+w /workspaces/Goldilocks/.git && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt update && sudo apt install -y git gh",
+  "postCreateCommand": "python -m venv /opt/venv && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install -r requirements.txt && chown -R root:root /opt/venv",
 
   "customizations": {
     "vscode": {
@@ -79,5 +79,22 @@
       "onAutoForward": "notify"
     }
   },
-  "shutdownAction": "stopContainer"
+  "shutdownAction": "stopContainer",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "configureZshAsDefaultShell": "true",
+      "installOhMyZsh": "true",
+      "upgradePackages": "true"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": false,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  }
 }
