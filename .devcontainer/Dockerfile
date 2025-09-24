@@ -99,7 +99,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 USER app
 EXPOSE 9000
-WORKDIR /workspace
+WORKDIR /workspaces/Goldilocks
 
 # Use bash as default shell for development
 CMD ["/bin/bash"]

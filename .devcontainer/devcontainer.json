@@ -1,7 +1,7 @@
 {
   "name": "Goldilocks Development Environment",
   "image": "goldilocks:devcontainer",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "app",
   "updateRemoteUserUID": true,
 
@@ -10,7 +10,7 @@
     "FLASK_APP": "src/goldilocks/app.py",
     "FLASK_ENV": "development",
     "FLASK_DEBUG": "1",
-    "PYTHONPATH": "/workspace/src",
+    "PYTHONPATH": "/workspaces/Goldilocks/src",
     "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "0",
     "PIP_CACHE_DIR": "/home/app/.cache/pip",
@@ -25,13 +25,13 @@
   // Volume mounts for persistent caching and performance
   "mounts": [
     "source=goldilocks-venv,target=/opt/venv,type=volume",
-    "source=goldilocks-node-modules,target=/workspace/node_modules,type=volume",
-    "source=goldilocks-bytecode,target=/workspace/__pycache__,type=volume",
+    "source=goldilocks-node-modules,target=/workspaces/Goldilocks/node_modules,type=volume",
+    "source=goldilocks-bytecode,target=/workspaces/Goldilocks/__pycache__,type=volume",
     "source=pip-cache,target=/home/app/.cache/pip,type=volume",
     "source=npm-cache,target=/home/app/.npm,type=volume",
-    "source=pytest-cache,target=/workspace/.pytest_cache,type=volume",
-    "source=mypy-cache,target=/workspace/.mypy_cache,type=volume",
-    "source=ruff-cache,target=/workspace/.ruff_cache,type=volume",
+    "source=pytest-cache,target=/workspaces/Goldilocks/.pytest_cache,type=volume",
+    "source=mypy-cache,target=/workspaces/Goldilocks/.mypy_cache,type=volume",
+    "source=ruff-cache,target=/workspaces/Goldilocks/.ruff_cache,type=volume",
     "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume"
   ],
 
