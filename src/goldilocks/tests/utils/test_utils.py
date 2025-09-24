@@ -291,7 +291,7 @@ class TestTimerDecorator:
         """Test that timer decorator handles exceptions properly."""
 
         @timer
-        def failing_function():
+        def failing_function() -> None:
             raise ValueError("Test exception")
 
         with patch('builtins.print'):

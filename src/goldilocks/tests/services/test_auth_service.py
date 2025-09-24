@@ -326,6 +326,7 @@ class TestAuthenticationServiceSessionManagement:
             updated_session = UserSession.query.filter_by(
                 session_id="test_session_123"
             ).first()
+            assert updated_session is not None
             assert updated_session.is_active is False
 
     def test_invalidate_nonexistent_session(self, app: Flask) -> None:
@@ -474,9 +475,11 @@ class TestAuthenticationServiceProfileManagement:
 
             # Verify updates
             updated_user = User.query.get(test_user.id)
+            assert updated_user is not None
             assert updated_user.full_name == "Updated Name"
 
             updated_profile = updated_user.profile
+            assert updated_profile is not None
             assert updated_profile.bio == "Updated bio"
             assert updated_profile.location == "New Location"
             assert updated_profile.company == "New Company"
@@ -519,6 +522,7 @@ class TestAuthenticationServicePasswordManagement:
 
             # Verify password changed
             updated_user = User.query.get(test_user.id)
+            assert updated_user is not None
             assert updated_user.check_password("NewPassword123")
             assert not updated_user.check_password("OldPassword123")
 

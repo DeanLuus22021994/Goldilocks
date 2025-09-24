@@ -33,7 +33,7 @@ def app_fixture() -> Flask:
 
 
 @pytest.fixture()
-def client(app: Flask) -> FlaskClient:
+def client(app: Flask) -> FlaskClient[Any]:
     """Lightweight test client per test for isolation."""
     return app.test_client()
 
