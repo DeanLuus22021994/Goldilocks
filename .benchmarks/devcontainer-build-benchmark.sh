@@ -86,7 +86,7 @@ echo "📦 Step 1: Initializing volumes..." >&2
 VOLUME_START=$(date +%s.%3N)
 
 # Run initialize command
-bash -c "docker volume create goldilocks-venv-optimized; docker volume create goldilocks-python-cache; docker volume create goldilocks-pip-cache; docker volume create goldilocks-build-cache; docker volume create goldilocks-bytecode-cache; docker volume create goldilocks-precompiled; docker volume create vscode-server-insiders; docker volume create vscode-extensions-cache; docker volume create goldilocks-dev-cache; docker volume create goldilocks-pre-commit; docker volume create goldilocks-mypy; docker volume create goldilocks-ruff; docker volume create goldilocks-pytest; docker volume create docker-buildx-cache"
+bash -c "docker volume create goldilocks-venv-optimized; docker volume create goldilocks-python-cache; docker volume create goldilocks-pip-cache; docker volume create goldilocks-build-cache; docker volume create goldilocks-bytecode-cache; docker volume create goldilocks-precompiled; docker volume create vscode-server-insiders; docker volume create vscode-extensions-cache; docker volume create goldilocks-dev-cache; docker volume create goldilocks-pre-commit; docker volume create goldilocks-mypy; docker volume create goldilocks-ruff; docker volume create goldilocks-pytest; docker volume create docker-buildx-cache" >&2
 
 VOLUME_END=$(date +%s.%3N)
 VOLUME_TIME=$(echo "$VOLUME_END - $VOLUME_START" | bc)

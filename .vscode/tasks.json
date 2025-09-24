@@ -38,6 +38,28 @@
       "type": "shell",
       "command": "pre-commit run --all-files",
       "problemMatcher": []
+    },
+    {
+      "label": "DevContainer: Build Benchmark",
+      "type": "shell",
+      "command": "bash .benchmarks/devcontainer-build-benchmark.sh",
+      "detail": "Run devcontainer build benchmark with progress output",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "DevContainer: Build Benchmark (JSON only)",
+      "type": "shell",
+      "command": "bash .benchmarks/devcontainer-build-benchmark.sh > .benchmarks/latest_benchmark.json && echo 'JSON output saved to .benchmarks/latest_benchmark.json' && cat .benchmarks/latest_benchmark.json",
+      "detail": "Run devcontainer build benchmark and save JSON output to file",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }
