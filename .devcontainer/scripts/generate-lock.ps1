@@ -1,7 +1,7 @@
 # Devcontainer lock file generator and cache manager (PowerShell version)
 # This script creates and updates devcontainer-lock.json for build reproducibility
 
-param(
+p       base_image   = "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie"ram(
   [switch]$Force = $false
 )
 
@@ -130,7 +130,7 @@ $LockContent = @{
   lockfile   = @{
     devcontainer = @{
       hash     = $DevContainerHash
-      image    = "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm"
+      image    = "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie"
       features = @{
         node = @{
           version = "22"

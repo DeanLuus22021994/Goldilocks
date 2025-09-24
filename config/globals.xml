@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE goldilocks-globals [
+    <!ELEMENT goldilocks-globals (metadata, versions, docker, development, production, testing, documentation)>
+    <!ELEMENT metadata (project-name, description, created, last-updated)>
+    <!ELEMENT versions (python, flask, node, docker, dependencies)>
+    <!ELEMENT python (version, major, minor, patch, rc?, dev?, image-base, image-variant*)>
+    <!ELEMENT flask (version, major, minor, patch)>
+    <!ELEMENT node (version, major, minor, patch, image-variant*)>
+    <!ELEMENT docker (version, buildkit-version, compose-version)>
+    <!ELEMENT dependencies (sqlalchemy, werkzeug, jinja2, pytest, mypy, black)>
+    <!ELEMENT docker (images, build-args, cache-strategy)>
+    <!ELEMENT development (container-base, tools, features)>
+    <!ELEMENT production (container-base, optimization, security)>
+    <!ELEMENT testing (frameworks, coverage, type-checking)>
+    <!ELEMENT documentation (version-references, update-targets)>
+
+    <!ATTLIST goldilocks-globals
+        xmlns CDATA #FIXED "https://goldilocks.dev/config/globals/v2.0"
+        schema-version CDATA #REQUIRED
+        environment (development|production|testing|all) #REQUIRED>
+
+    <!ATTLIST python
+        stability (stable|rc|dev|alpha|beta) #REQUIRED
+        eol-date CDATA #IMPLIED
+        docker-tag CDATA #REQUIRED
+        supports-typing (true|false) #REQUIRED>
+
+    <!ATTLIST versions
+        last-verified CDATA #REQUIRED
+        auto-update (enabled|disabled) #REQUIRED>
+]>
+
+<!--
+🔥 GOLDILOCKS GLOBAL VERSION CONFIGURATION 🔥
+===============================================
+This is the SINGLE SOURCE OF TRUTH for all version references in the Goldilocks project.
+⚠️  NEVER UPDATE VERSIONS ANYWHERE ELSE - ALWAYS UPDATE HERE FIRST! ⚠️
+
+🎯 SEARCH TAGS FOR INSTANT FINDING:
+#PYTHON-VERSION #FLASK-VERSION #NODE-VERSION #DOCKER-VERSION
+#LATEST-STABLE #PRODUCTION-READY #DEVELOPMENT-TOOLS #CI-CD
+
+🚀 QUICK REFERENCE:
+- Python: 3.13.7 (LATEST STABLE)
+- Flask: 3.x (MODERN)
+- Node: 22.x (LTS)
+- Docker: Latest BuildKit enabled
+
+💎 XML FEATURES USED:
+- DTD validation for structure
+- Namespacing for global uniqueness
+- Semantic versioning breakdown
+- Environment-specific configurations
+- Auto-update tracking
+- Comprehensive tagging system
+-->
+
+<goldilocks-globals
+    xmlns="https://goldilocks.dev/config/globals/v2.0"
+    schema-version="2.0.0"
+    environment="all">
+
+    <!-- 📋 PROJECT METADATA -->
+    <metadata>
+        <project-name>Goldilocks Flask Application</project-name>
+        <description>Modern Flask application with comprehensive development environment</description>
+        <created>2024-09-24</created>
+        <last-updated>2024-12-24T10:00:00Z</last-updated>
+    </metadata>
+
+    <!-- 🔢 VERSION DEFINITIONS - THE HOLY GRAIL -->
+    <versions last-verified="2024-12-24T10:00:00Z" auto-update="enabled">
+
+        <!-- 🐍 PYTHON VERSION CONFIGURATION -->
+        <python
+            stability="rc"
+            eol-date="2030-10-31"
+            docker-tag="3.14.0rc3-trixie"
+            supports-typing="true">
+
+            <version>3.14.0rc3</version>
+            <major>3</major>
+            <minor>14.0</minor>
+            <patch>0</patch>
+            <rc>3</rc>
+
+            <!-- Docker image base references -->
+            <image-base>python:3.14.0rc3-trixie</image-base>
+            <image-variant type="devcontainer">mcr.microsoft.com/devcontainers/python:1-3.14-trixie</image-variant>
+            <image-variant type="alpine">python:3.14.0rc3-alpine</image-variant>
+            <image-variant type="full">python:3.14.0rc3-trixie</image-variant>
+
+            <!-- Search tags for easy finding -->
+            <!-- #PYTHON-VERSION #PYTHON-MAJOR #PYTHON-MINOR #PYTHON-PATCH #PYTHON-RC -->
+            <!-- #CUTTING-EDGE-PYTHON #RC-PYTHON #FUTURE-PYTHON #TRIXIE-PYTHON -->
+        </python>
+
+        <!-- 🌶️ FLASK VERSION CONFIGURATION -->
+        <flask>
+            <version>3.1.2</version>
+            <major>3</major>
+            <minor>1</minor>
+            <patch>2</patch>
+            <!-- #FLASK-VERSION #FLASK-MAJOR #LATEST-FLASK -->
+        </flask>
+
+        <!-- 📦 NODE.JS VERSION CONFIGURATION -->
+        <node>
+            <version>22.12.0</version>
+            <major>22</major>
+            <minor>12</minor>
+            <patch>0</patch>
+            <image-variant type="alpine">node:22.12.0-alpine</image-variant>
+            <image-variant type="slim">node:22.12.0-slim</image-variant>
+            <!-- #NODE-VERSION #NODE-LTS #LATEST-NODE -->
+        </node>
+
+        <!-- 🐳 DOCKER VERSION CONFIGURATION -->
+        <docker>
+            <version>24.0.7</version>
+            <buildkit-version>0.12.5</buildkit-version>
+            <compose-version>2.23.3</compose-version>
+            <!-- #DOCKER-VERSION #BUILDKIT-VERSION #COMPOSE-VERSION -->
+        </docker>
+
+        <!-- 📚 DEPENDENCY VERSIONS -->
+        <dependencies>
+            <sqlalchemy version="2.0.43" />
+            <werkzeug version="3.0.3" />
+            <jinja2 version="3.1.4" />
+            <pytest version="8.3.3" />
+            <mypy version="1.8.0" />
+            <black version="24.10.0" />
+            <!-- #DEPENDENCIES #SQLALCHEMY #PYTEST #MYPY -->
+        </dependencies>
+    </versions>
+
+    <!-- 🐳 DOCKER CONFIGURATION -->
+    <docker>
+        <images>
+            <base-image>python:3.13.7-slim-bookworm</base-image>
+            <devcontainer-image>mcr.microsoft.com/devcontainers/python:1-3.13-bookworm</devcontainer-image>
+            <alpine-image>python:3.13.7-alpine3.19</alpine-image>
+        </images>
+
+        <build-args>
+            <python-version>3.13.7</python-version>
+            <buildkit-inline-cache>1</buildkit-inline-cache>
+            <pip-no-cache-dir>0</pip-no-cache-dir>
+        </build-args>
+
+        <cache-strategy>
+            <pip-cache>enabled</pip-cache>
+            <buildkit-cache>enabled</buildkit-cache>
+            <layer-cache>enabled</layer-cache>
+        </cache-strategy>
+
+        <!-- #DOCKER-CONFIG #DOCKER-IMAGES #DOCKER-CACHE -->
+    </docker>
+
+    <!-- 🛠️ DEVELOPMENT ENVIRONMENT -->
+    <development>
+        <container-base>mcr.microsoft.com/devcontainers/python:1-3.13-bookworm</container-base>
+        <tools>
+            <linting>flake8,black,isort,mypy</linting>
+            <testing>pytest,pytest-cov,pytest-xdist</testing>
+            <development>pre-commit,ruff,bandit</development>
+        </tools>
+        <features>
+            <node-version>22</node-version>
+            <git-lfs>enabled</git-lfs>
+            <docker-in-docker>enabled</docker-in-docker>
+        </features>
+        <!-- #DEVELOPMENT #DEV-TOOLS #LINTING #TESTING -->
+    </development>
+
+    <!-- 🚀 PRODUCTION ENVIRONMENT -->
+    <production>
+        <container-base>python:3.13.7-slim-bookworm</container-base>
+        <optimization>
+            <python-optimize>2</python-optimize>
+            <bytecode-compilation>enabled</bytecode-compilation>
+            <multi-stage-build>enabled</multi-stage-build>
+        </optimization>
+        <security>
+            <non-root-user>app</non-root-user>
+            <security-scanning>enabled</security-scanning>
+            <minimal-surface>enabled</minimal-surface>
+        </security>
+        <!-- #PRODUCTION #OPTIMIZATION #SECURITY -->
+    </production>
+
+    <!-- 🧪 TESTING CONFIGURATION -->
+    <testing>
+        <frameworks>
+            <unit-testing>pytest</unit-testing>
+            <type-checking>mypy</type-checking>
+            <linting>flake8,black,isort</linting>
+        </frameworks>
+        <coverage>
+            <minimum-threshold>70</minimum-threshold>
+            <report-format>term-missing,xml</report-format>
+        </coverage>
+        <type-checking>
+            <python-version>3.13</python-version>
+            <strict-mode>enabled</strict-mode>
+            <warn-unused-ignores>enabled</warn-unused-ignores>
+        </type-checking>
+        <!-- #TESTING #COVERAGE #TYPE-CHECKING -->
+    </testing>
+
+    <!-- 📖 DOCUMENTATION REFERENCES -->
+    <documentation>
+        <version-references>
+            <readme-files>README.md,docs/README.md</readme-files>
+            <technical-specs>docs/TECHNICAL_SPECIFICATIONS.md</technical-specs>
+            <frontend-templates>frontend/static/index.html,frontend/static/templates/main/index.html</frontend-templates>
+        </version-references>
+
+        <update-targets>
+            <!-- Files that reference Python version and need updates -->
+            <dockerfile-targets>
+                <file path="Dockerfile" line-pattern="FROM python:.*" />
+                <file path=".devcontainer/Dockerfile" line-pattern="FROM python:.*" />
+                <file path="infrastructure/docker/build.Dockerfile" line-pattern="FROM python:.*" />
+                <file path="infrastructure/docker/runtime.Dockerfile" line-pattern="FROM python:.*" />
+            </dockerfile-targets>
+
+            <config-targets>
+                <file path="pyproject.toml" section="[tool.mypy]" key="python_version" />
+                <file path="config/pyproject.toml" section="[tool.mypy]" key="python_version" />
+                <file path=".github/workflows/ci.yml" key="python-version" />
+                <file path="docker-bake.json" key="PYTHON_VERSION" />
+            </config-targets>
+
+            <documentation-targets>
+                <file path="README.md" search-pattern="Python 3\.\d+" />
+                <file path="docs/README.md" search-pattern="Python 3\.\d+" />
+                <file path="docs/TECHNICAL_SPECIFICATIONS.md" search-pattern="Python.*3\.\d+" />
+                <file path="frontend/static/index.html" search-pattern="Python 3\.\d+" />
+                <file path="frontend/static/templates/main/index.html" search-pattern="Python 3\.\d+" />
+            </documentation-targets>
+
+            <script-targets>
+                <file path=".devcontainer/scripts/generate-lock.sh" search-pattern="python:1-3\.\d+-bookworm" />
+                <file path=".devcontainer/scripts/generate-lock.ps1" search-pattern="python:1-3\.\d+-bookworm" />
+            </script-targets>
+        </update-targets>
+        <!-- #DOCUMENTATION #UPDATE-TARGETS #VERSION-REFERENCES -->
+    </documentation>
+
+    <!-- 🔍 SEARCH OPTIMIZATION TAGS (For easy finding) -->
+    <!--
+    PRIMARY SEARCH TAGS:
+    #GOLDILOCKS-GLOBALS #VERSION-CONFIG #SINGLE-SOURCE-TRUTH
+    #PYTHON-3.13.7 #LATEST-PYTHON #STABLE-PYTHON #PRODUCTION-READY
+    #FLASK-3.1.2 #NODE-22.12.0 #DOCKER-24.0.7
+    #DEVELOPMENT-CONFIG #PRODUCTION-CONFIG #TESTING-CONFIG
+    #DOCKER-IMAGES #DEVCONTAINER #CI-CD #AUTOMATION
+    #UPDATE-REFERENCES #DOCUMENTATION #MAINTENANCE
+
+    SEARCH COMBINATIONS:
+    #PYTHON + #VERSION → Python version information
+    #DOCKER + #IMAGES → Docker image configurations
+    #DEVELOPMENT + #TOOLS → Development environment setup
+    #PRODUCTION + #OPTIMIZATION → Production optimizations
+    #TESTING + #COVERAGE → Testing configurations
+    #UPDATE + #TARGETS → Files that need version updates
+
+    EMERGENCY SEARCH TAGS:
+    #URGENT #CRITICAL #BREAKING-CHANGE #SECURITY-UPDATE
+    #VERSION-BUMP #MAJOR-UPDATE #COMPATIBILITY #DEPRECATED
+    -->
+
+</goldilocks-globals>

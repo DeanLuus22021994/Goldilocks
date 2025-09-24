@@ -54,10 +54,13 @@ class TestAPIEndpoints:
         data = response.get_json()
 
         python_version = data["python"]
-        # Should be in format "3.12.7"
+        # Should be in format "3.14.0" (rc versions may have additional parts like "rc3")
         parts = python_version.split(".")
-        assert len(parts) == 3
-        assert all(part.isdigit() for part in parts)
+        assert len(parts) >= 3  # Allow for versions like 3.14.0rc3
+        assert parts[0] == "3"  # Major version
+        assert parts[1] == "14.0"  # Minor version
+        # Patch version may contain rc/alpha/beta suffixes
+        assert parts[2][0].isdigit()  # Should start with a digit
 
     def test_version_endpoint_with_correlation_id(
         self, client: FlaskClient[Any], correlation_id_header: dict[str, str]

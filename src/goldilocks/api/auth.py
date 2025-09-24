@@ -77,7 +77,7 @@ def register() -> str | Response:
 
 
 @auth_bp.route("/logout")
-@login_required  # type: ignore[misc]
+@login_required
 def logout() -> Response:
     """User logout handler."""
     user_id = current_user.id
@@ -88,14 +88,14 @@ def logout() -> Response:
 
 
 @auth_bp.route("/dashboard")
-@login_required  # type: ignore[misc]
+@login_required
 def dashboard() -> str:
     """User dashboard page."""
     return render_template("auth/dashboard.html")
 
 
-@auth_bp.route("/profile", methods=["GET", "POST"])
-@login_required  # type: ignore[misc]
+@auth_bp.route("/profile")
+@login_required
 def profile() -> str | Response:
     """User profile page and update handler."""
     form = ProfileForm()

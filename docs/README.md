@@ -100,7 +100,7 @@ Automated workflows with GitHub Actions:
 
 Optimized Docker-based development:
 
-- **Base**: Python 3.13 slim with pip cache persistence
+- **Base**: Python 3.14.0 with pip cache persistence
 - **Tools**: Git, make, and all development dependencies pre-installed
 - **Setup**: Automated pip upgrade, requirements installation, pre-commit hooks
 - **Networking**: Port 9000 auto-forwarding and browser opening

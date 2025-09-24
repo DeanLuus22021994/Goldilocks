@@ -98,7 +98,7 @@ cat > "$LOCK_FILE" << EOF
   "lockfile": {
     "devcontainer": {
       "hash": "$DEVCONTAINER_HASH",
-      "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+      "image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
       "features": {
         "node": {
           "version": "22",
@@ -125,7 +125,7 @@ cat > "$LOCK_FILE" << EOF
       "package_json_hash": "$PACKAGE_JSON_HASH"
     },
     "system": {
-      "base_image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+      "base_image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
       "base_hash": "sha256:placeholder",
       "apt_packages": [],
       "cache_paths": [

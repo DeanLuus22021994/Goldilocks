@@ -10,7 +10,7 @@ ms.date: 2024-09-24
 
 | Component    | Version     | Status | Performance Target |
 | ------------ | ----------- | ------ | ------------------ |
-| Python       | 3.13        | ✅     | <100ms startup     |
+| Python       | 3.14.0      | ✅     | <100ms startup     |
 | Flask        | 3.x         | ✅     | <50ms response     |
 | Docker       | Multi-stage | ✅     | <100MB runtime     |
 | Tests        | 100% pass   | ✅     | <5s execution      |

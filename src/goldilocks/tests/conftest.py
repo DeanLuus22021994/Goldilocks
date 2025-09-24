@@ -1,5 +1,7 @@
 """Test configuration and fixtures for Goldilocks test suite."""
 
+from __future__ import annotations
+
 import json
 from collections.abc import Callable
 from typing import Any, cast
@@ -33,7 +35,7 @@ def app_fixture() -> Flask:
 
 
 @pytest.fixture()
-def client(app: Flask) -> FlaskClient[Any]:
+def client(app: Flask) -> FlaskClient:  # type: ignore[type-arg]
     """Lightweight test client per test for isolation."""
     return app.test_client()
 

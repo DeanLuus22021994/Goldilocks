@@ -81,7 +81,7 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
     login_manager.login_message = "Please log in to access this page"
     login_manager.login_message_category = "info"
 
-    @login_manager.user_loader  # type: ignore[misc]
+    @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
         """Load user by ID for Flask-Login."""
         return AuthenticationService.get_user_by_id(int(user_id))

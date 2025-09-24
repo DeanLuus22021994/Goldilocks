@@ -7,7 +7,7 @@ from wtforms import BooleanField, EmailField, PasswordField, StringField, TextAr
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
 
 
-class LoginForm(FlaskForm):  # type: ignore[misc]
+class LoginForm(FlaskForm):
     """User login form."""
 
     email = EmailField(
@@ -30,7 +30,7 @@ class LoginForm(FlaskForm):  # type: ignore[misc]
     remember_me = BooleanField("Remember me")
 
 
-class RegisterForm(FlaskForm):  # type: ignore[misc]
+class RegisterForm(FlaskForm):
     """User registration form."""
 
     username = StringField(
@@ -100,8 +100,8 @@ class RegisterForm(FlaskForm):  # type: ignore[misc]
     )
 
 
-class ProfileForm(FlaskForm):  # type: ignore[misc]
-    """User profile editing form."""
+class ProfileForm(FlaskForm):
+    """User profile update form."""
 
     full_name = StringField(
         "Full Name",
@@ -153,7 +153,7 @@ class ProfileForm(FlaskForm):  # type: ignore[misc]
     )
 
 
-class ChangePasswordForm(FlaskForm):  # type: ignore[misc]
+class ChangePasswordForm(FlaskForm):
     """Change password form."""
 
     current_password = PasswordField(
@@ -188,7 +188,7 @@ class ChangePasswordForm(FlaskForm):  # type: ignore[misc]
     )
 
 
-class ForgotPasswordForm(FlaskForm):  # type: ignore[misc]
+class ForgotPasswordForm(FlaskForm):
     """Forgot password form."""
 
     email = EmailField(
@@ -202,7 +202,7 @@ class ForgotPasswordForm(FlaskForm):  # type: ignore[misc]
     )
 
 
-class ResetPasswordForm(FlaskForm):  # type: ignore[misc]
+class ResetPasswordForm(FlaskForm):
     """Reset password form."""
 
     password = PasswordField(

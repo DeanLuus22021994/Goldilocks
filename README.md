@@ -67,7 +67,7 @@ CI
 
 Dev Container
 
-- Python 3.13 slim base, pip cache persisted.
+- Python 3.14.0 base, pip cache persisted.
 - Git and make installed permanently in the Docker image.
 - postCreateCommand upgrades pip, installs requirements, installs pre-commit hooks.
 - Port 9000 auto-forwards and opens.

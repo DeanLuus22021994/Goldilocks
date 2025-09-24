@@ -51,7 +51,11 @@
 
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "tamasfe.even-better-toml"
+      ],
       "settings": {
         "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "git.repositorySearchDepth": 1,

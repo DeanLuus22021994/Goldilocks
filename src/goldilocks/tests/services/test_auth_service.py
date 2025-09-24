@@ -105,7 +105,7 @@ class TestAuthenticationServiceUserManagement:
             assert user is not None
 
             # Check activity log
-            activity = ActivityLog.query.filter_by(
+            activity = db.session.query(ActivityLog).filter_by(
                 user_id=user.id,
                 action="user_registered"
             ).first()
@@ -234,7 +234,7 @@ class TestAuthenticationServiceAuthentication:
             assert user is not None
 
             # Check activity log
-            activity = ActivityLog.query.filter_by(
+            activity = db.session.query(ActivityLog).filter_by(
                 user_id=user.id,
                 action="login_success"
             ).first()
@@ -264,7 +264,7 @@ class TestAuthenticationServiceSessionManagement:
             assert len(session_id) > 10  # Should be a long random string
 
             # Verify session in database
-            session = UserSession.query.filter_by(
+            session = db.session.query(UserSession).filter_by(
                 session_id=session_id).first()
             assert session is not None
             assert session.user_id == test_user.id
@@ -291,7 +291,7 @@ class TestAuthenticationServiceSessionManagement:
             assert session_id is not None
 
             # Verify session has longer expiration
-            session = UserSession.query.filter_by(
+            session = db.session.query(UserSession).filter_by(
                 session_id=session_id).first()
             assert session is not None
 
@@ -323,7 +323,7 @@ class TestAuthenticationServiceSessionManagement:
             assert result is True
 
             # Verify session is inactive
-            updated_session = UserSession.query.filter_by(
+            updated_session = db.session.query(UserSession).filter_by(
                 session_id="test_session_123"
             ).first()
             assert updated_session is not None
@@ -369,7 +369,8 @@ class TestAuthenticationServiceSessionManagement:
             assert result is True
 
             # Verify all sessions are inactive
-            sessions = UserSession.query.filter_by(user_id=test_user.id).all()
+            sessions = db.session.query(UserSession).filter_by(
+                user_id=test_user.id).all()
             for session in sessions:
                 assert session.is_active is False
 
@@ -474,7 +475,7 @@ class TestAuthenticationServiceProfileManagement:
             assert error is None
 
             # Verify updates
-            updated_user = User.query.get(test_user.id)
+            updated_user = db.session.get(User, test_user.id)
             assert updated_user is not None
             assert updated_user.full_name == "Updated Name"
 
@@ -521,7 +522,7 @@ class TestAuthenticationServicePasswordManagement:
             assert error is None
 
             # Verify password changed
-            updated_user = User.query.get(test_user.id)
+            updated_user = db.session.get(User, test_user.id)
             assert updated_user is not None
             assert updated_user.check_password("NewPassword123")
             assert not updated_user.check_password("OldPassword123")
@@ -607,7 +608,7 @@ class TestAuthenticationServiceUtilities:
             )
 
             # Verify activity was logged
-            activity = ActivityLog.query.filter_by(
+            activity = db.session.query(ActivityLog).filter_by(
                 user_id=test_user.id,
                 action="test_action"
             ).first()
@@ -649,13 +650,13 @@ class TestAuthenticationServiceUtilities:
             assert count >= 1
 
             # Verify expired session was removed
-            expired = UserSession.query.filter_by(
+            expired = db.session.query(UserSession).filter_by(
                 session_id="expired_session"
             ).first()
             assert expired is None
 
             # Verify active session remains
-            active = UserSession.query.filter_by(
+            active = db.session.query(UserSession).filter_by(
                 session_id="active_session"
             ).first()
             assert active is not None

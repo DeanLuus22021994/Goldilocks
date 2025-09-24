@@ -254,7 +254,7 @@ class TestApplicationIntegration:
             db.session.commit()
 
             # Should be able to query the user
-            queried_user = User.query.filter_by(
+            queried_user = db.session.query(User).filter_by(
                 email="test@example.com").first()
             assert queried_user is not None
             assert queried_user.username == "testuser"

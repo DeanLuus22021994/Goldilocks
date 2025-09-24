@@ -28,7 +28,7 @@ def app() -> Generator[Flask, None, None]:
 
 
 @pytest.fixture
-def client(app: Flask) -> FlaskClient[Any]:
+def client(app: Flask) -> FlaskClient:
     """Create test client."""
     return app.test_client()
 
@@ -95,7 +95,7 @@ class APITestMixin:
     """Mixin class for API tests."""
 
     @staticmethod
-    def make_authenticated_request(client: FlaskClient[Any], endpoint: str, user: User, method: str = "GET", **kwargs: Any) -> Any:
+    def make_authenticated_request(client: FlaskClient, endpoint: str, user: User, method: str = "GET", **kwargs: Any) -> Any:
         """Make an authenticated request as a specific user."""
         # This would need proper session/auth implementation
         # For now, just make the request
@@ -107,7 +107,7 @@ class APITestMixin:
             raise ValueError(f"Unsupported method: {method}")
 
     @staticmethod
-    def get_csrf_token(client: FlaskClient[Any], endpoint: str) -> str:
+    def get_csrf_token(client: FlaskClient, endpoint: str) -> str:
         """Extract CSRF token from a form page."""
         # Simplified implementation for testing
         return "test_csrf_token"

@@ -1,7 +1,7 @@
 # filepath: /app/pyproject.toml
 [tool.black]
 line-length = 120
-target-version = ["py312"]
+target-version = ["py313"]
 skip-string-normalization = true
 
 [tool.isort]
@@ -18,7 +18,7 @@ testpaths = ["src/goldilocks/tests"]
 addopts = "-q --cov=goldilocks --cov-report=term-missing"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14.0"
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true

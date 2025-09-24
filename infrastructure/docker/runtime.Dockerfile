@@ -1,5 +1,5 @@
 # Production runtime stage - Minimal image with only runtime dependencies
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.14.0rc3-trixie AS runtime
 
 # Set build arguments
 ARG TARGETPLATFORM
