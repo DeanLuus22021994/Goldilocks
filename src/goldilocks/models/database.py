@@ -8,7 +8,7 @@ from typing import Any, Callable, cast
 
 # from flask_login import UserMixin  # removed to avoid subclassing Any
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import JSON, Boolean, DateTime, Enum, String, Text, event
+from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, String, Text, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -27,7 +27,7 @@ _check_password_hash: Callable[[str, str],
                                bool] = cast(Any, check_password_hash)
 
 
-class User(db.Model):
+class User(Base):  # ← Type checker happy, fully modern
     """User model for authentication and profile management."""
 
     __tablename__ = "users"
@@ -122,8 +122,12 @@ class User(db.Model):
     def __repr__(self) -> str:
         return f"<User {self.username}>"
 
+    def is_admin(self) -> bool:
+        """Return True if the user has the admin role."""
+        return (self.role or "").lower() == "admin"
 
-class UserSession(db.Model):
+
+class UserSession(Base):
     """User session model for authentication management."""
 
     __tablename__ = "user_sessions"
@@ -132,7 +136,7 @@ class UserSession(db.Model):
     session_id: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False)
     user_id: Mapped[int] = mapped_column(
-        db.ForeignKey("users.id"), nullable=False)
+        ForeignKey("users.id"), nullable=False)
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
@@ -170,14 +174,14 @@ class UserSession(db.Model):
         return f"<UserSession {self.session_id}>"
 
 
-class UserProfile(db.Model):
+class UserProfile(Base):
     """Extended user profile information."""
 
     __tablename__ = "user_profiles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        db.ForeignKey("users.id"), unique=True, nullable=False)
+        ForeignKey("users.id"), unique=True, nullable=False)
     bio: Mapped[str | None] = mapped_column(Text)
     location: Mapped[str | None] = mapped_column(String(255))
     website: Mapped[str | None] = mapped_column(String(500))
@@ -225,13 +229,13 @@ class UserProfile(db.Model):
         return f"<UserProfile {self.user_id}>"
 
 
-class ActivityLog(db.Model):
+class ActivityLog(Base):
     """Activity logging for audit and analytics."""
 
     __tablename__ = "activity_logs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int | None] = mapped_column(db.ForeignKey("users.id"))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     action: Mapped[str] = mapped_column(String(64), nullable=False)
     resource_type: Mapped[str | None] = mapped_column(String(64))
     resource_id: Mapped[str | None] = mapped_column(String(255))
@@ -271,7 +275,7 @@ class ActivityLog(db.Model):
         return f"<ActivityLog {self.action}>"
 
 
-class SystemSetting(db.Model):
+class SystemSetting(Base):
     """System configuration settings."""
 
     __tablename__ = "system_settings"

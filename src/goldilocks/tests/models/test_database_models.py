@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timezone
 
 from flask import Flask
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from goldilocks.models.database import ActivityLog, SystemSetting, User, UserProfile, UserSession, db
@@ -495,6 +496,9 @@ class TestDatabaseIntegration:
             db.session.commit()
 
             # Verify cascaded deletion
-            assert UserProfile.query.filter_by(user_id=user_id).first() is None
-            assert UserSession.query.filter_by(user_id=user_id).first() is None
-            assert ActivityLog.query.filter_by(user_id=user_id).first() is None
+            assert db.session.execute(select(UserProfile).filter_by(
+                user_id=user_id)).first() is None
+            assert db.session.execute(select(UserSession).filter_by(
+                user_id=user_id)).first() is None
+            assert db.session.execute(select(ActivityLog).filter_by(
+                user_id=user_id)).first() is None
