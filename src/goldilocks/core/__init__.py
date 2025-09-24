@@ -10,9 +10,65 @@ This module provides:
 - Base classes for business logic components
 """
 
+import os
 from typing import Any
 
-__all__: list[str] = ["DEFAULT_CONFIG", "PACKAGE_INFO", "get_config"]
+
+class Config:
+    """Base configuration class."""
+
+    SECRET_KEY = os.environ.get(
+        "SECRET_KEY", "dev-secret-key-change-in-production")
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL",
+        "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@localhost:3306/goldilocks"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 3600,
+        "max_overflow": 20,
+        "pool_pre_ping": True,
+    }
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600
+    SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = 86400  # 24 hours
+
+
+class DevelopmentConfig(Config):
+    """Development configuration."""
+
+    DEBUG = True
+    FLASK_ENV = "development"
+
+
+class ProductionConfig(Config):
+    """Production configuration."""
+
+    DEBUG = False
+    FLASK_ENV = "production"
+    SESSION_COOKIE_SECURE = True
+
+
+class TestingConfig(Config):
+    """Testing configuration."""
+
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+
+
+# Configuration mapping
+config = {
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig
+}
+
 
 # Core configuration constants
 DEFAULT_CONFIG = {

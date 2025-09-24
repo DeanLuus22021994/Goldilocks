@@ -4,12 +4,36 @@
   "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "app",
 
+  "hostRequirements": {
+    "gpu": "optional",
+    "storage": "32gb",
+    "memory": "8gb",
+    "cpus": 4
+  },
+
+  "runArgs": [
+    "--gpus=all",
+    "--shm-size=2g",
+    "--ipc=host",
+    "--ulimit=memlock=-1",
+    "--ulimit=stack=67108864",
+    "--device=/dev/dri"
+  ],
+
   "containerEnv": {
     "FLASK_APP": "src/goldilocks/app.py",
     "FLASK_ENV": "development",
     "FLASK_DEBUG": "1",
     "PYTHONPATH": "/workspaces/Goldilocks/src",
-    "PYTHONUNBUFFERED": "1"
+    "PYTHONUNBUFFERED": "1",
+    "NVIDIA_VISIBLE_DEVICES": "all",
+    "NVIDIA_DRIVER_CAPABILITIES": "compute,utility,graphics",
+    "DATABASE_URL": "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@localhost:3306/goldilocks",
+    "DB_HOST": "localhost",
+    "DB_PORT": "3306",
+    "DB_NAME": "goldilocks",
+    "DB_USER": "goldilocks_user",
+    "DB_PASSWORD": "goldilocks_pass_2024"
   },
 
   "mounts": [
@@ -36,7 +60,21 @@
     }
   },
 
-  "forwardPorts": [9000],
+  "forwardPorts": [9000, 3306, 8080],
+  "portsAttributes": {
+    "9000": {
+      "label": "Flask App",
+      "onAutoForward": "notify"
+    },
+    "3306": {
+      "label": "MariaDB",
+      "onAutoForward": "silent"
+    },
+    "8080": {
+      "label": "Adminer",
+      "onAutoForward": "notify"
+    }
+  },
   "shutdownAction": "stopContainer",
 
   "features": {

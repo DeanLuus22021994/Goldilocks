@@ -1,5 +1,5 @@
 # Build stage - Compile Python bytecode and install dependencies
-FROM python:3.13-slim-bookworm AS builder
+FROM python:3.12-slim-bookworm AS builder
 
 # Set build arguments
 ARG BUILDKIT_INLINE_CACHE=1

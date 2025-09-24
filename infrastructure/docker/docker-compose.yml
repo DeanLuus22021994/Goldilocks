@@ -1,4 +1,64 @@
 services:
+  # MariaDB database service - optimized for edge computing
+  goldilocks-db:
+    image: mariadb:11.2
+    container_name: goldilocks-db
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=goldilocks_root_2024
+      - MARIADB_DATABASE=goldilocks
+      - MARIADB_USER=goldilocks_user
+      - MARIADB_PASSWORD=goldilocks_pass_2024
+      # Edge computing optimizations
+      - MARIADB_INIT_CONNECT='SET sql_mode="STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"'
+    volumes:
+      - goldilocks-db-data:/var/lib/mysql
+      - ./mariadb-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - goldilocks-network
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --innodb-log-file-size=64M
+      --innodb-flush-log-at-trx-commit=2
+      --innodb-flush-method=O_DIRECT
+      --query-cache-type=1
+      --query-cache-size=32M
+      --max-connections=100
+      --table-open-cache=512
+      --thread-cache-size=16
+      --key-buffer-size=32M
+      --tmp-table-size=32M
+      --max-heap-table-size=32M
+      --skip-name-resolve
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles: ["dev", "prod"]
+
+  # Adminer database management interface - lightweight
+  goldilocks-adminer:
+    image: adminer:4.8.1-standalone
+    container_name: goldilocks-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - goldilocks-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=goldilocks-db
+      - ADMINER_DESIGN=pappu687
+    depends_on:
+      goldilocks-db:
+        condition: service_healthy
+    profiles: ["dev"]
+
   # Development service with tools and hot reload
   goldilocks-dev:
     image: goldilocks:devcontainer
@@ -26,11 +86,21 @@ services:
       - PYTHONDONTWRITEBYTECODE=0
       - DOCKER_BUILDKIT=1
       - BUILDKIT_PROGRESS=plain
+      # Database connection
+      - DATABASE_URL=mysql+pymysql://goldilocks_user:goldilocks_pass_2024@goldilocks-db:3306/goldilocks
+      - DB_HOST=goldilocks-db
+      - DB_PORT=3306
+      - DB_NAME=goldilocks
+      - DB_USER=goldilocks_user
+      - DB_PASSWORD=goldilocks_pass_2024
     ports:
       - "9000:9000"
     working_dir: /workspaces/Goldilocks
     networks:
       - goldilocks-network
+    depends_on:
+      goldilocks-db:
+        condition: service_healthy
     profiles: ["dev"]
 
   # Production service with minimal footprint
@@ -67,6 +137,10 @@ services:
     profiles: ["build"]
 
 volumes:
+  # Database data volume - persistent MariaDB storage
+  goldilocks-db-data:
+    driver: local
+
   # Virtual environment cache - persistent across rebuilds
   goldilocks-venv:
     driver: local

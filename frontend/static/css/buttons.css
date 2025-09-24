@@ -1,4 +1,72 @@
 /* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: var(--card);
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--elev);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Button variants */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--card);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg);
+  border-color: var(--muted);
+  color: var(--fg);
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+}
+
+/* Icon buttons */
 .icon-btn {
   display: inline-flex;
   align-items: center;
@@ -12,7 +80,19 @@
   cursor: pointer;
 }
 
+.icon-btn:hover {
+  background: var(--bg);
+  border-color: var(--muted);
+}
+
 .icon-btn:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+/* Auth links container */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }

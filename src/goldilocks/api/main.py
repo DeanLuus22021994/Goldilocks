@@ -1,3 +1,12 @@
+"""Main application routes blueprint."""
+
+from flask import Blueprint
+
+# Create main Blueprint
+main_bp = Blueprint("main", __name__)
+
+# HTML Template for main page
+INDEX_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
   <head>
@@ -81,39 +90,43 @@
             <span aria-hidden="true">🌓</span>
             <span class="hide-sm" data-theme-label>light</span>
           </button>
-          <!-- Auth links (shown when not logged in) -->
-          <div class="auth-links" data-auth-links>
-            <a href="/login" class="btn btn-secondary btn-sm">Login</a>
-            <a href="/register" class="btn btn-primary btn-sm">Register</a>
-          </div>
-          <!-- Profile (shown by JS when logged in) -->
-          <div class="profile" data-profile hidden>
-            <button
-              class="icon-btn"
-              data-profile-toggle
-              aria-haspopup="menu"
-              aria-expanded="false"
-            >
-              <img
-                class="avatar"
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='8' r='5' fill='%23999'/%3E%3Crect x='4' y='15' width='16' height='7' rx='3' fill='%23999'/%3E%3C/svg%3E"
-                alt=""
-                width="24"
-                height="24"
-              />
-              <span class="hide-sm" data-profile-name>—</span>
-            </button>
-            <div class="profile-menu" data-profile-menu role="menu">
-              <div class="small muted profile-menu-header">
-                Signed in as <strong data-profile-name>—</strong>
+
+          {% if current_user.is_authenticated %}
+            <!-- Profile (shown when logged in) -->
+            <div class="profile" data-profile>
+              <button
+                class="icon-btn"
+                data-profile-toggle
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                <img
+                  class="avatar"
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='8' r='5' fill='%23999'/%3E%3Crect x='4' y='15' width='16' height='7' rx='3' fill='%23999'/%3E%3C/svg%3E"
+                  alt=""
+                  width="24"
+                  height="24"
+                />
+                <span class="hide-sm" data-profile-name>{{ current_user.full_name or current_user.username }}</span>
+              </button>
+              <div class="profile-menu" data-profile-menu role="menu">
+                <div class="small muted profile-menu-header">
+                  Signed in as <strong data-profile-name>{{ current_user.full_name or current_user.username }}</strong>
+                </div>
+                <hr />
+                <a href="{{ url_for('auth.profile') }}" role="menuitem">Profile</a>
+                <a href="{{ url_for('auth.dashboard') }}" role="menuitem">Dashboard</a>
+                <hr />
+                <a href="{{ url_for('auth.logout') }}" role="menuitem" data-signout>Sign out</a>
               </div>
-              <hr />
-              <a href="#" role="menuitem">Profile</a>
-              <a href="#" role="menuitem">Settings</a>
-              <hr />
-              <a href="#" role="menuitem" data-signout>Sign out</a>
             </div>
-          </div>
+          {% else %}
+            <!-- Auth links (shown when not logged in) -->
+            <div class="auth-links" data-auth-links>
+              <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-secondary">Login</a>
+              <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Register</a>
+            </div>
+          {% endif %}
         </div>
       </div>
     </header>
@@ -134,6 +147,16 @@
             <span class="icon" aria-hidden="true">🧪</span>
             <span>Version</span>
           </a>
+          {% if current_user.is_authenticated %}
+            <a class="nav-item" href="{{ url_for('auth.dashboard') }}">
+              <span class="icon" aria-hidden="true">📊</span>
+              <span>Dashboard</span>
+            </a>
+            <a class="nav-item" href="{{ url_for('auth.profile') }}">
+              <span class="icon" aria-hidden="true">👤</span>
+              <span>Profile</span>
+            </a>
+          {% endif %}
         </nav>
       </aside>
 
@@ -231,7 +254,7 @@
                 <div class="feature-icon">⚡</div>
                 <h3>Modern Stack</h3>
                 <p>
-                  Latest Python 3.13, Flask 3.x, with cutting-edge development
+                  Latest Python 3.12, Flask 3.x, with cutting-edge development
                   tools and CI/CD pipelines.
                 </p>
                 <a href="#" class="feature-link">Tech Stack →</a>
@@ -325,3 +348,11 @@
     <script src="/static/js/main.js" defer></script>
   </body>
 </html>
+"""
+
+
+@main_bp.get("/")
+def index():
+    """Main application index page."""
+    from flask import render_template_string
+    return render_template_string(INDEX_TEMPLATE)

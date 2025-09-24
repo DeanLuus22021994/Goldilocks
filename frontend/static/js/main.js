@@ -72,19 +72,22 @@
     });
   }
 
-  // Profile dropdown (simple simulated auth via localStorage)
+  // Profile dropdown and authentication state
   var profileWrap = document.querySelector("[data-profile]");
   var profileMenu = document.querySelector("[data-profile-menu]");
   var profileBtn = document.querySelector("[data-profile-toggle]");
   var profileNameEls = document.querySelectorAll("[data-profile-name]");
+  var authLinksWrap = document.querySelector("[data-auth-links]");
   var AUTH_FLAG = "goldilocks-auth";
 
   function setProfileVisible(visible) {
     if (!profileWrap) return;
     if (visible) {
       profileWrap.removeAttribute("hidden");
+      if (authLinksWrap) authLinksWrap.style.display = "none";
     } else {
       profileWrap.setAttribute("hidden", "");
+      if (authLinksWrap) authLinksWrap.style.display = "flex";
     }
   }
 
