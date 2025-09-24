@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 db = SQLAlchemy()
 
 
-class User(UserMixin, db.Model):  # type: ignore[misc]
+class User(UserMixin, db.Model):  # type: ignore[name-defined]
     """User model for authentication and profile management."""
 
     __tablename__ = "users"
@@ -106,7 +106,7 @@ class User(UserMixin, db.Model):  # type: ignore[misc]
         return f"<User {self.username}>"
 
 
-class UserSession(db.Model):  # type: ignore[misc]
+class UserSession(db.Model):  # type: ignore[name-defined]
     """User session model for authentication management."""
 
     __tablename__ = "user_sessions"
@@ -153,7 +153,7 @@ class UserSession(db.Model):  # type: ignore[misc]
         return f"<UserSession {self.session_id}>"
 
 
-class UserProfile(db.Model):  # type: ignore[misc]
+class UserProfile(db.Model):  # type: ignore[name-defined]
     """Extended user profile information."""
 
     __tablename__ = "user_profiles"
@@ -208,7 +208,7 @@ class UserProfile(db.Model):  # type: ignore[misc]
         return f"<UserProfile {self.user_id}>"
 
 
-class ActivityLog(db.Model):  # type: ignore[misc]
+class ActivityLog(db.Model):  # type: ignore[name-defined]
     """Activity logging for audit and analytics."""
 
     __tablename__ = "activity_logs"
@@ -254,7 +254,7 @@ class ActivityLog(db.Model):  # type: ignore[misc]
         return f"<ActivityLog {self.action}>"
 
 
-class SystemSetting(db.Model):  # type: ignore[misc]
+class SystemSetting(db.Model):  # type: ignore[name-defined]
     """System configuration settings."""
 
     __tablename__ = "system_settings"
