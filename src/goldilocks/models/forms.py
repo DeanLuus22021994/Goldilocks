@@ -7,7 +7,7 @@ from wtforms import BooleanField, EmailField, PasswordField, StringField, TextAr
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
 
 
-class LoginForm(FlaskForm):
+class LoginForm(FlaskForm):  # type: ignore[misc]
     """User login form."""
 
     email = EmailField(
@@ -30,7 +30,7 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField("Remember me")
 
 
-class RegisterForm(FlaskForm):
+class RegisterForm(FlaskForm):  # type: ignore[misc]
     """User registration form."""
 
     username = StringField(
@@ -100,7 +100,7 @@ class RegisterForm(FlaskForm):
     )
 
 
-class ProfileForm(FlaskForm):
+class ProfileForm(FlaskForm):  # type: ignore[misc]
     """User profile update form."""
 
     full_name = StringField(
@@ -153,7 +153,7 @@ class ProfileForm(FlaskForm):
     )
 
 
-class ChangePasswordForm(FlaskForm):
+class ChangePasswordForm(FlaskForm):  # type: ignore[misc]
     """Change password form."""
 
     current_password = PasswordField(
@@ -188,7 +188,7 @@ class ChangePasswordForm(FlaskForm):
     )
 
 
-class ForgotPasswordForm(FlaskForm):
+class ForgotPasswordForm(FlaskForm):  # type: ignore[misc]
     """Forgot password form."""
 
     email = EmailField(
@@ -202,7 +202,7 @@ class ForgotPasswordForm(FlaskForm):
     )
 
 
-class ResetPasswordForm(FlaskForm):
+class ResetPasswordForm(FlaskForm):  # type: ignore[misc]
     """Reset password form."""
 
     password = PasswordField(
