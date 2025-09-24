@@ -21,7 +21,7 @@ from flask.testing import FlaskClient
 @pytest.mark.filterwarnings("ignore:.*__version__.*:DeprecationWarning")
 def test_version_flask_fallback(
     monkeypatch: pytest.MonkeyPatch,
-    client: FlaskClient,
+    client: FlaskClient[Any],
     json_of: Callable[[Any], dict[str, Any]],
 ) -> None:
     """Force PackageNotFoundError for Flask to exercise fallback path."""

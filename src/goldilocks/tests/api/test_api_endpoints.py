@@ -153,7 +153,8 @@ class TestAPIBlueprint:
 
     def test_api_blueprint_is_registered(self, app: Flask) -> None:
         """Test that API blueprint is properly registered."""
-        blueprints = [bp.name for bp in app.iter_blueprints()]  # type: ignore[misc]
+        blueprints = [bp.name for bp in app.iter_blueprints()
+                      ]  # type: ignore[misc]
         assert "api" in blueprints
 
     def test_api_blueprint_url_rules(self, app: Flask) -> None:

@@ -39,7 +39,8 @@ class TestAppFactory:
         """Test that all blueprints are registered."""
         app = create_app("testing")
 
-        blueprint_names = [bp.name for bp in app.iter_blueprints()]  # type: ignore[misc]
+        # type: ignore[misc]
+        blueprint_names = [bp.name for bp in app.iter_blueprints()]
         expected_blueprints = {"main", "auth", "api"}
 
         assert expected_blueprints.issubset(set(blueprint_names))
