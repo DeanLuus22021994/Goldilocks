@@ -144,6 +144,22 @@ try {
   Write-Warning "npm not found"
 }
 
+# Get Git version
+$GitVersion = "unknown"
+try {
+  $GitVersion = (git --version 2>&1) -replace "git version ([0-9.]+).*", '$1'
+} catch {
+  Write-Warning "Git not found"
+}
+
+# Get GitHub CLI version
+$GitHubCLIVersion = "unknown"
+try {
+  $GitHubCLIVersion = (gh --version 2>&1) -split "`n" | Select-Object -First 1 | ForEach-Object { ($_ -split " ")[2] }
+} catch {
+  Write-Warning "GitHub CLI not found"
+}
+
 # Get Docker version
 $DockerVersion = "unknown"
 try {
@@ -163,11 +179,17 @@ $LockContent = @{
   lockfile   = @{
     devcontainer = @{
       hash     = $DevContainerHash
-      image    = "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie"
+      image    = "goldilocks:devcontainer"
       features = @{
-        node = @{
-          version = "22"
-          hash    = "sha256:placeholder"
+        git = @{
+          version = $GitVersion
+          source  = "apt-install"
+          hash    = "manual"
+        }
+        "github-cli" = @{
+          version = $GitHubCLIVersion
+          source  = "apt-install"
+          hash    = "manual"
         }
       }
     }
@@ -193,15 +215,15 @@ $LockContent = @{
       package_json_hash = $PackageJsonHash
     }
     system       = @{
-      base_image   = "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie"
+      base_image   = "goldilocks:devcontainer"
       base_hash    = "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd"
-      apt_packages = @()
+      apt_packages = @("git", "gh")
       cache_paths  = @(
-        "/home/vscode/.cache/pip",
-        "/home/vscode/.npm",
-        "/home/vscode/.cache/uv",
-        "/home/vscode/.vscode-server",
-        "/home/vscode/.vscode-server/extensions"
+        "/home/app/.cache/pip",
+        "/home/app/.npm",
+        "/home/app/.cache/uv",
+        "/home/app/.vscode-server",
+        "/home/app/.vscode-server/extensions"
       )
     }
   }
@@ -237,6 +259,10 @@ $LockContent = @{
     docker_version = $DockerVersion
     build_time     = $Timestamp
     cache_hit_rate = 0
+    tools          = @{
+      git        = $GitVersion
+      github_cli = $GitHubCLIVersion
+    }
   }
 }
 
@@ -251,3 +277,5 @@ Write-Host "  - Package.json hash: $PackageJsonHash" -ForegroundColor Gray
 Write-Host "  - Pyproject.toml hash: $PyprojectTomlHash" -ForegroundColor Gray
 Write-Host "  - Python version: $PythonVersion" -ForegroundColor Gray
 Write-Host "  - Node version: $NodeVersion" -ForegroundColor Gray
+Write-Host "  - Git version: $GitVersion" -ForegroundColor Gray
+Write-Host "  - GitHub CLI version: $GitHubCLIVersion" -ForegroundColor Gray

@@ -47,7 +47,7 @@
 
   "initializeCommand": "docker volume create goldilocks-venv && docker volume create vscode-server-cache && docker volume create pip-cache && docker volume create npm-cache && docker volume create pre-commit-cache && docker volume create mypy-cache",
 
-  "postCreateCommand": "sudo chown -R app:app /workspaces/Goldilocks && sudo chmod -R u+w /workspaces/Goldilocks/.git",
+  "postCreateCommand": "sudo chown -R app:app /workspaces/Goldilocks && sudo chmod -R u+w /workspaces/Goldilocks/.git && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt update && sudo apt install -y git gh",
 
   "customizations": {
     "vscode": {
@@ -79,12 +79,5 @@
       "onAutoForward": "notify"
     }
   },
-  "shutdownAction": "stopContainer",
-
-  "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "installDirectlyFromGitHubRelease": true,
-      "version": "latest"
-    }
-  }
+  "shutdownAction": "stopContainer"
 }

@@ -114,7 +114,9 @@ print(json.dumps(packages, indent=2))
 ")
 fi
 
-# Get Docker version
+# Get tool versions
+GIT_VERSION=$(git --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+GITHUB_CLI_VERSION=$(gh --version 2>/dev/null | head -n1 | cut -d' ' -f3 || echo "unknown")
 DOCKER_VERSION=""
 if command -v docker &> /dev/null; then
     DOCKER_VERSION=$(docker --version | grep -oP '\d+\.\d+\.\d+')
@@ -132,11 +134,17 @@ cat > "$LOCK_FILE" << EOF
   "lockfile": {
     "devcontainer": {
       "hash": "$DEVCONTAINER_HASH",
-      "image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
+      "image": "goldilocks:devcontainer",
       "features": {
-        "node": {
-          "version": "22",
-          "hash": "sha256:placeholder"
+        "git": {
+          "version": "$GIT_VERSION",
+          "source": "apt-install",
+          "hash": "manual"
+        },
+        "github-cli": {
+          "version": "$GITHUB_CLI_VERSION",
+          "source": "apt-install",
+          "hash": "manual"
         }
       }
     },
@@ -162,15 +170,15 @@ cat > "$LOCK_FILE" << EOF
       "package_json_hash": "$PACKAGE_JSON_HASH"
     },
     "system": {
-      "base_image": "mcr.microsoft.com/devcontainers/python:1-3.14.0-trixie",
+      "base_image": "goldilocks:devcontainer",
       "base_hash": "sha256:646dc945e49c73a141896deda12d43f3f293fd69426774c16fc43496180e8fcd",
-      "apt_packages": [],
+      "apt_packages": ["git", "gh"],
       "cache_paths": [
-        "/home/vscode/.cache/pip",
-        "/home/vscode/.npm",
-        "/home/vscode/.cache/uv",
-        "/home/vscode/.vscode-server",
-        "/home/vscode/.vscode-server/extensions"
+        "/home/app/.cache/pip",
+        "/home/app/.npm",
+        "/home/app/.cache/uv",
+        "/home/app/.vscode-server",
+        "/home/app/.vscode-server/extensions"
       ]
     }
   },
@@ -205,7 +213,11 @@ cat > "$LOCK_FILE" << EOF
     "os": "$OS_TYPE",
     "docker_version": "$DOCKER_VERSION",
     "build_time": "$TIMESTAMP",
-    "cache_hit_rate": 0
+    "cache_hit_rate": 0,
+    "tools": {
+      "git": "$GIT_VERSION",
+      "github_cli": "$GITHUB_CLI_VERSION"
+    }
   }
 }
 EOF
@@ -218,3 +230,5 @@ echo "  - Package.json hash: $PACKAGE_JSON_HASH"
 echo "  - Pyproject.toml hash: $PYPROJECT_TOML_HASH"
 echo "  - Python version: $(python3 --version | cut -d' ' -f2)"
 echo "  - Node version: $(node --version 2>/dev/null || echo 'not-installed')"
+echo "  - Git version: $GIT_VERSION"
+echo "  - GitHub CLI version: $GITHUB_CLI_VERSION"
