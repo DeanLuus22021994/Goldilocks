@@ -11,6 +11,9 @@ from flask.testing import FlaskClient
 # Import the Flask app from our package
 from goldilocks.app import app as flask_app
 
+# Import our models for fixtures
+from goldilocks.models.database import User
+
 # Cached terminal reporter and verbosity settings
 _TR: Any = None
 _QUIET = False
@@ -95,3 +98,25 @@ def pytest_report_teststatus(
     if report.failed:
         return "failed", "R", "RED"
     return None
+
+
+@pytest.fixture()
+def test_user() -> User:
+    """Create a test user instance."""
+    user = User()
+    user.email = "test@example.com"
+    user.username = "testuser"
+    user.full_name = "Test User"
+    user.role = "user"
+    return user
+
+
+@pytest.fixture()
+def admin_user() -> User:
+    """Create a test admin user instance."""
+    user = User()
+    user.email = "admin@example.com"
+    user.username = "admin"
+    user.full_name = "Admin User"
+    user.role = "admin"
+    return user

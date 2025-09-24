@@ -9,14 +9,17 @@ This module provides:
 - File and path manipulation utilities
 - Decorators for common functionality
 - Performance measurement and debugging tools
+- Validation and sanitization utilities
 """
 
 import functools
+import re
 import time
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-__all__: list[str] = ["timer", "safe_get", "format_duration", "retry"]
+__all__: list[str] = ["timer", "safe_get", "format_duration",
+                      "retry", "validate_email", "sanitize_filename", "generate_slug"]
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -73,3 +76,59 @@ def retry(max_attempts: int = 3, delay: float = 1.0) -> Callable[[F], F]:
         return wrapper  # type: ignore
 
     return decorator
+
+
+def validate_email(email: str) -> bool:
+    """Validate email address format."""
+    # More strict regex that doesn't allow consecutive dots
+    pattern = r'^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$'
+    if '..' in email:  # Explicitly reject consecutive dots
+        return False
+    return bool(re.match(pattern, email))
+
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize filename by removing dangerous characters."""
+    # Remove or replace dangerous characters
+    filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    # Remove leading/trailing spaces and dots
+    filename = filename.strip(' .')
+    # Ensure it's not empty
+    if not filename:
+        filename = 'unnamed'
+    return filename
+
+
+def generate_slug(text: str, max_length: int = 50) -> str:
+    """Generate URL-friendly slug from text."""
+    # Convert to lowercase and replace spaces/special chars with dashes
+    slug = re.sub(r'[^\w\s-]', '', text.lower())
+    slug = re.sub(r'[\s_-]+', '-', slug)
+    # Remove leading/trailing dashes
+    slug = slug.strip('-')
+    # Truncate if too long
+    if len(slug) > max_length:
+        slug = slug[:max_length].rstrip('-')
+    return slug or 'untitled'
+
+
+def truncate_string(text: str, max_length: int = 100, suffix: str = "...") -> str:
+    """Truncate string with ellipsis if longer than max_length."""
+    if len(text) <= max_length:
+        return text
+    return text[:max_length - len(suffix)] + suffix
+
+
+def is_safe_url(url: str) -> bool:
+    """Check if URL is safe for redirect (no external domains)."""
+    if not url:
+        return False
+    # Only allow relative URLs or URLs to same domain
+    return url.startswith('/') and not url.startswith('//')
+
+
+def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
+    """Mask sensitive data like email or phone numbers."""
+    if len(data) <= visible_chars:
+        return '*' * len(data)
+    return data[:visible_chars] + '*' * (len(data) - visible_chars)
