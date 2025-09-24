@@ -10,7 +10,13 @@ from flask import current_app, request
 from flask_login import current_user
 from sqlalchemy.exc import IntegrityError
 
-from goldilocks.models.database import ActivityLog, User, UserProfile, UserSession, db
+from goldilocks.models.database import (
+    ActivityLog,
+    User,
+    UserProfile,
+    UserSession,
+    db,
+)
 
 
 class AuthenticationService:
@@ -28,8 +34,9 @@ class AuthenticationService:
         try:
             # Check if user already exists
             existing_user = (
-                db.session.query(User).filter(
-                    (User.email == email) | (User.username == username)).first()
+                db.session.query(User)
+                .filter((User.email == email) | (User.username == username))
+                .first()
             )
             if existing_user:
                 if existing_user.email == email:
@@ -73,7 +80,9 @@ class AuthenticationService:
             return None, "An unexpected error occurred"
 
     @staticmethod
-    def authenticate_user(email_or_username: str, password: str) -> tuple[User | None, str | None]:
+    def authenticate_user(
+        email_or_username: str, password: str
+    ) -> tuple[User | None, str | None]:
         """Authenticate user with email/username and password."""
         try:
             # Find user by email or username
@@ -97,8 +106,10 @@ class AuthenticationService:
                 AuthenticationService.log_activity(
                     user_id=user.id,
                     action="login_failed",
-                    metadata={"reason": "invalid_password",
-                              "email": email_or_username},
+                    metadata={
+                        "reason": "invalid_password",
+                        "email": email_or_username,
+                    },
                 )
                 return None, "Invalid email/username or password"
 
@@ -144,8 +155,11 @@ class AuthenticationService:
     def invalidate_session(session_id: str) -> bool:
         """Invalidate a user session."""
         try:
-            session = db.session.query(UserSession).filter_by(
-                session_id=session_id).first()
+            session = (
+                db.session.query(UserSession)
+                .filter_by(session_id=session_id)
+                .first()
+            )
             if session:
                 session.is_active = False
                 db.session.commit()
@@ -160,8 +174,9 @@ class AuthenticationService:
     def invalidate_all_user_sessions(user_id: int) -> bool:
         """Invalidate all sessions for a user."""
         try:
-            db.session.query(UserSession).filter_by(
-                user_id=user_id).update({"is_active": False})
+            db.session.query(UserSession).filter_by(user_id=user_id).update(
+                {"is_active": False}
+            )
             db.session.commit()
             return True
         except Exception as e:
@@ -177,12 +192,18 @@ class AuthenticationService:
     @staticmethod
     def get_user_by_email(email: str) -> User | None:
         """Get user by email."""
-        return db.session.query(User).filter_by(email=email.lower().strip()).first()
+        return (
+            db.session.query(User)
+            .filter_by(email=email.lower().strip())
+            .first()
+        )
 
     @staticmethod
     def get_user_by_username(username: str) -> User | None:
         """Get user by username."""
-        return db.session.query(User).filter_by(username=username.strip()).first()
+        return (
+            db.session.query(User).filter_by(username=username.strip()).first()
+        )
 
     @staticmethod
     def update_user_profile(
@@ -225,8 +246,13 @@ class AuthenticationService:
             AuthenticationService.log_activity(
                 user_id=user_id,
                 action="profile_updated",
-                metadata={"updated_fields": [k for k, v in locals(
-                ).items() if k != "user_id" and v is not None]},
+                metadata={
+                    "updated_fields": [
+                        k
+                        for k, v in locals().items()
+                        if k != "user_id" and v is not None
+                    ]
+                },
             )
 
             db.session.commit()
@@ -238,7 +264,9 @@ class AuthenticationService:
             return False, "An error occurred while updating your profile"
 
     @staticmethod
-    def change_password(user_id: int, current_password: str, new_password: str) -> tuple[bool, str | None]:
+    def change_password(
+        user_id: int, current_password: str, new_password: str
+    ) -> tuple[bool, str | None]:
         """Change user password."""
         try:
             user = db.session.query(User).filter_by(id=user_id).first()
@@ -255,7 +283,8 @@ class AuthenticationService:
             query = db.session.query(UserSession).filter_by(user_id=user_id)
             if current_session_id:
                 query = query.filter(
-                    UserSession.session_id != current_session_id)
+                    UserSession.session_id != current_session_id
+                )
             query.update({"is_active": False})
 
             # Log activity
@@ -278,16 +307,22 @@ class AuthenticationService:
         """Get user statistics for dashboard."""
         try:
             total_users = db.session.query(User).count()
-            active_users = db.session.query(
-                User).filter_by(is_active=True).count()
-            verified_users = db.session.query(
-                User).filter_by(is_verified=True).count()
-            admin_users = db.session.query(
-                User).filter_by(role="admin").count()
+            active_users = (
+                db.session.query(User).filter_by(is_active=True).count()
+            )
+            verified_users = (
+                db.session.query(User).filter_by(is_verified=True).count()
+            )
+            admin_users = (
+                db.session.query(User).filter_by(role="admin").count()
+            )
 
             recent_logins = (
                 db.session.query(User)
-                .filter(User.last_login_at >= datetime.now(timezone.utc) - timedelta(days=7))
+                .filter(
+                    User.last_login_at
+                    >= datetime.now(timezone.utc) - timedelta(days=7)
+                )
                 .count()
             )
 
@@ -325,8 +360,9 @@ class AuthenticationService:
                 resource_type=resource_type,
                 resource_id=resource_id,
                 ip_address=request.remote_addr if request else None,
-                user_agent=request.headers.get(
-                    "User-Agent") if request else None,
+                user_agent=(
+                    request.headers.get("User-Agent") if request else None
+                ),
                 metadata=metadata,
             )
             db.session.add(activity)

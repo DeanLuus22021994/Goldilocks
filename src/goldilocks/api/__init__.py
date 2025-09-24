@@ -25,8 +25,12 @@ try:
 except ImportError:
     _FALLBACK_APP_VERSION = "0.1.0"
 
-__all__: list[str] = ["API_VERSION", "ENDPOINTS",
-                      "create_error_response", "api_bp"]
+__all__: list[str] = [
+    "API_VERSION",
+    "ENDPOINTS",
+    "create_error_response",
+    "api_bp",
+]
 
 # API versioning and metadata
 API_VERSION = "v1"
@@ -77,12 +81,16 @@ def version() -> tuple[dict[str, Any], int]:
             if package_name == "Flask":
                 # Fallback to Flask module version
                 import flask
+
                 return getattr(flask, "__version__", "unknown")
             return "unknown"
 
     return {
         "app": _FALLBACK_APP_VERSION,
-        "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+        "python": (
+            f"{sys.version_info.major}.{sys.version_info.minor}."
+            f"{sys.version_info.micro}"
+        ),
         "flask": get_version("Flask"),
         "platform": platform.system().lower(),
     }, 200

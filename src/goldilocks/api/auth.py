@@ -1,4 +1,5 @@
-"""Authentication API blueprint for user registration, login, and profile management."""
+"""Authentication API blueprint for user registration, login, and profile
+management."""
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
@@ -34,7 +35,10 @@ def login() -> str | Response:
             flash("Successfully logged in!", "success")
 
             next_page = request.args.get("next")
-            return redirect(next_page) if next_page else redirect(url_for("auth.dashboard"))
+            if next_page:
+                return redirect(next_page)
+            else:
+                return redirect(url_for("auth.dashboard"))
         else:
             flash(error or "Invalid email or password", "error")
 
@@ -68,7 +72,10 @@ def register() -> str | Response:
         if user:
             login_user(user)
             AuthenticationService.log_activity("register", user.id)
-            flash("Account created successfully! Welcome to Goldilocks!", "success")
+            flash(
+                "Account created successfully! Welcome to Goldilocks!",
+                "success",
+            )
             return redirect(url_for("auth.dashboard"))
         else:
             flash(error or "Registration failed", "error")

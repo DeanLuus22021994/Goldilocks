@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import tempfile
 from unittest.mock import patch
 
 from flask import Flask
 from flask.testing import FlaskClient
+from flask_login import current_user
 
 from goldilocks.core.app_factory import (
     create_app,
@@ -14,6 +16,7 @@ from goldilocks.core.app_factory import (
     setup_logging,
     setup_request_handlers,
 )
+from goldilocks.models.database import User, db
 
 
 class TestAppFactory:
@@ -53,8 +56,6 @@ class TestAppFactory:
         app = create_app("testing")
 
         with app.app_context():
-            from goldilocks.models.database import db
-
             # Database should be initialized
             assert db is not None
             assert hasattr(db, 'create_all')
@@ -106,8 +107,6 @@ class TestSetupFunctions:
         setup_logging(app)
 
         # Logging should be configured
-        import logging
-
         logger = logging.getLogger("goldilocks")
         assert logger.level == logging.INFO
 
@@ -248,8 +247,6 @@ class TestApplicationIntegration:
         app = create_app("testing")
 
         with app.app_context():
-            from goldilocks.models.database import User, db
-
             # Should be able to create tables
             db.create_all()
 
@@ -278,8 +275,6 @@ class TestApplicationIntegration:
         app = create_app("testing")
 
         with app.app_context():
-            from flask_login import current_user
-
             # Should have anonymous user by default
             assert current_user.is_anonymous
 

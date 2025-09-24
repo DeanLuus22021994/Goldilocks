@@ -5,6 +5,8 @@ from __future__ import annotations
 from flask import Flask
 from flask.testing import FlaskClient
 
+from goldilocks.api import API_VERSION, ENDPOINTS, create_error_response
+
 
 class TestAPIEndpoints:
     """Test suite for core API endpoints."""
@@ -111,8 +113,6 @@ class TestAPIUtilities:
 
     def test_create_error_response_basic(self) -> None:
         """Test creating basic error response."""
-        from goldilocks.api import create_error_response
-
         response = create_error_response("Test error", 400)
 
         expected = {
@@ -124,8 +124,6 @@ class TestAPIUtilities:
 
     def test_create_error_response_with_details(self) -> None:
         """Test creating error response with details."""
-        from goldilocks.api import create_error_response
-
         details = {"field": "email", "reason": "invalid format"}
         response = create_error_response("Validation error", 422, details)
 
@@ -139,8 +137,6 @@ class TestAPIUtilities:
 
     def test_create_error_response_defaults(self) -> None:
         """Test error response with default parameters."""
-        from goldilocks.api import create_error_response
-
         response = create_error_response("Default error")
 
         assert response["status_code"] == 400
@@ -148,8 +144,6 @@ class TestAPIUtilities:
 
     def test_api_constants_exist(self) -> None:
         """Test that API constants are properly defined."""
-        from goldilocks.api import API_VERSION, ENDPOINTS
-
         assert isinstance(API_VERSION, str)
         assert isinstance(ENDPOINTS, dict)
 

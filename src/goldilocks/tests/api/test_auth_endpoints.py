@@ -175,7 +175,7 @@ class TestAuthenticationEndpoints:
         # Should redirect to login when not authenticated
         assert response.status_code == 302
 
-    def _get_csrf_token(self, client: FlaskClient, endpoint: str) -> str:
+    def _get_csrf_token(self, _client: FlaskClient, _endpoint: str) -> str:
         """Helper method to get CSRF token from a form page."""
         # In a real implementation, this would parse the HTML for the CSRF
         # token
