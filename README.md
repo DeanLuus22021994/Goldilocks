@@ -47,6 +47,11 @@ Static analysis
 - mypy .
 - pre-commit run --all-files (black, isort, flake8, mypy, pyupgrade)
 
+Environment cleanup
+
+- python clean.py (removes Python cache, pytest cache, mypy cache, temp files)
+- Use this to clear IDE errors caused by stale cache files
+
 VS Code tasks
 
 - Run Flask (port 9000)
