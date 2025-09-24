@@ -8,9 +8,9 @@ ARG TARGETPLATFORM
 
 # Set environment variables for security and performance
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    PATH="/app/.local/bin:$PATH"
+  PYTHONUNBUFFERED=1 \
+  PYTHONPATH=/app \
+  PATH="/app/.local/bin:$PATH"
 
 # Install system dependencies with cache mount - minimal security packages
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
