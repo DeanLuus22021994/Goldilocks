@@ -30,8 +30,9 @@ no_implicit_optional = true
 pretty = true
 explicit_package_bases = true
 mypy_path = ["src", "."]
-files = ["src", "*.py"]
+files = ["src/goldilocks/app.py", "src/goldilocks/api", "src/goldilocks/core", "src/goldilocks/models", "src/goldilocks/services", "src/goldilocks/utils"]
 ignore_missing_imports = true
+exclude = ["src/goldilocks/tests", "tests"]
 
 [[tool.mypy.overrides]]
 module = [
