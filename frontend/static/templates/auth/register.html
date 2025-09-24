@@ -1,60 +1,130 @@
-<!DOCTYPE html>
+{% extends "layouts/clean.html" %}<!DOCTYPE html>
+
 <html lang="en">
-  <head>
+
+{% block title %}Create Account - Goldilocks{% endblock %}  <head>
+
     <meta charset="utf-8" />
-    <title>Register - Goldilocks</title>
-    <link rel="stylesheet" href="/static/css/variables.css" />
-    <link rel="stylesheet" href="/static/css/base.css" />
-    <link rel="stylesheet" href="/static/css/components.css" />
-    <link rel="stylesheet" href="/static/css/buttons.css" />
-  </head>
-  <body>
-    <div class="container">
-      <h1>Create Account</h1>
-      <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-          {{ form.full_name.label }} {{ form.full_name() }} {% if
-          form.full_name.errors %}
-          <div class="form-error">{{ form.full_name.errors[0] }}</div>
-          {% endif %}
+
+{% block content %}    <title>Register - Goldilocks</title>
+
+  <div class="auth-container">    <link rel="stylesheet" href="/static/css/variables.css" />
+
+    <h1 class="auth-title">Create Your Account</h1>    <link rel="stylesheet" href="/static/css/base.css" />
+
+    <p class="auth-description">Join Goldilocks today for optimal balance</p>    <link rel="stylesheet" href="/static/css/components.css" />
+
+        <link rel="stylesheet" href="/static/css/buttons.css" />
+
+    <form method="POST" action="/auth/register" class="form form--large">  </head>
+
+        {{ form.hidden_tag() }}  <body>
+
+            <div class="container">
+
+        <div class="form-group">      <h1>Create Account</h1>
+
+            <label for="{{ form.full_name.id }}" class="form-label">Full Name</label>      <form method="POST">
+
+            {{ form.full_name(class="form-input", placeholder="Enter your full name", required=true) }}        {{ form.hidden_tag() }}
+
+            {% if form.full_name.errors %}        <div class="form-group">
+
+                <div class="form-error">{{ form.full_name.errors[0] }}</div>          {{ form.full_name.label }} {{ form.full_name() }} {% if
+
+            {% endif %}          form.full_name.errors %}
+
+        </div>          <div class="form-error">{{ form.full_name.errors[0] }}</div>
+
+                  {% endif %}
+
+        <div class="form-group">        </div>
+
+            <label for="{{ form.username.id }}" class="form-label">Username</label>        <div class="form-group">
+
+            {{ form.username(class="form-input", placeholder="Choose a username", required=true) }}          {{ form.username.label }} {{ form.username() }} {% if
+
+            {% if form.username.errors %}          form.username.errors %}
+
+                <div class="form-error">{{ form.username.errors[0] }}</div>          <div class="form-error">{{ form.username.errors[0] }}</div>
+
+            {% endif %}          {% endif %}
+
+        </div>        </div>
+
+                <div class="form-group">
+
+        <div class="form-group">          {{ form.email.label }} {{ form.email() }} {% if form.email.errors %}
+
+            <label for="{{ form.email.id }}" class="form-label">Email</label>          <div class="form-error">{{ form.email.errors[0] }}</div>
+
+            {{ form.email(class="form-input", placeholder="Enter your email", required=true) }}          {% endif %}
+
+            {% if form.email.errors %}        </div>
+
+                <div class="form-error">{{ form.email.errors[0] }}</div>        <div class="form-group">
+
+            {% endif %}          {{ form.password.label }} {{ form.password() }} {% if
+
+        </div>          form.password.errors %}
+
+                  <div class="form-error">{{ form.password.errors[0] }}</div>
+
+        <div class="form-group">          {% endif %}
+
+            <label for="{{ form.password.id }}" class="form-label">Password</label>        </div>
+
+            {{ form.password(class="form-input", placeholder="Create a strong password", required=true) }}        <div class="form-group">
+
+            {% if form.password.errors %}          {{ form.confirm_password.label }} {{ form.confirm_password() }} {% if
+
+                <div class="form-error">{{ form.password.errors[0] }}</div>          form.confirm_password.errors %}
+
+            {% endif %}          <div class="form-error">{{ form.confirm_password.errors[0] }}</div>
+
+        </div>          {% endif %}
+
+                </div>
+
+        <div class="form-group">        <div class="form-group">
+
+            <label for="{{ form.confirm_password.id }}" class="form-label">Confirm Password</label>          {{ form.terms_accepted() }} {{ form.terms_accepted.label }} {% if
+
+            {{ form.confirm_password(class="form-input", placeholder="Confirm your password", required=true) }}          form.terms_accepted.errors %}
+
+            {% if form.confirm_password.errors %}          <div class="form-error">{{ form.terms_accepted.errors[0] }}</div>
+
+                <div class="form-error">{{ form.confirm_password.errors[0] }}</div>          {% endif %}
+
+            {% endif %}        </div>
+
+        </div>        <button type="submit" class="btn btn-primary">Create Account</button>
+
+              </form>
+
+        <div class="form-group form-group--checkbox">      <p>
+
+            {{ form.terms_accepted(class="form-checkbox") }}        <a href="{{ url_for('auth.login') }}"
+
+            <label for="{{ form.terms_accepted.id }}" class="form-label form-label--checkbox">          >Already have an account? Login here</a
+
+                I agree to the <a href="/terms" class="auth-link">Terms of Service</a>        >
+
+            </label>      </p>
+
+            {% if form.terms_accepted.errors %}    </div>
+
+                <div class="form-error">{{ form.terms_accepted.errors[0] }}</div>  </body>
+
+            {% endif %}</html>
+
         </div>
-        <div class="form-group">
-          {{ form.username.label }} {{ form.username() }} {% if
-          form.username.errors %}
-          <div class="form-error">{{ form.username.errors[0] }}</div>
-          {% endif %}
-        </div>
-        <div class="form-group">
-          {{ form.email.label }} {{ form.email() }} {% if form.email.errors %}
-          <div class="form-error">{{ form.email.errors[0] }}</div>
-          {% endif %}
-        </div>
-        <div class="form-group">
-          {{ form.password.label }} {{ form.password() }} {% if
-          form.password.errors %}
-          <div class="form-error">{{ form.password.errors[0] }}</div>
-          {% endif %}
-        </div>
-        <div class="form-group">
-          {{ form.confirm_password.label }} {{ form.confirm_password() }} {% if
-          form.confirm_password.errors %}
-          <div class="form-error">{{ form.confirm_password.errors[0] }}</div>
-          {% endif %}
-        </div>
-        <div class="form-group">
-          {{ form.terms_accepted() }} {{ form.terms_accepted.label }} {% if
-          form.terms_accepted.errors %}
-          <div class="form-error">{{ form.terms_accepted.errors[0] }}</div>
-          {% endif %}
-        </div>
-        <button type="submit" class="btn btn-primary">Create Account</button>
-      </form>
-      <p>
-        <a href="{{ url_for('auth.login') }}"
-          >Already have an account? Login here</a
-        >
-      </p>
+
+        <button type="submit" class="btn btn--primary btn--large">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Already have an account? <a href="/auth/login" class="auth-link">Sign in here</a></p>
     </div>
-  </body>
-</html>
+  </div>
+{% endblock %}
