@@ -54,12 +54,12 @@ class TestAPIEndpoints:
         data = response.get_json()
 
         python_version = data["python"]
-        # Should be in format "3.14.0" (rc versions may have additional
-        # parts like "rc3")
+        # Should be in format "3.13.7" or "3.14.0" (rc versions may have
+        # additional parts like "rc3")
         parts = python_version.split(".")
         assert len(parts) >= 3  # Allow for versions like 3.14.0rc3
         assert parts[0] == "3"  # Major version
-        assert parts[1] == "14.0"  # Minor version
+        assert parts[1].isdigit()  # Minor version should be numeric
         # Patch version may contain rc/alpha/beta suffixes
         assert parts[2][0].isdigit()  # Should start with a digit
 
