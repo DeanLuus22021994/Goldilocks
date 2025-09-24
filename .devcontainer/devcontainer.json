@@ -1,24 +1,24 @@
 {
   "name": "Goldilocks Development Environment",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
-  "workspaceFolder": "/workspaces/Goldilocks",
-  "remoteUser": "vscode",
+  "build": {
+    "context": "..",
+    "dockerfile": "infrastructure/docker/tools.Dockerfile",
+    "target": "tools"
+  },
+  "workspaceFolder": "/workspace",
+  "remoteUser": "app",
   "updateRemoteUserUID": true,
 
-  // Optimized container environment variables
+  // Development environment variables
   "containerEnv": {
-    "GOLDILOCKS_CONFIG_DIR": "/workspaces/Goldilocks/.devcontainer",
-    "UV_CACHE_DIR": "/home/vscode/.cache/uv",
-    "PIP_CACHE_DIR": "/home/vscode/.cache/pip",
-    "NPM_CONFIG_CACHE": "/home/vscode/.npm",
-    "YARN_CACHE_FOLDER": "/home/vscode/.cache/yarn",
-    "PIP_DISABLE_PIP_VERSION_CHECK": "1",
-    "PIP_NO_INPUT": "1",
-    "PYTHONUNBUFFERED": "1",
-    "PYTHONDONTWRITEBYTECODE": "0",
     "FLASK_APP": "src/goldilocks/app.py",
     "FLASK_ENV": "development",
-    "FLASK_DEBUG": "1"
+    "FLASK_DEBUG": "1",
+    "PYTHONPATH": "/workspace/src",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "0",
+    "PIP_CACHE_DIR": "/home/app/.cache/pip",
+    "NPM_CONFIG_CACHE": "/home/app/.npm"
   },
 
   // Remote environment variables from host
@@ -28,17 +28,15 @@
 
   // Volume mounts for persistent caching and performance
   "mounts": [
-    "source=goldilocks-venv,target=${containerWorkspaceFolder}/.venv,type=volume",
-    "source=goldilocks-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
-    "source=goldilocks-bytecode,target=${containerWorkspaceFolder}/__pycache__,type=volume",
-    "source=vscode-server-cache,target=/home/vscode/.vscode-server,type=volume",
-    "source=vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume",
-    "source=uv-cache,target=/home/vscode/.cache/uv,type=volume",
-    "source=pip-cache,target=/home/vscode/.cache/pip,type=volume",
-    "source=npm-cache,target=/home/vscode/.npm,type=volume",
-    "source=pytest-cache,target=${containerWorkspaceFolder}/.pytest_cache,type=volume",
-    "source=mypy-cache,target=${containerWorkspaceFolder}/.mypy_cache,type=volume",
-    "source=ruff-cache,target=${containerWorkspaceFolder}/.ruff_cache,type=volume"
+    "source=goldilocks-venv,target=/opt/venv,type=volume",
+    "source=goldilocks-node-modules,target=/workspace/node_modules,type=volume",
+    "source=goldilocks-bytecode,target=/workspace/__pycache__,type=volume",
+    "source=pip-cache,target=/home/app/.cache/pip,type=volume",
+    "source=npm-cache,target=/home/app/.npm,type=volume",
+    "source=pytest-cache,target=/workspace/.pytest_cache,type=volume",
+    "source=mypy-cache,target=/workspace/.mypy_cache,type=volume",
+    "source=ruff-cache,target=/workspace/.ruff_cache,type=volume",
+    "source=vscode-server-cache,target=/home/app/.vscode-server,type=volume"
   ],
 
   // Minimal host requirements
@@ -49,15 +47,7 @@
     "gpu": "optional"
   },
 
-  // Minimal features - only essential tools
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
-      "nodeGypDependencies": false,
-      "installYarnUsingApt": false,
-      "nvmVersion": "none"
-    }
-  },
+  // No additional features needed - everything is in the Docker image
 
   "customizations": {
     "vscode": {
@@ -72,7 +62,7 @@
         "christian-kohler.path-intellisense"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspaces/Goldilocks/.venv/bin/python",
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "python.terminal.activateEnvironment": true,
         "python.analysis.typeCheckingMode": "strict",
         "[python]": {
@@ -108,14 +98,14 @@
         },
         "terminal.integrated.env.linux": {
           "PYTHONUNBUFFERED": "1",
-          "PYTHONDONTWRITEBYTECODE": "0"
+          "PYTHONDONTWRITEBYTECODE": "0",
+          "PATH": "/opt/venv/bin:${env:PATH}"
         }
       }
     }
   },
 
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
-  "initializeCommand": "bash .devcontainer/scripts/generate-lock.sh",
   "updateContentCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
   "forwardPorts": [9000],

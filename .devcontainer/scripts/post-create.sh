@@ -5,31 +5,24 @@ set -e
 
 echo "🚀 Starting optimized Goldilocks setup..."
 
-# Set up workspace ownership (essential for volume mounts)
-sudo chown -R vscode:vscode "$(pwd)"
-mkdir -p "/home/vscode/.cache/pip" "/home/vscode/.npm"
-sudo chown -R vscode:vscode "/home/vscode/.cache" "/home/vscode/.npm"
-
 # Configure Git safely
 git config --global --add safe.directory "$(pwd)"
 
-# Create virtual environment if missing
-if [ ! -f ".venv/bin/activate" ]; then
-    python -m venv .venv --upgrade-deps
-    sudo chown -R vscode:vscode .venv
+# Activate virtual environment (already created in Docker build)
+export PATH="/opt/venv/bin:$PATH"
+
+# Verify environment
+echo "Python: $(python --version)"
+echo "Pip: $(pip --version)"
+echo "Flask: $(flask --version)"
+
+# Set up pre-commit hooks if not already done
+if [ ! -f ".git/hooks/pre-commit" ]; then
+    pre-commit install --install-hooks
 fi
 
-# Install Python dependencies
-# shellcheck source=/dev/null
-source .venv/bin/activate
-pip install -r requirements.txt
+# Ensure cache directories exist
+mkdir -p "/home/app/.cache/pip" "/home/app/.npm"
 
-# Set up pre-commit hooks
-pre-commit install --install-hooks
-
-# Set up Node.js environment if needed
-if [ -f "package.json" ]; then
-    npm ci
-fi
-
-echo "✅ Goldilocks setup complete!"
+echo "✅ Goldilocks development environment ready!"
+echo "🔧 Run 'flask run --host 0.0.0.0 --port 9000' to start the development server"

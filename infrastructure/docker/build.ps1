@@ -43,7 +43,7 @@ function Build-Stage {
 
   $dockerCmd += "."
 
-  & $dockerCmd
+  & $dockerCmd[0] $dockerCmd[1..($dockerCmd.Length - 1)]
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to build $StageName"
     exit 1
