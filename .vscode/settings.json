@@ -1,6 +1,6 @@
 {
   // ------------- Python Project Configuration ----------------
-  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.defaultInterpreterPath": "./venv-3.13/bin/python",
   "python.terminal.activateEnvironment": false,
   "python.analysis.autoSearchPaths": true,
   "python.analysis.extraPaths": [

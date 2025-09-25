@@ -45,11 +45,18 @@ def setup_logging(app: Flask) -> None:
     log_format = "%(asctime)s %(levelname)s %(name)s %(message)s"
     formatter = logging.Formatter(log_format)
     try:
-        jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
+        # Use the new import path for pythonjsonlogger
+        jsonlogger_mod = importlib.import_module("pythonjsonlogger.json")
         json_formatter = jsonlogger_mod.JsonFormatter
         formatter = json_formatter(log_format)
     except (ImportError, AttributeError):
-        pass
+        # Fallback to old import if new one is not available
+        try:
+            jsonlogger_mod = importlib.import_module("pythonjsonlogger.jsonlogger")
+            json_formatter = jsonlogger_mod.JsonFormatter
+            formatter = json_formatter(log_format)
+        except (ImportError, AttributeError):
+            pass
 
     handler.setFormatter(formatter)
 
@@ -98,7 +105,7 @@ def setup_request_handlers(app: Flask) -> None:
     def add_correlation_id_and_timing() -> None:
         """Add correlation ID and start timing for each request."""
         # Use provided X-Request-ID header or generate new UUID
-        g.correlation_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
+        g.correlation_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         g.start_time = time.perf_counter()  # More precise timing
 
     @app.after_request
