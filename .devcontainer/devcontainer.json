@@ -1,11 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Goldilocks DevContainer",
-  "dockerComposeFile": [
-    "../infrastructure/docker/docker-compose.yml",
-    "docker-compose.devcontainer.yml",
-    "docker-compose.devcontainer.dev.yml"
-  ],
+  "dockerComposeFile": "../infrastructure/docker/docker-compose.yml",
   "service": "goldilocks-backend",
   "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "root",

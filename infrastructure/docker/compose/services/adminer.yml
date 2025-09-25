@@ -38,9 +38,6 @@ services:
         condition: service_healthy
         restart: true
 
-    # STRUCTURED: Profile management
-    profiles: ["dev", "admin", "database"]
-
     # MODERNIZE: Health monitoring using PHP
     healthcheck:
       test: ["CMD", "php", "-r", "echo file_get_contents('http://localhost:8080') ? 'ok' : exit(1);"]

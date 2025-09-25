@@ -82,5 +82,3 @@ services:
 
     # SECURITY: Non-root execution
     user: "999:999"  # mysql user
-
-    profiles: ["dev", "prod", "database"]

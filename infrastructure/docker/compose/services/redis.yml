@@ -40,9 +40,6 @@ services:
     networks:
       - goldilocks-network
 
-    # STRUCTURED: Profile management
-    profiles: ["dev", "prod", "cache"]
-
     # MODERNIZE: Health monitoring
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
