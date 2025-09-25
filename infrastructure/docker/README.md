@@ -9,12 +9,13 @@ This infrastructure implements a **modular, standardized Docker Compose architec
 ```
 infrastructure/docker/
 ├── 🚀 docker-compose.yml           # Main composition with includes
-├── 📂 compose/                     # Modular compose definitions
+├── � .env                         # Docker infrastructure configuration
+├── �📂 compose/                     # Modular compose definitions
 │   ├── shared/                     # 🔧 Shared infrastructure
 │   │   ├── networks.yml            # Network definitions
 │   │   ├── volumes.yml             # Volume management
 │   │   ├── secrets.yml             # Docker secrets
-│   │   └── environment.env         # Centralized config
+│   │   └── environment.env         # Application runtime configuration
 │   ├── services/                   # 🎯 Service definitions
 │   │   ├── database.yml            # MariaDB service
 │   │   ├── backend.yml             # Python Flask app
@@ -66,6 +67,61 @@ infrastructure/docker/
 - **Production**: Security hardening, resource optimization, monitoring
 - **CI/CD**: Pipeline-optimized builds and testing
 - **Edge Computing**: Resource-constrained deployment optimization
+
+## 🔧 Environment Configuration
+
+### **Two-Tier Configuration Architecture**
+
+Following **DRY** and **STRUCTURED** principles, the infrastructure uses separate configuration files for different concerns:
+
+#### **Docker Infrastructure (`.env`)**
+
+**Purpose**: Docker Compose build and infrastructure settings
+
+```bash
+# Docker build configuration
+PYTHON_VERSION=3.12-slim
+DOCKER_BUILDKIT=1
+TARGETPLATFORM=linux/amd64
+
+# Service ports and paths
+BACKEND_PORT=9000
+ADMINER_PORT=8080
+DATA_PATH=./data
+
+# Container configuration
+MARIADB_ROOT_PASSWORD=secure-password
+MEMORY_LIMIT=512m
+```
+
+#### **Application Runtime (`compose/shared/environment.env`)**
+
+**Purpose**: Application runtime environment variables
+
+```bash
+# Flask application settings
+FLASK_DEBUG=1
+LOG_LEVEL=DEBUG
+API_DOCS_ENABLED=true
+
+# Database and caching
+DATABASE_URL=mysql+pymysql://...
+CACHE_TYPE=redis
+SESSION_TYPE=redis
+
+# Security and features
+SECRET_KEY=dev-secret-key
+FEATURE_PROFILER=true
+```
+
+### **Configuration Hierarchy**
+
+```
+Backend Service Environment:
+├── 📄 .env                        # Docker & infrastructure
+├── 📄 shared/environment.env      # Application runtime
+└── 🔧 Service environment:        # Container-specific overrides
+```
 
 ## 🚀 Quick Start
 

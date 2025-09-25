@@ -64,44 +64,25 @@ services:
       - goldilocks-build-cache:/tmp/build-cache
       - goldilocks-bytecode-cache:/tmp/bytecode-cache
 
-    # HIGH COMPATIBILITY: Environment configuration
+    # HIGH COMPATIBILITY: Environment configuration from shared file
+    env_file:
+      - ../shared/environment.env
+
     environment:
-      # Application settings
-      FLASK_APP: ${FLASK_APP:-src.goldilocks.app}
-      FLASK_ENV: ${FLASK_ENV:-development}
-      FLASK_DEBUG: ${FLASK_DEBUG:-1}
-
-      # Python configuration
-      PYTHONPATH: ${PYTHONPATH:-/workspaces/Goldilocks/src}
-      PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
-      PYTHONDONTWRITEBYTECODE: ${PYTHONDONTWRITEBYTECODE:-0}
-      PYTHONOPTIMIZE: ${PYTHONOPTIMIZE:-0}
-
-      # Development tools
+      # Development cache directories (container-specific)
       PIP_CACHE_DIR: /tmp/pip-cache
       PRE_COMMIT_HOME: /tmp/pre-commit-cache
       MYPY_CACHE_DIR: /tmp/mypy-cache
       RUFF_CACHE_DIR: /tmp/ruff-cache
       PYTEST_CACHE_DIR: /tmp/pytest-cache
 
-      # Build optimization
+      # Build optimization (container-specific)
       DOCKER_BUILDKIT: 1
       BUILDKIT_PROGRESS: plain
       BUILDX_EXPERIMENTAL: 1
 
-      # Database connection
-      DATABASE_URL: mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@goldilocks-db:3306/${MARIADB_DATABASE}
-      DB_HOST: goldilocks-db
-      DB_PORT: 3306
-      DB_NAME: ${MARIADB_DATABASE}
-      DB_USER: ${MARIADB_USER}
-      DB_PASSWORD: ${MARIADB_PASSWORD}
-
-      # Security
-      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
-
-      # Performance monitoring
-      FLASK_PROFILER_ENABLED: ${FLASK_PROFILER_ENABLED:-false}
+      # Performance monitoring (development)
+      FLASK_PROFILER_ENABLED: ${FLASK_PROFILER_ENABLED:-true}
       FLASK_PROFILER_PATH: ${FLASK_PROFILER_PATH:-/tmp/profiler}
 
     # STRUCTURED: Port configuration
