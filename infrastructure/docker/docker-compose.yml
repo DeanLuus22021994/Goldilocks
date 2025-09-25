@@ -5,6 +5,14 @@
 # MODERNIZE: Latest Docker Compose specification
 version: "3.9"
 
+# STRUCTURED: Environment-specific configurations available in compose/overrides/
+# Usage Examples:
+#   Development: docker-compose -f docker-compose.yml -f compose/overrides/development.yml up -d
+#   Production:  docker-compose -f docker-compose.yml -f compose/overrides/production.yml up -d
+#   Testing:     docker-compose -f docker-compose.yml -f compose/overrides/testing.yml up -d
+#   CI/CD:       docker-compose -f docker-compose.yml -f compose/overrides/ci-cd.yml run --rm goldilocks-app
+#   Edge:        docker-compose -f docker-compose.yml -f compose/overrides/edge.yml up -d
+
 # STRUCTURED: Include service definitions following SRP
 include:
   # Core application services

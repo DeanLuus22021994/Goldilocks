@@ -1,0 +1,183 @@
+# ==============================================================================
+# Goldilocks CI/CD Environment Overrides
+# IDEMPOTENCY - Reproducible builds and tests
+# LIGHTWEIGHT - Optimized for automated pipelines
+# MODERNIZE - Container registry and deployment ready
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  goldilocks-app:
+    # CI/CD build configurations
+    image: ${DOCKER_REGISTRY:-goldilocks}:${BUILD_TAG:-latest}
+
+    # CI/CD environment configurations
+    environment:
+      - FLASK_ENV=testing
+      - FLASK_DEBUG=0
+      - TESTING=1
+      - CI=true
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONHASHSEED=0  # Reproducible builds
+      - LOG_LEVEL=ERROR
+      - LOG_FORMAT=json
+      - DATABASE_URL=postgresql://ci_user:ci_password@goldilocks-ci-db:5432/goldilocks_ci
+      - CACHE_TYPE=simple
+      - MAIL_SUPPRESS_SEND=true
+      - WTF_CSRF_ENABLED=false
+      - ENABLE_METRICS=false
+      - BUILD_NUMBER=${BUILD_NUMBER:-unknown}
+      - COMMIT_SHA=${COMMIT_SHA:-unknown}
+      - BRANCH_NAME=${BRANCH_NAME:-unknown}
+
+    # CI/CD command (comprehensive testing)
+    command: >
+      bash -c "
+      set -e &&
+      echo 'Starting CI/CD test suite...' &&
+      python -m pytest /app/tests
+        --cov=/app/src
+        --cov-report=xml:/app/coverage.xml
+        --cov-report=term-missing
+        --junitxml=/app/test-results.xml
+        --tb=short
+        --maxfail=5
+        -v &&
+      echo 'Running security checks...' &&
+      python -m bandit -r /app/src -f json -o /app/security-report.json &&
+      echo 'Running type checks...' &&
+      python -m mypy /app/src --junit-xml=/app/mypy-results.xml &&
+      echo 'CI/CD pipeline completed successfully!'
+      "
+
+    # CI/CD resource limits (optimized for CI runners)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+
+    # CI/CD volumes (for reports and artifacts)
+    volumes:
+      - ci-reports:/app/reports
+      - ci-coverage:/app/coverage
+      - ../../tests:/app/tests:ro
+      - ../../src:/app/src:ro
+
+    # CI/CD dependencies
+    depends_on:
+      goldilocks-ci-db:
+        condition: service_healthy
+
+    networks:
+      - goldilocks-ci-network
+
+  # PostgreSQL for CI/CD (faster than MariaDB for testing)
+  goldilocks-ci-db:
+    image: postgres:16-alpine
+    container_name: goldilocks-ci-db
+
+    # CI/CD database configurations
+    environment:
+      - POSTGRES_DB=goldilocks_ci
+      - POSTGRES_USER=ci_user
+      - POSTGRES_PASSWORD=ci_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+
+    # CI/CD database configuration (speed optimized)
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c max_connections=50
+      -c fsync=off
+      -c synchronous_commit=off
+      -c checkpoint_timeout=1h
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c log_statement=none
+
+    # CI/CD database volumes (ephemeral)
+    volumes:
+      - ci-db-data:/var/lib/postgresql/data
+
+    # CI/CD resource limits (minimal)
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+    # Fast health check for CI/CD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ci_user -d goldilocks_ci"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    networks:
+      - goldilocks-ci-network
+
+  # Redis for CI/CD caching tests
+  goldilocks-ci-redis:
+    image: redis:7-alpine
+    container_name: goldilocks-ci-redis
+
+    # Redis configuration for CI/CD
+    command: >
+      redis-server
+      --maxmemory 32mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+
+    # CI/CD resource limits (minimal)
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: '0.1'
+        reservations:
+          memory: 32M
+          cpus: '0.05'
+
+    # Health check for Redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+    networks:
+      - goldilocks-ci-network
+
+# CI/CD-specific volumes (ephemeral, optimized for pipelines)
+volumes:
+  ci-db-data:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=128m
+  ci-reports:
+    driver: local
+    name: goldilocks-ci-reports-${BUILD_NUMBER:-latest}
+  ci-coverage:
+    driver: local
+    name: goldilocks-ci-coverage-${BUILD_NUMBER:-latest}
+
+# CI/CD-specific networks
+networks:
+  goldilocks-ci-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.40.0.0/16

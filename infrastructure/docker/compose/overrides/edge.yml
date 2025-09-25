@@ -1,0 +1,151 @@
+# ==============================================================================
+# Goldilocks Edge Computing Environment Overrides
+# LIGHTWEIGHT - Minimal resource usage for edge devices
+# HIGH COMPATIBILITY - IoT and edge device optimizations
+# MODERNIZE - Latest edge computing patterns
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  goldilocks-app:
+    # Edge computing environment configurations
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONOPTIMIZE=2
+      - LOG_LEVEL=WARNING
+      - LOG_FORMAT=json
+      - ENABLE_METRICS=true
+      - ENABLE_PROFILER=false
+      - EDGE_MODE=true
+      - CACHE_TYPE=simple  # No external cache for edge
+      - SESSION_TYPE=filesystem  # Local session storage
+
+    # Edge computing ports (minimal exposure)
+    ports:
+      - "9000:9000"
+
+    # Edge volumes (local storage optimized)
+    volumes:
+      - edge-data:/app/data
+      - edge-cache:/tmp/goldilocks-cache
+      - edge-logs:/app/logs
+
+    # Edge computing resource limits (very constrained)
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+      # Edge restart policy (resilient)
+      restart_policy:
+        condition: unless-stopped
+        delay: 10s
+        max_attempts: 5
+        window: 300s
+
+    # Edge health check (lightweight)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 2
+      start_period: 30s
+
+  goldilocks-db:
+    # Use SQLite for edge computing (no separate database container)
+    profiles:
+      - with-database  # Only when explicitly needed
+
+    # Edge database configurations (if used)
+    environment:
+      - MARIADB_ROOT_PASSWORD=edge_root_password
+      - MARIADB_DATABASE=goldilocks_edge
+      - MARIADB_USER=edge_user
+      - MARIADB_PASSWORD=edge_password
+
+    # Edge database configuration (memory optimized)
+    command: >
+      --skip-general-log
+      --skip-slow-query-log
+      --innodb-buffer-pool-size=32M
+      --innodb-log-file-size=8M
+      --innodb-flush-log-at-trx-commit=2
+      --max-connections=10
+      --query-cache-size=8M
+      --table-open-cache=64
+      --thread-cache-size=4
+
+    # Edge database volumes (local storage)
+    volumes:
+      - edge-db-data:/var/lib/mysql
+
+    # Edge database resource limits (very constrained)
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+    # Edge health check (lightweight)
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 60s
+      timeout: 10s
+      retries: 2
+      start_period: 45s
+
+  # No Adminer in edge computing
+  goldilocks-adminer:
+    profiles:
+      - debug
+
+# Edge computing volumes (local, persistent)
+volumes:
+  edge-data:
+    driver: local
+    name: goldilocks-edge-data
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks-edge/data
+  edge-cache:
+    driver: local
+    name: goldilocks-edge-cache
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks-edge/cache
+  edge-logs:
+    driver: local
+    name: goldilocks-edge-logs
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks-edge/logs
+  edge-db-data:
+    driver: local
+    name: goldilocks-edge-db-data
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks-edge/database
+
+# Edge computing networks (minimal overhead)
+networks:
+  goldilocks-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450  # Optimized for edge networks
+    ipam:
+      config:
+        - subnet: 172.50.0.0/24

@@ -1,0 +1,117 @@
+# ==============================================================================
+# Goldilocks Development Environment Overrides
+# HIGH COMPATIBILITY - Local development optimizations
+# MODERNIZE - Hot reload, debugging, and development tools
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  goldilocks-app:
+    # Development-specific configurations
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - TEMPLATES_AUTO_RELOAD=1
+      - SEND_FILE_MAX_AGE_DEFAULT=1
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=0  # Keep .pyc for debugging
+      - LOG_LEVEL=DEBUG
+      - LOG_FORMAT=colored
+      - ENABLE_PROFILER=true
+      - ENABLE_QUERY_PROFILER=true
+      - HOT_RELOAD=1
+
+    # Development ports (expose additional debugging ports)
+    ports:
+      - "9000:9000"  # Flask app
+      - "5555:5555"  # Debugger port
+      - "9090:9090"  # Metrics/monitoring
+
+    # Development volumes for hot reload
+    volumes:
+      - ../../src:/app/src:cached
+      - ../../frontend:/app/frontend:cached
+      - ../../tests:/app/tests:cached
+      - ../../.pre-commit-config.yaml:/app/.pre-commit-config.yaml:ro
+      - ../../pyproject.toml:/app/pyproject.toml:ro
+      - dev-cache:/tmp/goldilocks-cache
+      - pre-commit-cache:/home/app/.cache/pre-commit
+
+    # Development command with hot reload
+    command: ["bash", "/app/entrypoint-dev.sh"]
+
+    # Development resource limits (generous for development)
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '1.0'
+
+  goldilocks-db:
+    # Development database configurations
+    environment:
+      - MARIADB_ROOT_PASSWORD=goldilocks_root_dev_2024
+      - MARIADB_DATABASE=goldilocks_dev
+      - MARIADB_USER=goldilocks_dev_user
+      - MARIADB_PASSWORD=goldilocks_dev_pass_2024
+
+    # Development ports (expose database for external tools)
+    ports:
+      - "3306:3306"
+
+    # Development volumes (persistent data)
+    volumes:
+      - mariadb-dev-data:/var/lib/mysql
+      - ../../infrastructure/docker/mariadb-init:/docker-entrypoint-initdb.d:ro
+      - mariadb-dev-logs:/var/log/mysql
+
+    # Development MariaDB configuration
+    command: >
+      --general-log=1
+      --general-log-file=/var/log/mysql/general.log
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=1
+      --log-queries-not-using-indexes=1
+      --innodb-buffer-pool-size=256M
+      --innodb-log-file-size=64M
+      --max-connections=100
+
+  goldilocks-adminer:
+    # Development Adminer (always available)
+    ports:
+      - "8080:8080"
+
+    # Additional development environment variables
+    environment:
+      - ADMINER_DEFAULT_SERVER=goldilocks-db
+      - ADMINER_DESIGN=pepa-linha-dark
+      - ADMINER_PLUGINS=tables-filter tinymce
+
+# Development-specific volumes
+volumes:
+  mariadb-dev-data:
+    driver: local
+    name: goldilocks-mariadb-dev-data
+  mariadb-dev-logs:
+    driver: local
+    name: goldilocks-mariadb-dev-logs
+  dev-cache:
+    driver: local
+    name: goldilocks-dev-cache
+  pre-commit-cache:
+    driver: local
+    name: goldilocks-pre-commit-cache
+
+# Development-specific networks
+networks:
+  goldilocks-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1

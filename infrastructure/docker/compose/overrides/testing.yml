@@ -1,0 +1,143 @@
+# ==============================================================================
+# Goldilocks Testing Environment Overrides
+# IDEMPOTENCY - Reproducible test environments
+# LIGHTWEIGHT - Fast startup and teardown
+# MODERNIZE - CI/CD optimized configurations
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  goldilocks-app:
+    # Testing environment configurations
+    environment:
+      - FLASK_ENV=testing
+      - FLASK_DEBUG=0
+      - TESTING=1
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - LOG_LEVEL=WARNING
+      - LOG_FORMAT=json
+      - DATABASE_URL=sqlite:///:memory:
+      - CACHE_TYPE=simple
+      - MAIL_SUPPRESS_SEND=true
+      - WTF_CSRF_ENABLED=false
+      - SESSION_COOKIE_SECURE=false
+      - ENABLE_METRICS=false
+      - ENABLE_PROFILER=false
+
+    # Testing ports (minimal exposure)
+    ports:
+      - "9000:9000"
+
+    # Testing volumes (minimal, in-memory preferred)
+    volumes:
+      - test-cache:/tmp/goldilocks-cache
+      - ../../tests:/app/tests:ro
+      - ../../src:/app/src:ro
+
+    # Testing command with coverage
+    command: ["python", "-m", "pytest", "/app/tests", "--cov=/app/src", "--cov-report=xml", "--cov-report=term", "-v"]
+
+    # Testing resource limits (minimal for CI/CD)
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+    # Fast health check for testing
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+
+    # Testing dependencies
+    depends_on:
+      goldilocks-test-db:
+        condition: service_healthy
+
+  # Separate test database for isolation
+  goldilocks-test-db:
+    image: mariadb:11.4-noble
+    container_name: goldilocks-test-db
+
+    # Testing database configurations (minimal)
+    environment:
+      - MARIADB_ROOT_PASSWORD=test_root_password
+      - MARIADB_DATABASE=goldilocks_test
+      - MARIADB_USER=test_user
+      - MARIADB_PASSWORD=test_password
+      - MARIADB_RANDOM_ROOT_PASSWORD=no
+
+    # Testing database configuration (speed optimized)
+    command: >
+      --skip-general-log
+      --skip-slow-query-log
+      --innodb-buffer-pool-size=64M
+      --innodb-log-file-size=16M
+      --innodb-flush-log-at-trx-commit=0
+      --max-connections=50
+      --query-cache-size=0
+      --innodb-doublewrite=0
+      --innodb-flush-method=O_DIRECT_NO_FSYNC
+      --sync-binlog=0
+
+    # Testing database volumes (ephemeral)
+    volumes:
+      - test-db-data:/var/lib/mysql
+      - ../../infrastructure/docker/mariadb-init:/docker-entrypoint-initdb.d:ro
+
+    # Testing resource limits (minimal)
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+    # Fast health check for testing
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    networks:
+      - goldilocks-network
+
+  # No Adminer in testing environment
+  goldilocks-adminer:
+    profiles:
+      - debug
+
+# Testing-specific volumes (ephemeral, fast)
+volumes:
+  test-db-data:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=128m,uid=999,gid=999
+  test-cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=64m
+
+# Testing-specific networks (simple)
+networks:
+  goldilocks-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

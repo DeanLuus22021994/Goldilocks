@@ -1,0 +1,178 @@
+# ==============================================================================
+# Goldilocks Production Environment Overrides
+# LIGHTWEIGHT - Minimal resources, maximum performance
+# HIGH COMPATIBILITY - Production-ready configurations
+# MODERNIZE - Latest security and monitoring practices
+# ==============================================================================
+
+version: '3.9'
+
+services:
+  goldilocks-app:
+    # Production environment configurations
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONOPTIMIZE=2
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - ENABLE_METRICS=true
+      - ENABLE_PROFILER=false
+      - ENABLE_QUERY_PROFILER=false
+
+    # Production ports (only expose application port)
+    ports:
+      - "9000:9000"
+
+    # Minimal production volumes (no source code mounting)
+    volumes:
+      - prod-uploads:/app/uploads
+      - prod-logs:/app/logs
+      - prod-cache:/tmp/goldilocks-cache
+
+    # Production command
+    command: ["bash", "/app/entrypoint-prod.sh"]
+
+    # Production resource limits (optimized for efficiency)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+      # Production restart policy
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+    # Production health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  goldilocks-db:
+    # Production database configurations
+    environment:
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/mariadb_root_password
+      - MARIADB_DATABASE=goldilocks
+      - MARIADB_USER=goldilocks_app
+      - MARIADB_PASSWORD_FILE=/run/secrets/mariadb_app_password
+
+    # Production ports (internal only, not exposed)
+    # ports: [] # No external access in production
+
+    # Production volumes (persistent and optimized)
+    volumes:
+      - mariadb-prod-data:/var/lib/mysql
+      - ../../infrastructure/docker/mariadb-init:/docker-entrypoint-initdb.d:ro
+      - mariadb-prod-logs:/var/log/mysql
+      - mariadb-prod-config:/etc/mysql/conf.d:ro
+
+    # Production MariaDB configuration (performance optimized)
+    command: >
+      --skip-general-log
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=2
+      --innodb-buffer-pool-size=512M
+      --innodb-log-file-size=128M
+      --innodb-flush-log-at-trx-commit=1
+      --max-connections=200
+      --query-cache-size=64M
+      --query-cache-type=1
+      --innodb-read-only-compressed=OFF
+
+    # Production resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.5'
+        reservations:
+          memory: 512M
+          cpus: '0.75'
+
+    # Production health check
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Database secrets
+    secrets:
+      - mariadb_root_password
+      - mariadb_app_password
+
+  # Remove Adminer in production for security
+  goldilocks-adminer:
+    profiles:
+      - debug  # Only available when explicitly requested
+
+# Production secrets
+secrets:
+  mariadb_root_password:
+    external: true
+    name: goldilocks_mariadb_root_password
+  mariadb_app_password:
+    external: true
+    name: goldilocks_mariadb_app_password
+
+# Production-specific volumes
+volumes:
+  mariadb-prod-data:
+    driver: local
+    name: goldilocks-mariadb-prod-data
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks/data/mariadb
+  mariadb-prod-logs:
+    driver: local
+    name: goldilocks-mariadb-prod-logs
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks/logs/mariadb
+  mariadb-prod-config:
+    driver: local
+    name: goldilocks-mariadb-prod-config
+  prod-uploads:
+    driver: local
+    name: goldilocks-prod-uploads
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks/data/uploads
+  prod-logs:
+    driver: local
+    name: goldilocks-prod-logs
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/goldilocks/logs/app
+  prod-cache:
+    driver: local
+    name: goldilocks-prod-cache
+
+# Production-specific networks (with security constraints)
+networks:
+  goldilocks-network:
+    driver: overlay
+    attachable: false
+    driver_opts:
+      encrypted: "true"
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24
+          gateway: 10.0.1.1
