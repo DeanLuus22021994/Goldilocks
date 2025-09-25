@@ -18,6 +18,31 @@ from typing import Any
 from sqlalchemy.pool import StaticPool
 
 
+def get_engine_options(db_uri: str) -> dict[str, Any]:
+    """Get appropriate engine options based on database URI."""
+    if db_uri.startswith("sqlite"):
+        return {
+            "poolclass": StaticPool,
+            "connect_args": {"check_same_thread": False},
+        }
+    else:
+        return {
+            "pool_size": 10,
+            "pool_timeout": 30,
+            "pool_recycle": 1800,  # Recycle connections every 30 minutes
+            "max_overflow": 20,
+            "pool_pre_ping": True,  # Test connections before use
+            "connect_args": {
+                "connect_timeout": 10,
+                "read_timeout": 30,
+                "write_timeout": 30,
+                "charset": "utf8mb4",
+                "use_unicode": True,
+                "autocommit": False,
+            },
+        }
+
+
 class Config:
     """Base configuration class."""
 
@@ -28,21 +53,13 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
-    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
-        "pool_size": 10,
-        "pool_timeout": 30,
-        "pool_recycle": 1800,  # Recycle connections every 30 minutes
-        "max_overflow": 20,
-        "pool_pre_ping": True,  # Test connections before use
-        "connect_args": {
-            "connect_timeout": 10,
-            "read_timeout": 30,
-            "write_timeout": 30,
-            "charset": "utf8mb4",
-            "use_unicode": True,
-            "autocommit": False,
-        },
-    }
+
+    # Set engine options based on current DATABASE_URL
+    _db_uri = os.environ.get(
+        "DATABASE_URL", "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@localhost:3306/goldilocks"
+    )
+    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = get_engine_options(_db_uri)
+
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = 3600
     SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
@@ -72,10 +89,9 @@ class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///:memory:")
-    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
-        "poolclass": StaticPool,
-        "connect_args": {"check_same_thread": False},
-    }
+
+    # Override engine options for SQLite testing
+    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = get_engine_options("sqlite:///:memory:")
 
 
 # Configuration mapping

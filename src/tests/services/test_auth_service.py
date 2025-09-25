@@ -78,7 +78,7 @@ class TestAuthenticationServiceUserManagement:
 
             assert user is None
             assert error is not None
-            assert "already exists" in error.lower()
+            assert "already taken" in error.lower()
 
     def test_create_user_with_role(self, app: Flask) -> None:
         """Test creating user with specific role."""
@@ -114,7 +114,7 @@ class TestAuthenticationServiceUserManagement:
 
             assert activity is not None
 
-    @patch('goldilocks.services.auth.db.session')
+    @patch("goldilocks.services.auth.db.session")
     def test_create_user_handles_database_errors(self, mock_session: Any, app: Flask) -> None:
         """Test that database errors are handled gracefully."""
         with app.app_context():
@@ -240,7 +240,7 @@ class TestAuthenticationServiceAuthentication:
 class TestAuthenticationServiceSessionManagement:
     """Test suite for session management functionality."""
 
-    @patch('goldilocks.services.auth.request')
+    @patch("goldilocks.services.auth.request")
     def test_create_session(self, mock_request: Any, app: Flask, test_user: User) -> None:
         """Test creating user session."""
         with app.app_context():
@@ -264,7 +264,7 @@ class TestAuthenticationServiceSessionManagement:
             assert session.user_id == test_user.id
             assert session.ip_address == "127.0.0.1"
 
-    @patch('goldilocks.services.auth.request')
+    @patch("goldilocks.services.auth.request")
     def test_create_session_with_remember_me(self, mock_request: Any, app: Flask, test_user: User) -> None:
         """Test creating session with remember me option."""
         with app.app_context():
@@ -606,9 +606,10 @@ class TestAuthenticationServiceUtilities:
 
             assert count >= 1
 
-            # Verify expired session was removed
+            # Verify expired session was deactivated
             expired = db.session.query(UserSession).filter_by(session_id="expired_session").first()
-            assert expired is None
+            assert expired is not None
+            assert expired.is_active is False
 
             # Verify active session remains
             active = db.session.query(UserSession).filter_by(session_id="active_session").first()

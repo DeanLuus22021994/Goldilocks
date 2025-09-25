@@ -276,13 +276,15 @@ class TestApplicationIntegration:
         """Test Flask-Login integration."""
         app = create_app("testing")
 
-        with app.app_context():
+        with app.test_request_context():
             # Should have anonymous user by default
+            assert current_user is not None
             assert current_user.is_anonymous
 
     def test_csrf_protection_integration(self) -> None:
         """Test CSRF protection integration."""
         app = create_app("testing")
+        app.config["WTF_CSRF_ENABLED"] = True
 
         with app.test_client() as client:
             # POST requests without CSRF token should fail

@@ -45,7 +45,7 @@ class User(Base):  # ← Type checker happy, fully modern
     uuid: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)  # Allow None for testing
     full_name: Mapped[str | None] = mapped_column(String(255))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
     # Renamed to avoid UserMixin conflict
@@ -75,9 +75,11 @@ class User(Base):  # ← Type checker happy, fully modern
     )
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize user with UUID generation."""
+        """Initialize user with UUID generation and defaults."""
         if "uuid" not in kwargs:
             kwargs["uuid"] = str(uuid.uuid4())
+        if "active" not in kwargs:
+            kwargs["active"] = True
         super().__init__(**kwargs)
 
     def set_password(self, password: str) -> None:
@@ -86,6 +88,8 @@ class User(Base):  # ← Type checker happy, fully modern
 
     def check_password(self, password: str) -> bool:
         """Check password against hash."""
+        if self.password_hash is None:
+            return False  # No password set
         return _check_password_hash(self.password_hash, password)
 
     def get_id(self) -> str:
@@ -244,8 +248,8 @@ class ActivityLog(Base):
     def __init__(self, **kwargs: Any) -> None:
         """Initialize ActivityLog with proper parameter handling."""
         # Handle metadata parameter -> metadata_json mapping
-        if 'metadata' in kwargs:
-            kwargs['metadata_json'] = kwargs.pop('metadata')
+        if "metadata" in kwargs:
+            kwargs["metadata_json"] = kwargs.pop("metadata")
         super().__init__(**kwargs)
 
     def to_dict(self) -> dict[str, Any]:

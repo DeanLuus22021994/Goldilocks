@@ -131,11 +131,20 @@ class AuthenticationService:
         expires_delta = timedelta(days=30 if remember_me else 1)
         expires_at = datetime.now(timezone.utc) + expires_delta
 
+        # Safely get request information (may not be available in tests)
+        try:
+            ip_address = request.remote_addr
+            user_agent = request.headers.get("User-Agent")
+        except RuntimeError:
+            # Outside of request context (e.g., in tests)
+            ip_address = None
+            user_agent = None
+
         session = UserSession(
             session_id=session_id,
             user_id=user_id,
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get("User-Agent"),
+            ip_address=ip_address,
+            user_agent=user_agent,
             expires_at=expires_at,
         )
 
@@ -342,14 +351,23 @@ class AuthenticationService:
     ) -> None:
         """Log user activity to the activity log."""
         try:
+            # Safely get request information (may not be available in tests)
+            try:
+                ip_address = request.remote_addr if request else None
+                user_agent = request.headers.get("User-Agent") if request else None
+            except RuntimeError:
+                # Outside of request context (e.g., in tests)
+                ip_address = None
+                user_agent = None
+
             activity = ActivityLog(
                 user_id=user_id,
                 action=action,
                 resource_type=resource_type,
                 resource_id=resource_id,
-                ip_address=request.remote_addr if request else None,
-                user_agent=(request.headers.get("User-Agent") if request else None),
-                metadata=metadata,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                metadata_json=metadata,
             )
             db.session.add(activity)
             db.session.commit()

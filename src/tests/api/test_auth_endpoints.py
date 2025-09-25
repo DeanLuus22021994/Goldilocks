@@ -22,6 +22,9 @@ class TestAuthenticationEndpoints:
 
     def test_login_with_valid_credentials(self, client: FlaskClient, test_user: User) -> None:
         """Test login with valid user credentials."""
+        # Store user data before database operations
+        user_email = test_user.email
+
         # Create test user in database
         with client.application.app_context():
             test_user.set_password("testpassword123")
@@ -31,7 +34,7 @@ class TestAuthenticationEndpoints:
         response = client.post(
             "/auth/login",
             data={
-                "email": test_user.email,
+                "email": user_email,
                 "password": "testpassword123",
                 "csrf_token": self._get_csrf_token(client, "/auth/login"),
             },
@@ -89,13 +92,16 @@ class TestAuthenticationEndpoints:
 
     def test_register_with_duplicate_email(self, client: FlaskClient, test_user: User) -> None:
         """Test registration with already existing email."""
+        # Store user data before database operations
+        user_email = test_user.email
+
         with client.application.app_context():
             db.session.add(test_user)
             db.session.commit()
 
         user_data: dict[str, str | bool] = {
             "username": "differentuser",
-            "email": test_user.email,  # Duplicate email
+            "email": user_email,  # Duplicate email
             "full_name": "Different User",
             "password": "TestPassword123",
             "confirm_password": "TestPassword123",
@@ -227,14 +233,21 @@ class TestAuthenticationSecurity:
 
     def test_csrf_protection_on_forms(self, client: FlaskClient) -> None:
         """Test that forms are protected against CSRF attacks."""
-        # Try to submit login form without CSRF token
-        response = client.post(
-            "/auth/login",
-            data={"email": "test@example.com", "password": "password"},
-        )
+        # Create app with CSRF enabled
+        from goldilocks.core.app_factory import create_app
 
-        # Should fail due to missing CSRF token
-        assert response.status_code == 400
+        csrf_app = create_app("testing")
+        csrf_app.config["WTF_CSRF_ENABLED"] = True
+
+        with csrf_app.test_client() as csrf_client:
+            # Try to submit login form without CSRF token
+            response = csrf_client.post(
+                "/auth/login",
+                data={"email": "test@example.com", "password": "password"},
+            )
+
+            # Should fail due to missing CSRF token
+            assert response.status_code == 400
 
     def test_password_hashing(self, app: Flask, test_user: User) -> None:
         """Test that passwords are properly hashed."""
@@ -243,6 +256,7 @@ class TestAuthenticationSecurity:
             test_user.set_password(password)
 
             # Password should be hashed, not stored in plain text
+            assert test_user.password_hash is not None
             assert test_user.password_hash != password
             # Hashed passwords are long
             assert len(test_user.password_hash) > 20
