@@ -1,6 +1,5 @@
 # Backend Application Service - Ultra-Performance Development
 # Adheres to: MODERNIZE, DRY, STRUCTURED, MONOLITHIC, HIGH COMPATIBILITY
-version: '3.9'
 
 services:
   goldilocks-backend:
@@ -56,28 +55,14 @@ services:
         source: ${DOCKER_CONTEXT_PATH:-../../../..}
         target: /workspaces/Goldilocks
         consistency: cached
-      # PERFORMANCE: Cache volumes for development tools
-      - type: volume
-        source: goldilocks-pip-cache
-        target: /tmp/pip-cache
-      - type: volume
-        source: goldilocks-pre-commit-cache
-        target: /tmp/pre-commit-cache
-      - type: volume
-        source: goldilocks-mypy-cache
-        target: /tmp/mypy-cache
-      - type: volume
-        source: goldilocks-ruff-cache
-        target: /tmp/ruff-cache
-      - type: volume
-        source: goldilocks-pytest-cache
-        target: /tmp/pytest-cache
-      - type: volume
-        source: goldilocks-build-cache
-        target: /tmp/build-cache
-      - type: volume
-        source: goldilocks-bytecode-cache
-        target: /tmp/bytecode-cache
+      # PERFORMANCE: Cache volumes for development tools - references shared volumes
+      - goldilocks-pip-cache:/tmp/pip-cache
+      - goldilocks-pre-commit-cache:/tmp/pre-commit-cache
+      - goldilocks-mypy-cache:/tmp/mypy-cache
+      - goldilocks-ruff-cache:/tmp/ruff-cache
+      - goldilocks-pytest-cache:/tmp/pytest-cache
+      - goldilocks-build-cache:/tmp/build-cache
+      - goldilocks-bytecode-cache:/tmp/bytecode-cache
 
     # HIGH COMPATIBILITY: Environment configuration
     environment:
@@ -126,7 +111,7 @@ services:
     # STRUCTURED: Working directory
     working_dir: /workspaces/Goldilocks
 
-    # LOW FOOTPRINT: Network configuration
+    # LOW FOOTPRINT: Network configuration - references shared network
     networks:
       - goldilocks-network
 
@@ -163,24 +148,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-# PERFORMANCE: Cache volumes
-volumes:
-  goldilocks-pip-cache:
-    driver: local
-  goldilocks-pre-commit-cache:
-    driver: local
-  goldilocks-mypy-cache:
-    driver: local
-  goldilocks-ruff-cache:
-    driver: local
-  goldilocks-pytest-cache:
-    driver: local
-  goldilocks-build-cache:
-    driver: local
-  goldilocks-bytecode-cache:
-    driver: local
-
-networks:
-  goldilocks-network:
-    external: true

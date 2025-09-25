@@ -36,19 +36,20 @@ build: build-dev ## Build development environment (default)
 
 build-dev: ## Build optimized development environment with full caching
 	@echo "🏗️  Building development environment with SSD optimization..."
-	./infrastructure/docker/build.sh dev
+	./infrastructure/docker/scripts/compose.sh development build
 
 build-prod: ## Build optimized production environment
 	@echo "🏗️  Building production environment with SSD optimization..."
-	./infrastructure/docker/build.sh prod
+	./infrastructure/docker/scripts/compose.sh production build
 
 build-all: ## Build all targets with maximum cache optimization
 	@echo "🌟 Building all targets with maximum SSD cache optimization..."
-	./infrastructure/docker/build.sh all
+	./infrastructure/docker/scripts/compose.sh development build --no-cache
+	./infrastructure/docker/scripts/compose.sh production build --no-cache
 
 build-devcontainer: ## Build devcontainer with optimized caching
 	@echo "🏠 Building devcontainer with SSD optimization..."
-	./infrastructure/docker/build.sh devcontainer
+	docker compose -f infrastructure/docker/docker-compose.yml build goldilocks-backend --target devcontainer
 
 ## Docker Compose Commands
 
@@ -126,7 +127,7 @@ fresh: docker-prune setup build ## Complete fresh start (removes all caches)
 
 benchmark: ## Test build performance (requires existing cache)
 	@echo "⏱️  Testing optimized build performance..."
-	@time ./infrastructure/docker/build.sh devcontainer
+	@time docker compose -f infrastructure/docker/docker-compose.yml build goldilocks-backend --target devcontainer
 	@echo ""
 	@echo "💡 Subsequent builds should be significantly faster thanks to SSD caching!"
 

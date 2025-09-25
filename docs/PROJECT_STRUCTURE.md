@@ -54,11 +54,12 @@ This document explains the organized project structure and where to find differe
 - Deployment configurations
 - Environment-specific setups
 
-### Scripts (`scripts/`)
+### Docker Scripts (`infrastructure/docker/scripts/`)
 
-- Build automation scripts
-- Development utilities
-- Cross-platform (bash + PowerShell versions)
+- Build automation and management scripts
+- Development utilities and testing
+- Container deployment management
+- Linux-based DevContainer environment
 
 ### Source Code (`src/`)
 

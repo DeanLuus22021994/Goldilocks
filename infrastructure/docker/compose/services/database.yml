@@ -1,6 +1,5 @@
 # MariaDB Database Service - Edge Computing Optimized
 # Adheres to: LIGHTWEIGHT, HIGH COMPATIBILITY, STRUCTURED, LOW FOOTPRINT
-version: '3.9'
 
 services:
   goldilocks-db:
@@ -28,17 +27,15 @@ services:
       MARIADB_DISABLE_UPGRADE_BACKUP: 1
       MARIADB_INIT_CONNECT: 'SET sql_mode="STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"'
 
-    # STRUCTURED: Volume management
+    # STRUCTURED: Volume management - references shared volumes
     volumes:
-      - type: volume
-        source: goldilocks-db-data
-        target: /var/lib/mysql
+      - goldilocks-db-data:/var/lib/mysql
       - type: bind
-        source: ${DOCKER_CONTEXT_PATH}/mariadb-init
+        source: ${DOCKER_CONTEXT_PATH}/database-init
         target: /docker-entrypoint-initdb.d
         read_only: true
 
-    # LOW FOOTPRINT: Network configuration
+    # LOW FOOTPRINT: Network configuration - references shared network
     ports:
       - "${DB_PORT:-3306}:3306"
 
@@ -77,32 +74,7 @@ services:
       timeout: 10s
       retries: 3
 
-    profiles: ["dev", "prod", "database"]
-
-    # PERFORMANCE: System optimizations
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-
     # SECURITY: Non-root execution
     user: "999:999"  # mysql user
 
-# STRUCTURED: Volume definitions
-volumes:
-  goldilocks-db-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_PATH:-./data}/database
-
-# LOW FOOTPRINT: Network definitions
-networks:
-  goldilocks-network:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: goldilocks0
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
+    profiles: ["dev", "prod", "database"]

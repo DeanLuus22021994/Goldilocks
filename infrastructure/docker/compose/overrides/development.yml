@@ -4,10 +4,8 @@
 # MODERNIZE - Hot reload, debugging, and development tools
 # ==============================================================================
 
-version: '3.9'
-
 services:
-  goldilocks-app:
+  goldilocks-backend:
     # Development-specific configurations
     environment:
       - FLASK_ENV=development
@@ -24,40 +22,31 @@ services:
 
     # Development ports (expose additional debugging ports)
     ports:
-      - "9000:9000"  # Flask app
       - "5555:5555"  # Debugger port
       - "9090:9090"  # Metrics/monitoring
 
-    # Development volumes for hot reload
+    # Additional development volumes for hot reload
     volumes:
-      - ../../src:/app/src:cached
-      - ../../frontend:/app/frontend:cached
-      - ../../tests:/app/tests:cached
-      - ../../.pre-commit-config.yaml:/app/.pre-commit-config.yaml:ro
-      - ../../pyproject.toml:/app/pyproject.toml:ro
-      - dev-cache:/tmp/goldilocks-cache
-      - pre-commit-cache:/home/app/.cache/pre-commit
-
-    # Development command with hot reload
-    command: ["bash", "/app/entrypoint-dev.sh"]
+      - ../../tests:/workspaces/Goldilocks/tests:cached
+      - ../../.pre-commit-config.yaml:/workspaces/Goldilocks/.pre-commit-config.yaml:ro
 
     # Development resource limits (generous for development)
     deploy:
       resources:
         limits:
+          memory: 2G
+          cpus: '4.0'
+        reservations:
           memory: 1G
           cpus: '2.0'
-        reservations:
-          memory: 512M
-          cpus: '1.0'
 
   goldilocks-db:
-    # Development database configurations
+    # Override database environment for development
     environment:
-      - MARIADB_ROOT_PASSWORD=goldilocks_root_dev_2024
-      - MARIADB_DATABASE=goldilocks_dev
-      - MARIADB_USER=goldilocks_dev_user
-      - MARIADB_PASSWORD=goldilocks_dev_pass_2024
+      MARIADB_ROOT_PASSWORD: goldilocks_root_dev_2024
+      MARIADB_DATABASE: goldilocks_dev
+      MARIADB_USER: goldilocks_dev_user
+      MARIADB_PASSWORD: goldilocks_dev_pass_2024
 
     # Development ports (expose database for external tools)
     ports:

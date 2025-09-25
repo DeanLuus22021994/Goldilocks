@@ -5,34 +5,22 @@
 # MODERNIZE - Latest edge computing patterns
 # ==============================================================================
 
-version: '3.9'
-
 services:
-  goldilocks-app:
+  goldilocks-backend:
     # Edge computing environment configurations
     environment:
-      - FLASK_ENV=production
-      - FLASK_DEBUG=0
-      - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONOPTIMIZE=2
-      - LOG_LEVEL=WARNING
-      - LOG_FORMAT=json
-      - ENABLE_METRICS=true
-      - ENABLE_PROFILER=false
-      - EDGE_MODE=true
-      - CACHE_TYPE=simple  # No external cache for edge
-      - SESSION_TYPE=filesystem  # Local session storage
-
-    # Edge computing ports (minimal exposure)
-    ports:
-      - "9000:9000"
-
-    # Edge volumes (local storage optimized)
-    volumes:
-      - edge-data:/app/data
-      - edge-cache:/tmp/goldilocks-cache
-      - edge-logs:/app/logs
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONOPTIMIZE: 2
+      LOG_LEVEL: WARNING
+      LOG_FORMAT: json
+      ENABLE_METRICS: true
+      ENABLE_PROFILER: false
+      EDGE_MODE: true
+      CACHE_TYPE: simple  # No external cache for edge
+      SESSION_TYPE: filesystem  # Local session storage
 
     # Edge computing resource limits (very constrained)
     deploy:
@@ -43,7 +31,6 @@ services:
         reservations:
           memory: 128M
           cpus: '0.25'
-      # Edge restart policy (resilient)
       restart_policy:
         condition: unless-stopped
         delay: 10s

@@ -40,8 +40,9 @@ Essential Commands:
 
 Build Commands:
 
-- ./infrastructure/docker/build.ps1 # Multi-stage Docker build
+- ./infrastructure/docker/scripts/compose.sh development build # Multi-stage Docker build
 - .devcontainer/scripts/generate-lock.sh # Update cache manifest
+- ./infrastructure/docker/scripts/test-infrastructure.sh # Infrastructure testing
 
 ## File Locations
 

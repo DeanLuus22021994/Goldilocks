@@ -59,13 +59,15 @@ This guide explains the comprehensive Docker optimizations implemented for maxim
 #### Using Docker Bake (Recommended)
 
 ```bash
-# Build all targets with maximum optimization
-./infrastructure/docker/build.sh
+# Build all targets with maximum optimization using the management script
+./infrastructure/docker/scripts/compose.sh development build
 
-# Build specific targets
-./infrastructure/docker/build.sh dev        # Development only
-./infrastructure/docker/build.sh prod       # Production only
-./infrastructure/docker/build.sh builder    # Base builder stage
+# Build specific environments
+./infrastructure/docker/scripts/compose.sh development build  # Development environment
+./infrastructure/docker/scripts/compose.sh production build   # Production environment
+
+# Direct Docker Compose commands
+docker compose -f infrastructure/docker/docker-compose.yml build goldilocks-backend
 ```
 
 #### Using Docker Compose

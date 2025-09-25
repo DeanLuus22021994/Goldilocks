@@ -1,0 +1,85 @@
+# ==============================================================================
+# Goldilocks Shared Network Configurations
+# STRUCTURED - Centralized network definitions following best practices
+# STANDARDIZATION - Consistent naming and CIDR allocation
+# HIGH COMPATIBILITY - Support for different deployment scenarios
+# ==============================================================================
+
+# MODERNIZE: Named networks with explicit configuration
+networks:
+  # Primary application network (default for all services)
+  goldilocks-network:
+    name: goldilocks_network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-goldilocks
+      com.docker.network.driver.mtu: 1500
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+          ip_range: 172.20.1.0/24
+    labels:
+      com.goldilocks.network.type: "application"
+      com.goldilocks.network.environment: "multi"
+      com.docker.compose.project: "goldilocks"
+
+  # Database-specific network for enhanced security
+  goldilocks-db-network:
+    name: goldilocks_db_network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-goldilocks-db
+      com.docker.network.driver.mtu: 1500
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/24
+          gateway: 172.21.0.1
+    labels:
+      com.goldilocks.network.type: "database"
+      com.goldilocks.network.security: "internal-only"
+      com.docker.compose.project: "goldilocks"
+
+  # Cache and session network
+  goldilocks-cache-network:
+    name: goldilocks_cache_network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-goldilocks-cache
+      com.docker.network.driver.mtu: 1500
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/24
+          gateway: 172.22.0.1
+    labels:
+      com.goldilocks.network.type: "cache"
+      com.goldilocks.network.purpose: "session-storage"
+      com.docker.compose.project: "goldilocks"
+
+  # Monitoring and observability network
+  goldilocks-monitoring-network:
+    name: goldilocks_monitoring_network
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-goldilocks-mon
+      com.docker.network.driver.mtu: 1500
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.23.0.0/24
+          gateway: 172.23.0.1
+    labels:
+      com.goldilocks.network.type: "monitoring"
+      com.goldilocks.network.purpose: "observability"
+      com.docker.compose.project: "goldilocks"
+
+  # External network for reverse proxy integration
+  goldilocks-external:
+    name: goldilocks_external
+    external: true
+    labels:
+      com.goldilocks.network.type: "external"
+      com.goldilocks.network.purpose: "reverse-proxy"

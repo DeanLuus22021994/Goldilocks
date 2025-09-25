@@ -2,9 +2,6 @@
 # Modular, Maintainable, and Scalable Microservice Architecture
 # Adheres to: MODERNIZE, DRY, STRUCTURED, MONOLITHIC, STANDARDIZATION, LOW FOOTPRINT
 
-# MODERNIZE: Latest Docker Compose specification
-version: "3.9"
-
 # STRUCTURED: Environment-specific configurations available in compose/overrides/
 # Usage Examples:
 #   Development: docker-compose -f docker-compose.yml -f compose/overrides/development.yml up -d
@@ -15,6 +12,11 @@ version: "3.9"
 
 # STRUCTURED: Include service definitions following SRP
 include:
+  # Shared infrastructure components
+  - compose/shared/networks.yml
+  - compose/shared/volumes.yml
+  - compose/shared/secrets.yml
+
   # Core application services
   - compose/services/database.yml
   - compose/services/backend.yml
@@ -38,52 +40,15 @@ x-common-labels: &common-labels
   com.goldilocks.version: "${APP_VERSION:-1.0.0}"
   com.goldilocks.environment: "${ENVIRONMENT:-development}"
 
-# HIGH COMPATIBILITY: Multi-environment service overrides
-services:
-  # Apply common configurations to all services
-  goldilocks-db:
-    <<: *restart-policy
-    logging: *default-logging
-    labels: *common-labels
-
-  goldilocks-backend:
-    <<: *restart-policy
-    logging: *default-logging
-    labels: *common-labels
-
-  goldilocks-frontend:
-    <<: *restart-policy
-    logging: *default-logging
-    labels: *common-labels
-
-  goldilocks-adminer:
-    <<: *restart-policy
-    logging: *default-logging
-    labels: *common-labels
-
-# STRUCTURED: Global volume definitions
+# STRUCTURED: Global volume definitions - Additional application volumes
 volumes:
-  # Persistent application data
+  # Additional application data volumes
   goldilocks-app-data:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: ${DATA_PATH:-./data}/app
-    labels: *common-labels
-
-# LOW FOOTPRINT: Optimized network configuration
-networks:
-  goldilocks-network:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: goldilocks0
-      com.docker.network.bridge.enable_icc: "true"
-      com.docker.network.bridge.enable_ip_masquerade: "true"
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
-          gateway: 172.20.0.1
     labels: *common-labels
 
 # STRUCTURED: Environment-specific configurations

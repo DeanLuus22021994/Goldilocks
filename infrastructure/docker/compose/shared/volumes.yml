@@ -1,0 +1,323 @@
+# ==============================================================================
+# Goldilocks Shared Volume Configurations
+# STRUCTURED - Centralized volume definitions following best practices
+# STANDARDIZATION - Consistent naming and labeling conventions
+# HIGH COMPATIBILITY - Support for different storage backends
+# ==============================================================================
+
+# MODERNIZE: Named volumes with explicit configuration
+volumes:
+  # =============================================================================
+  # Application Data Volumes
+  # =============================================================================
+
+  # Application uploads and user-generated content
+  goldilocks-uploads:
+    name: goldilocks_uploads
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_DATA_PATH:-/opt/goldilocks/data}/uploads
+    labels:
+      com.goldilocks.volume.type: "application-data"
+      com.goldilocks.volume.purpose: "user-uploads"
+      com.goldilocks.volume.backup: "required"
+      com.docker.compose.project: "goldilocks"
+
+  # Application logs
+  goldilocks-logs:
+    name: goldilocks_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_LOGS_PATH:-/opt/goldilocks/logs}/app
+    labels:
+      com.goldilocks.volume.type: "logs"
+      com.goldilocks.volume.purpose: "application-logs"
+      com.goldilocks.volume.retention: "30d"
+      com.docker.compose.project: "goldilocks"
+
+  # Application cache (persistent)
+  goldilocks-app-cache:
+    name: goldilocks_app_cache
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_CACHE_PATH:-/opt/goldilocks/cache}/app
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "application-cache"
+      com.goldilocks.volume.backup: "optional"
+      com.docker.compose.project: "goldilocks"
+
+  # =============================================================================
+  # Database Volumes
+  # =============================================================================
+
+  # Primary database data
+  goldilocks-db-data:
+    name: goldilocks_db_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_DATA_PATH:-/opt/goldilocks/data}/mariadb
+    labels:
+      com.goldilocks.volume.type: "database"
+      com.goldilocks.volume.purpose: "primary-data"
+      com.goldilocks.volume.backup: "critical"
+      com.goldilocks.volume.encryption: "required"
+      com.docker.compose.project: "goldilocks"
+
+  # Database logs
+  goldilocks-db-logs:
+    name: goldilocks_db_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_LOGS_PATH:-/opt/goldilocks/logs}/mariadb
+    labels:
+      com.goldilocks.volume.type: "logs"
+      com.goldilocks.volume.purpose: "database-logs"
+      com.goldilocks.volume.retention: "7d"
+      com.docker.compose.project: "goldilocks"
+
+  # Database configuration
+  goldilocks-db-config:
+    name: goldilocks_db_config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_CONFIG_PATH:-/opt/goldilocks/config}/mariadb
+    labels:
+      com.goldilocks.volume.type: "configuration"
+      com.goldilocks.volume.purpose: "database-config"
+      com.goldilocks.volume.backup: "required"
+      com.docker.compose.project: "goldilocks"
+
+  # Database backups
+  goldilocks-db-backups:
+    name: goldilocks_db_backups
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_BACKUP_PATH:-/opt/goldilocks/backups}/mariadb
+    labels:
+      com.goldilocks.volume.type: "backups"
+      com.goldilocks.volume.purpose: "database-backups"
+      com.goldilocks.volume.retention: "90d"
+      com.docker.compose.project: "goldilocks"
+
+  # =============================================================================
+  # Development Volumes (Performance Optimized)
+  # =============================================================================
+
+  # Python virtual environment cache
+  goldilocks-venv-cache:
+    name: goldilocks_venv_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "python-venv"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  # Package manager caches
+  goldilocks-pip-cache:
+    name: goldilocks_pip_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "pip-cache"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-npm-cache:
+    name: goldilocks_npm_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "npm-cache"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  # Development tool caches
+  goldilocks-pre-commit-cache:
+    name: goldilocks_pre_commit_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "pre-commit-hooks"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-mypy-cache:
+    name: goldilocks_mypy_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "type-checking"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-pytest-cache:
+    name: goldilocks_pytest_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "test-cache"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  # Build tool caches
+  goldilocks-ruff-cache:
+    name: goldilocks_ruff_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "linting-cache"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-build-cache:
+    name: goldilocks_build_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "build-artifacts"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-bytecode-cache:
+    name: goldilocks_bytecode_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "python-bytecode"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  # Frontend development caches
+  goldilocks-node-modules:
+    name: goldilocks_node_modules
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=512M,uid=1000,gid=1000
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "node-modules"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  goldilocks-yarn-cache:
+    name: goldilocks_yarn_cache
+    driver: local
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "yarn-cache"
+      com.goldilocks.volume.environment: "development"
+      com.docker.compose.project: "goldilocks"
+
+  # =============================================================================
+  # Session and Cache Volumes
+  # =============================================================================
+
+  # Redis cache data
+  goldilocks-redis-data:
+    name: goldilocks_redis_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_DATA_PATH:-/opt/goldilocks/data}/redis
+    labels:
+      com.goldilocks.volume.type: "cache"
+      com.goldilocks.volume.purpose: "session-cache"
+      com.goldilocks.volume.backup: "optional"
+      com.docker.compose.project: "goldilocks"
+
+  # Session storage
+  goldilocks-sessions:
+    name: goldilocks_sessions
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_DATA_PATH:-/opt/goldilocks/data}/sessions
+    labels:
+      com.goldilocks.volume.type: "sessions"
+      com.goldilocks.volume.purpose: "user-sessions"
+      com.goldilocks.volume.backup: "optional"
+      com.docker.compose.project: "goldilocks"
+
+  # =============================================================================
+  # Monitoring and Observability Volumes
+  # =============================================================================
+
+  # Prometheus metrics data
+  goldilocks-prometheus-data:
+    name: goldilocks_prometheus_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_MONITORING_PATH:-/opt/goldilocks/monitoring}/prometheus
+    labels:
+      com.goldilocks.volume.type: "monitoring"
+      com.goldilocks.volume.purpose: "metrics-storage"
+      com.goldilocks.volume.retention: "15d"
+      com.docker.compose.project: "goldilocks"
+
+  # Grafana configuration and dashboards
+  goldilocks-grafana-data:
+    name: goldilocks_grafana_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${GOLDILOCKS_MONITORING_PATH:-/opt/goldilocks/monitoring}/grafana
+    labels:
+      com.goldilocks.volume.type: "monitoring"
+      com.goldilocks.volume.purpose: "dashboard-config"
+      com.goldilocks.volume.backup: "required"
+      com.docker.compose.project: "goldilocks"
+
+  # =============================================================================
+  # Temporary and Ephemeral Volumes
+  # =============================================================================
+
+  # Temporary files (tmpfs for performance)
+  goldilocks-tmp:
+    name: goldilocks_tmp
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=256m,uid=1000,gid=1000,noexec,nosuid,nodev
+    labels:
+      com.goldilocks.volume.type: "temporary"
+      com.goldilocks.volume.purpose: "temp-files"
+      com.goldilocks.volume.ephemeral: "true"
+      com.docker.compose.project: "goldilocks"
+
+  # Shared memory for inter-process communication
+  goldilocks-shm:
+    name: goldilocks_shm
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=64m,uid=1000,gid=1000
+    labels:
+      com.goldilocks.volume.type: "shared-memory"
+      com.goldilocks.volume.purpose: "ipc"
+      com.goldilocks.volume.ephemeral: "true"
+      com.docker.compose.project: "goldilocks"

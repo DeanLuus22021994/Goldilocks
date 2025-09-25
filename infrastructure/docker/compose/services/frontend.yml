@@ -1,6 +1,5 @@
 # Frontend Tooling Service - Node.js Alpine Ultra-Lightweight
 # Adheres to: LIGHTWEIGHT, MODERNIZE, DRY, LOW FOOTPRINT
-version: '3.9'
 
 services:
   goldilocks-frontend:
@@ -27,21 +26,15 @@ services:
       NPM_CONFIG_AUDIT_LEVEL: moderate
       CI: ${CI:-false}
 
-    # STRUCTURED: Volume management
+    # STRUCTURED: Volume management - references shared volumes
     volumes:
       - type: bind
         source: ${DOCKER_CONTEXT_PATH:-../../../..}
         target: /workspace
         consistency: cached
-      - type: volume
-        source: goldilocks-node-modules
-        target: /workspace/node_modules
-      - type: volume
-        source: goldilocks-npm-cache
-        target: /home/node/.npm
-      - type: volume
-        source: goldilocks-yarn-cache
-        target: /home/node/.cache/yarn
+      - goldilocks-node-modules:/workspace/node_modules
+      - goldilocks-npm-cache:/home/node/.npm
+      - goldilocks-yarn-cache:/home/node/.cache/yarn
 
     # STRUCTURED: Working directory
     working_dir: /workspace
@@ -49,7 +42,7 @@ services:
     # LOW FOOTPRINT: Keep container running efficiently
     command: ["sh", "-c", "while :; do sleep 3600; done"]
 
-    # LOW FOOTPRINT: Network configuration
+    # LOW FOOTPRINT: Network configuration - references shared network
     networks:
       - goldilocks-network
 
@@ -73,22 +66,3 @@ services:
       - /tmp:size=100M,noexec,nosuid,nodev
 
     init: true  # RELIABILITY: Proper signal handling
-
-# PERFORMANCE: Frontend cache volumes
-volumes:
-  goldilocks-node-modules:
-    driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
-      o: size=512M,uid=1000,gid=1000
-
-  goldilocks-npm-cache:
-    driver: local
-
-  goldilocks-yarn-cache:
-    driver: local
-
-networks:
-  goldilocks-network:
-    external: true

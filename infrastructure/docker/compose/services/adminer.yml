@@ -1,6 +1,5 @@
 # Database Administration Service - Adminer Ultra-Lightweight
 # Adheres to: LIGHTWEIGHT, STRUCTURED, LOW FOOTPRINT, SECURITY
-version: '3.9'
 
 services:
   goldilocks-adminer:
@@ -22,7 +21,7 @@ services:
     ports:
       - "${ADMINER_PORT:-8080}:8080"
 
-    # LOW FOOTPRINT: Network configuration
+    # LOW FOOTPRINT: Network configuration - references shared network
     networks:
       - goldilocks-network
 
@@ -67,7 +66,3 @@ services:
       - no-new-privileges:true
 
     init: true  # RELIABILITY: Proper signal handling
-
-networks:
-  goldilocks-network:
-    external: true
