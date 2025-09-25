@@ -137,6 +137,40 @@
         "isDefault": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Docs: Generate Modern Documentation",
+      "type": "shell",
+      "command": "python docs/generate.py",
+      "detail": "Generate modern documentation using markitdown package",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: Generate with Docker (markitdown)",
+      "type": "shell",
+      "command": "docker run --rm --mount type=bind,source=${workspaceFolder},target=/workspace --workdir /workspace python:3.12-slim sh -c 'pip install -q markitdown && python docs/generate.py'",
+      "detail": "Generate documentation using Docker container with markitdown",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: Watch and Regenerate",
+      "type": "shell",
+      "command": "while inotifywait -e modify,create,delete -r . --exclude '(__pycache__|*.pyc|.git|docs/STRUCTURE.md|docs/TECHNICAL.md)' 2>/dev/null; do echo 'Files changed, regenerating documentation...'; python docs/generate.py; done",
+      "detail": "Watch for file changes and automatically regenerate documentation",
+      "isBackground": true,
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
     }
   ]
 }

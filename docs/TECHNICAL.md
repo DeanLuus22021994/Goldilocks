@@ -1,71 +1,115 @@
----
-uid: goldilocks.technical
-title: Technical Specifications
-description: Architecture, performance metrics, and development commands for Goldilocks
-author: Goldilocks Development Team
-ms.date: 2025-09-25
----
+# Technical Documentation
 
-## Quick Reference
+Generated on: 2025-09-25T12:43:01.388438
 
-| Component    | Version     | Status | Performance Target |
-| ------------ | ----------- | ------ | ------------------ |
-| Python       | 3.12.3      | ✅     | <100ms startup     |
-| Flask        |          | ✅     | <50ms response     |
-| Docker       | Multi-stage | ✅     | <100MB runtime     |
-| Tests        | 0 files   | ✅     | <5s execution      |
-| DevContainer | Optimized   | ✅     | <30s rebuild       |
+## System Information
 
-## Architecture Checklist
+- **Python**: Python 3.12.3
+- **Flask**: Flask==3.1.2
+- **Docker**: Docker version 28.1.1, build 4eba377
 
-### ✅ Completed Optimizations
+## Performance Metrics
 
-- [x] Test Structure: Moved to src/goldilocks/tests/ for package inclusion
-- [x] Import System: Fixed all import errors, 100% pytest pass rate
-- [x] DevContainer: Removed unnecessary features, added volume caching
-- [x] Docker Multi-Stage: Separate build/tools/runtime images
-- [x] Python Bytecode: Precompilation scripts with optimization level 2
-- [x] File Organization: Config, docs, infrastructure, scripts domains
-- [x] Caching System: devcontainer-lock.json for build reproducibility
+- **Total Lines of Code**: 5,777
+- **Test Coverage Target**: 100%
+- **Build Time**: Optimized for fast startup
+- **Memory Footprint**: Minimal resource usage
 
-## Development Commands
+## Technology Stack
 
-Essential Commands:
+### Core Framework
+- **Flask**: Lightweight web framework
+- **Python 3.x**: Modern Python with type hints
 
-- npm run test:e2e # E2E tests with Cypress
-- python -m pytest # Unit tests (100% pass)
-- scripts/compile-bytecode.sh # Bytecode compilation
-- docker-compose --profile dev up # Development container
-- docker-compose --profile prod up # Production container
+### Development Tools
+- **pytest**: Testing framework
+- **mypy**: Static type checking
+- **black**: Code formatting
+- **isort**: Import sorting
+- **pre-commit**: Git hooks for quality
 
-Build Commands:
+### Container Technology
+- **Docker**: Containerized development and deployment
+- **Multi-stage builds**: Optimized image size
+- **Alpine Linux**: Minimal base images
 
-- ./infrastructure/docker/scripts/compose.sh development build # Multi-stage Docker build
-- .devcontainer/scripts/generate-lock.sh # Update cache manifest
-- ./infrastructure/docker/scripts/test-infrastructure.sh # Infrastructure testing
+### Documentation
+- **markitdown**: Modern markdown processing
+- **VS Code MCP**: Model Context Protocol integration
+- **Automated generation**: Dynamic content creation
 
-## File Locations
+## Quality Assurance
 
-- config/ # Tool configurations (pytest, cypress, pre-commit)
-- docs/ # Documentation (README, specifications)
-- infrastructure/ # Docker multi-stage builds, K8s manifests
-- scripts/ # Build automation (bytecode, caching)
-- src/goldilocks/ # Source code and tests
-- frontend/static/ # CSS, JS, HTML assets
+### Code Standards
+- Type hints for all functions
+- 100% test coverage requirement
+- Linting compliance (flake8, mypy, black)
+- Pre-commit validation
 
-## Next Actions
+### Security
+- No secrets in code
+- Dependency scanning via Dependabot
+- Container security best practices
+- Input validation and sanitization
 
-1. Validate Performance: Measure container sizes and startup times
-2. UI Enhancement: Responsive CSS architecture
-3. Error Handling: Structured exception handling throughout app
-4. Production Testing: Load testing and optimization validation
+### Performance
+- Minimal dependencies
+- Optimized Docker layers
+- Efficient resource usage
+- Fast application startup
 
-## Troubleshooting
+## Deployment
 
-| Issue                  | Quick Fix                                            |
-| ---------------------- | ---------------------------------------------------- |
-| Import errors          | python -m pytest src/goldilocks/tests/               |
-| Container rebuild slow | Check devcontainer-lock.json cache                   |
-| Tests failing          | Verify pytest config points to src/goldilocks/tests/ |
-| Large image size       | Use multi-stage runtime target                       |
-| Bytecode not working   | Run scripts/compile-bytecode.sh                      |
+### Local Development
+```bash
+# Start development environment
+make dev
+
+# Run tests
+make test
+
+# Format code
+make format
+```
+
+### Docker Deployment
+```bash
+# Build optimized image
+docker build -t goldilocks .
+
+# Run production container
+docker run -p 9000:9000 goldilocks
+```
+
+### CI/CD Pipeline
+- Automated testing on every commit
+- Docker image builds
+- Security scanning
+- Performance monitoring
+
+## Monitoring
+
+### Health Checks
+- `/health` endpoint for service monitoring
+- `/version` endpoint for version information
+- Structured JSON logging
+
+### Metrics
+- Request correlation IDs
+- Performance timing headers
+- Resource usage monitoring
+
+## Architecture Decisions
+
+### Separation of Concerns
+- Clean separation between modules
+- No cross-cutting functionality
+- Well-defined interfaces
+
+### Documentation Strategy
+- Automated generation using markitdown
+- VS Code integration via MCP servers
+- Dynamic content based on project state
+
+This technical documentation is automatically maintained to reflect
+the current state of the project and follows modern development practices.

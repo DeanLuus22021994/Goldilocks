@@ -151,7 +151,30 @@ status: ## Show environment status
 
 ## Documentation
 
-docs: ## Generate and serve documentation
-	@echo "📚 Documentation commands would go here"
+docs: ## Generate modern documentation using markitdown
+	@echo "📚 Generating modern documentation..."
+	python docs/generate.py
+
+docs-docker: ## Generate documentation using Docker container
+	@echo "� Generating documentation with Docker + markitdown..."
+	docker run --rm --mount type=bind,source=$$(pwd),target=/workspace --workdir /workspace python:3.12-slim sh -c 'pip install -q markitdown && python docs/generate.py'
+
+docs-watch: ## Watch for changes and regenerate documentation
+	@echo "👀 Watching for changes and auto-regenerating docs..."
+	@which inotifywait >/dev/null 2>&1 || { echo "❌ inotify-tools not installed. Run: apt-get install inotify-tools"; exit 1; }
+	@while inotifywait -e modify,create,delete -r . --exclude '(__pycache__|*.pyc|.git|docs/STRUCTURE.md|docs/TECHNICAL.md)' 2>/dev/null; do \
+		echo "📝 Files changed, regenerating documentation..."; \
+		python docs/generate.py; \
+	done
+
+docs-validate: ## Validate documentation quality and completeness
+	@echo "🔍 Validating documentation quality..."
+	@test -f docs/STRUCTURE.md || { echo "❌ STRUCTURE.md not found"; exit 1; }
+	@test -f docs/TECHNICAL.md || { echo "❌ TECHNICAL.md not found"; exit 1; }
+	@[ $$(wc -l < docs/STRUCTURE.md) -ge 50 ] || { echo "❌ STRUCTURE.md too short"; exit 1; }
+	@[ $$(wc -l < docs/TECHNICAL.md) -ge 30 ] || { echo "❌ TECHNICAL.md too short"; exit 1; }
+	@grep -q "## Project Metrics" docs/STRUCTURE.md || { echo "❌ Missing Project Metrics"; exit 1; }
+	@grep -q "## System Information" docs/TECHNICAL.md || { echo "❌ Missing System Information"; exit 1; }
+	@echo "✅ Documentation quality validation passed"
 
 .PHONY: help setup install build build-dev build-prod build-all build-devcontainer up up-prod down logs test test-cov lint format shell clean docker-clean docker-prune cache-stats dev stop rebuild fresh benchmark status docs

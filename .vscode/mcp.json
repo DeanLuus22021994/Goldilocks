@@ -1,0 +1,24 @@
+{
+  "servers": {
+    "markitdown": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "--interactive",
+        "--mount",
+        "type=bind,source=${workspaceFolder},target=/workspace",
+        "--workdir",
+        "/workspace",
+        "python:3.12-slim",
+        "sh",
+        "-c",
+        "pip install markitdown && python -c 'import markitdown; import json; import sys; md = markitdown.MarkItDown(); content = sys.stdin.read(); result = md.convert(content); print(json.dumps({\"markdown\": result.text_content if hasattr(result, \"text_content\") else str(result)}))'"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      }
+    }
+  }
+}
