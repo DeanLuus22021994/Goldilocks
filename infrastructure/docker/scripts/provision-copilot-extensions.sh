@@ -145,6 +145,74 @@ EOF
     success "User settings configured with GitHub Copilot preferences"
 }
 
+# Setup MCP servers configuration
+setup_mcp_servers() {
+    log "Setting up MCP servers configuration..."
+
+    mkdir -p "$DATA_DIR/User"
+
+    # Create mcp.json with available servers
+    cat > "$DATA_DIR/User/mcp.json" << 'EOF'
+{
+  "servers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@microsoft/mcp-server-playwright"]
+    },
+    "docker": {
+      "command": "docker",
+      "args": ["version"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@microsoft/mcp-server-filesystem", "/workspaces/Goldilocks"]
+    }
+  }
+}
+EOF
+
+    chmod 644 "$DATA_DIR/User/mcp.json"
+    success "MCP servers configuration created"
+}
+
+# Verify MCP servers availability
+verify_mcp_servers() {
+    log "Verifying MCP servers availability..."
+
+    local errors=0
+
+    # Check Node.js and npm
+    if ! command -v node >/dev/null 2>&1; then
+        error "Node.js not found"
+        ((errors++))
+    else
+        success "Node.js available: $(node --version)"
+    fi
+
+    if ! command -v npm >/dev/null 2>&1; then
+        error "npm not found"
+        ((errors++))
+    else
+        success "npm available: $(npm --version)"
+    fi
+
+    # Check Docker access
+    if ! docker version >/dev/null 2>&1; then
+        warning "Docker not accessible (may be expected in some environments)"
+    else
+        success "Docker accessible"
+    fi
+
+    # Check MCP servers
+    if ! npx @microsoft/mcp-server-playwright --help >/dev/null 2>&1; then
+        warning "Playwright MCP server not fully accessible (may install on first use)"
+    else
+        success "Playwright MCP server available"
+    fi
+
+    return $errors
+}
+
 # Verify GitHub Copilot setup
 verify_setup() {
     log "Verifying GitHub Copilot setup..."
@@ -177,18 +245,19 @@ verify_setup() {
 
 # Main execution
 main() {
-    log "Starting GitHub Copilot extension provisioning..."
+    log "Starting GitHub Copilot extensions and MCP servers provisioning..."
 
     ensure_directories
     setup_extensions_config
     create_extension_manifest
     setup_user_data
+    setup_mcp_servers
 
-    if verify_setup; then
-        success "GitHub Copilot extension provisioning completed successfully!"
-        success "Extensions will be available immediately when VS Code Server starts"
+    if verify_setup && verify_mcp_servers; then
+        success "GitHub Copilot extensions and MCP servers provisioning completed successfully!"
+        success "Extensions and MCP servers will be available immediately when VS Code Server starts"
     else
-        error "GitHub Copilot extension provisioning failed!"
+        error "GitHub Copilot extensions and MCP servers provisioning failed!"
         exit 1
     fi
 }

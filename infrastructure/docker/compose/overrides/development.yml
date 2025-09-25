@@ -2,9 +2,48 @@
 # Goldilocks Development Environment Overrides
 # HIGH COMPATIBILITY - Local development optimizations
 # MODERNIZE - Hot reload, debugging, and development tools
+# SEPARATION OF CONCERNS - Extensions service development configuration
 # ==============================================================================
 
 services:
+  goldilocks-extensions:
+    # DEVELOPMENT: Extensions and MCP servers optimization
+    environment:
+      - EXTENSIONS_DEVELOPMENT_MODE=true
+      - VSCODE_EXTENSIONS_AUTO_RELOAD=true
+      - EXTENSIONS_LOG_LEVEL=DEBUG
+      - GITHUB_COPILOT_DEVELOPMENT=true
+      - EXTENSIONS_CACHE_ENABLED=true
+      - MCP_SERVERS_DEVELOPMENT=true
+      - DOCKER_HOST_ACCESS=true
+      - PLAYWRIGHT_BROWSERS_PATH=/tmp/playwright-browsers
+
+    # DEVELOPMENT: Extended health check for debugging extensions and MCP
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "test",
+          "-f",
+          "/root/.vscode-server-insiders/extensions/extensions.json",
+          "&&",
+          "test",
+          "-f",
+          "/root/.vscode-server-insiders/data/User/mcp.json",
+        ]
+      start_period: 15s
+      start_interval: 2s
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+    # DEVELOPMENT: Volume for live configuration updates
+    volumes:
+      - type: bind
+        source: ${DOCKER_CONTEXT_PATH:-../../../..}/.vscode-server-insiders
+        target: /workspace/.vscode-server-insiders
+        consistency: cached # Development optimization
+
   goldilocks-backend:
     # Development-specific configurations
     environment:
@@ -13,7 +52,7 @@ services:
       - TEMPLATES_AUTO_RELOAD=1
       - SEND_FILE_MAX_AGE_DEFAULT=1
       - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=0  # Keep .pyc for debugging
+      - PYTHONDONTWRITEBYTECODE=0 # Keep .pyc for debugging
       - LOG_LEVEL=DEBUG
       - LOG_FORMAT=colored
       - ENABLE_PROFILER=true
@@ -22,8 +61,8 @@ services:
 
     # Development ports (expose additional debugging ports)
     ports:
-      - "5555:5555"  # Debugger port
-      - "9090:9090"  # Metrics/monitoring
+      - "5555:5555" # Debugger port
+      - "9090:9090" # Metrics/monitoring
 
     # Additional development volumes for hot reload
     volumes:
@@ -35,10 +74,10 @@ services:
       resources:
         limits:
           memory: 2G
-          cpus: '4.0'
+          cpus: "4.0"
         reservations:
           memory: 1G
-          cpus: '2.0'
+          cpus: "2.0"
 
   goldilocks-db:
     # Override database environment for development

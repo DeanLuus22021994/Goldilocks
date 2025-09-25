@@ -250,6 +250,18 @@ RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   rm -rf /var/lib/apt/lists/*; \
   apt-get clean
 
+# MODERNIZE: Install Node.js for MCP servers support
+RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  set -eux; \
+  curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -; \
+  apt-get install -y nodejs; \
+  npm install -g npm@latest; \
+  # Pre-install common MCP servers
+  npm install -g @microsoft/mcp-server-playwright @microsoft/mcp-server-filesystem || echo "Warning: MCP servers pre-install failed"; \
+  rm -rf /var/lib/apt/lists/*; \
+  apt-get clean
+
 # PERFORMANCE: Optimized development environment variables
 ENV PATH="/opt/venv/bin:$PATH" \
   FLASK_APP=src.goldilocks.app \

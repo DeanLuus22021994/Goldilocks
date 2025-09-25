@@ -19,6 +19,26 @@
       ],
       "settings": {
         "python.defaultInterpreterPath": "/opt/venv/bin/python"
+      },
+      "mcp": {
+        "servers": {
+          "playwright": {
+            "command": "npx",
+            "args": ["-y", "@microsoft/mcp-server-playwright"]
+          },
+          "docker": {
+            "command": "docker",
+            "args": ["version"]
+          },
+          "filesystem": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@microsoft/mcp-server-filesystem",
+              "/workspaces/Goldilocks"
+            ]
+          }
+        }
       }
     }
   },

@@ -63,8 +63,8 @@ services:
       - goldilocks-pytest-cache:/tmp/pytest-cache
       - goldilocks-build-cache:/tmp/build-cache
       - goldilocks-bytecode-cache:/tmp/bytecode-cache
-      # VS Code Server extensions and data persistence
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
+      # SEPARATION OF CONCERNS: Access to provisioned extensions (read-only access)
+      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions:ro
       - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
 
     # HIGH COMPATIBILITY: Environment configuration from shared file
@@ -88,11 +88,6 @@ services:
       FLASK_PROFILER_ENABLED: ${FLASK_PROFILER_ENABLED:-true}
       FLASK_PROFILER_PATH: ${FLASK_PROFILER_PATH:-/tmp/profiler}
 
-      # GitHub Copilot optimization (container-specific)
-      VSCODE_EXTENSIONS: /root/.vscode-server-insiders/extensions
-      GITHUB_COPILOT_ENABLED: true
-      VSCODE_SERVER_INSIDERS_EXTENSIONS_AUTOINSTALL: true
-
     # STRUCTURED: Port configuration
     ports:
       - "${BACKEND_PORT:-9000}:9000"
@@ -109,6 +104,9 @@ services:
       goldilocks-db:
         condition: service_healthy
         restart: true
+      goldilocks-extensions:
+        condition: service_healthy
+        restart: false # Extensions provision once
 
     # STRUCTURED: Profile management
     profiles: ["dev", "backend"]

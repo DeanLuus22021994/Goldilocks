@@ -1,0 +1,113 @@
+# VS Code Extensions Service - Dedicated Development Tools Support
+# Adheres to: SEPARATION OF CONCERNS, NO CROSS-CUTTING, STRUCTURED, DRY
+
+services:
+  goldilocks-extensions:
+    build:
+      context: ${DOCKER_CONTEXT_PATH:-../../../..}
+      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
+      target: devcontainer
+      # MODERNIZE: Advanced BuildKit features for extensions
+      cache_from:
+        - goldilocks:devcontainer
+        - goldilocks:tools
+      # HIGH COMPATIBILITY: Build arguments
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.14.0rc3-trixie}
+        BUILDKIT_INLINE_CACHE: ${BUILDKIT_INLINE_CACHE:-1}
+        BUILDX_EXPERIMENTAL: ${BUILDX_EXPERIMENTAL:-1}
+
+    container_name: goldilocks-extensions
+    restart: "no"
+
+    # LIGHTWEIGHT: Minimal resources for extensions service
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 64M
+          cpus: "0.1"
+
+    # SEPARATION OF CONCERNS: Extensions and MCP servers provisioning command
+    command: >
+      sh -c "
+        echo '🔧 Provisioning VS Code Extensions and MCP Servers...' &&
+        /usr/local/bin/provision-copilot-extensions.sh &&
+        echo '✅ Extensions and MCP servers provisioning completed' &&
+        echo '🤖 MCP servers available: Playwright, Docker, Filesystem' &&
+        sleep infinity
+      "
+
+    # STRUCTURED: Extensions-specific volumes only
+    volumes:
+      # VS Code Server extensions and data persistence (dedicated)
+      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
+      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
+      # Configuration access (read-only)
+      - type: bind
+        source: ${DOCKER_CONTEXT_PATH:-../../../..}/.vscode-server-insiders
+        target: /workspace/.vscode-server-insiders
+        read_only: true
+      # Docker host communication for infrastructure access
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    # STRUCTURED: Extensions-specific environment
+    environment:
+      # Extensions service identification
+      SERVICE_TYPE: extensions
+      SERVICE_PURPOSE: vscode-extensions-provisioning
+
+      # GitHub Copilot optimization (service-specific)
+      VSCODE_EXTENSIONS: /root/.vscode-server-insiders/extensions
+      GITHUB_COPILOT_ENABLED: true
+      VSCODE_SERVER_INSIDERS_EXTENSIONS_AUTOINSTALL: true
+
+      # MCP Servers configuration
+      MCP_SERVERS_ENABLED: true
+      DOCKER_HOST: unix:///var/run/docker.sock
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/playwright-browsers
+
+      # Performance optimization
+      EXTENSIONS_CACHE_DIR: /tmp/extensions-cache
+
+    # INFRASTRUCTURE ACCESS: Docker host communication for infrastructure management
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # STRUCTURED: Working directory for extensions
+    working_dir: /workspace
+
+    # INFRASTRUCTURE: Network configuration with host access
+    networks:
+      - goldilocks-network
+
+    # STRUCTURED: Profile management for extensions
+    profiles: ["dev", "extensions"]
+
+    # LIGHTWEIGHT: Minimal security requirements
+    security_opt:
+      - no-new-privileges:true
+
+    # MODERNIZE: Health monitoring for extensions service
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "test",
+          "-f",
+          "/root/.vscode-server-insiders/extensions/extensions.json",
+        ]
+      start_period: 30s
+      start_interval: 5s
+      interval: 60s
+      timeout: 5s
+      retries: 2
+
+    # STRUCTURED: Service metadata
+    labels:
+      com.goldilocks.service.type: "development-tools"
+      com.goldilocks.service.purpose: "vscode-extensions"
+      com.goldilocks.service.responsibility: "extensions-provisioning"
+      com.goldilocks.architecture.principle: "separation-of-concerns"
