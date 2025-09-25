@@ -54,27 +54,21 @@ class TestStructureContentGenerator:
             assert "Lines of Code**: 5,000" in content
 
     @patch("subprocess.run")
-    def test_generate_tree_uses_tree_command(
-        self, mock_run: MagicMock
-    ) -> None:
+    def test_generate_tree_uses_tree_command(self, mock_run: MagicMock) -> None:
         """Test that tree generation prefers external tree command."""
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="project/\n├── file1.py\n└── file2.py\n"
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout="project/\n├── file1.py\n└── file2.py\n")
 
         generator = StructureContentGenerator()
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = generator._generate_tree(Path(temp_dir))
+            result = generator.generate_tree_structure(Path(temp_dir))
 
             assert "project/" in result
             assert "├── file1.py" in result
             mock_run.assert_called_once()
 
     @patch("subprocess.run")
-    def test_generate_tree_fallback_to_python(
-        self, mock_run: MagicMock
-    ) -> None:
+    def test_generate_tree_fallback_to_python(self, mock_run: MagicMock) -> None:
         """Test fallback to Python tree implementation."""
         mock_run.side_effect = FileNotFoundError()
 
@@ -84,7 +78,7 @@ class TestStructureContentGenerator:
             project_root = Path(temp_dir)
             (project_root / "test.py").write_text("# test file")
 
-            result = generator._generate_tree(project_root)
+            result = generator.generate_tree_structure(project_root)
 
             # Should include the root directory name
             assert project_root.name in result
@@ -107,7 +101,7 @@ class TestStructureContentGenerator:
             (project_root / "src").mkdir()
             (project_root / "src" / "app.py").write_text("# app")
 
-            result = generator._python_tree(project_root)
+            result = generator.generate_python_tree_structure(project_root)
 
             assert "main.py" in result
             assert "src" in result

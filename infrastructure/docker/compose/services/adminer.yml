@@ -41,19 +41,16 @@ services:
     # STRUCTURED: Profile management
     profiles: ["dev", "admin", "database"]
 
-    # MODERNIZE: Health monitoring
+    # MODERNIZE: Health monitoring using PHP
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080", "||", "exit", "1"]
+      test: ["CMD", "php", "-r", "echo file_get_contents('http://localhost:8080') ? 'ok' : exit(1);"]
       start_period: 15s
       start_interval: 3s
       interval: 30s
       timeout: 5s
       retries: 2
 
-    # SECURITY: Read-only root filesystem
-    read_only: true
-
-    # SECURITY: Temporary filesystem for writes
+    # SECURITY: Temporary filesystem for writes (adminer needs writable /var/www/html for CSS)
     tmpfs:
       - /tmp:size=50M,noexec,nosuid,nodev
 

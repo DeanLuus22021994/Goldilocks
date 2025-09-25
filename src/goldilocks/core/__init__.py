@@ -17,21 +17,26 @@ from typing import Any
 class Config:
     """Base configuration class."""
 
-    SECRET_KEY = os.environ.get(
-        "SECRET_KEY", "dev-secret-key-change-in-production"
-    )
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@"
-        "localhost:3306/goldilocks",
+        "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@" "localhost:3306/goldilocks",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 10,
         "pool_timeout": 30,
-        "pool_recycle": 3600,
+        "pool_recycle": 1800,  # Recycle connections every 30 minutes
         "max_overflow": 20,
-        "pool_pre_ping": True,
+        "pool_pre_ping": True,  # Test connections before use
+        "connect_args": {
+            "connect_timeout": 10,
+            "read_timeout": 30,
+            "write_timeout": 30,
+            "charset": "utf8mb4",
+            "use_unicode": True,
+            "autocommit": False,
+        },
     }
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = 3600

@@ -64,6 +64,12 @@ services:
       - --skip-name-resolve
       - --skip-log-bin
       - --expire-logs-days=1
+      - --wait-timeout=600
+      - --interactive-timeout=600
+      - --net-read-timeout=60
+      - --net-write-timeout=60
+      - --max-allowed-packet=64M
+      - --connect-timeout=10
 
     # RELIABILITY: Health monitoring
     healthcheck:

@@ -17,9 +17,9 @@ class MarkdownProcessor:
     def _initialize_markitdown(self) -> None:
         """Lazy initialization of markitdown to handle import issues."""
         try:
-            import markitdown  # type: ignore
+            import markitdown  # type: ignore[import]
 
-            self._markitdown = markitdown.MarkItDown()
+            self._markitdown = markitdown.MarkItDown()  # type: ignore[misc]
         except ImportError:
             self._markitdown = None
 

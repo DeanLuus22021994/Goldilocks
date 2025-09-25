@@ -119,7 +119,7 @@ and the markitdown package for enhanced markdown processing.
 
     def _python_tree(self, project_root: Path) -> str:
         """Fallback tree implementation in Python."""
-        lines = []
+        lines: list[str] = []
         ignore_dirs = {
             ".git",
             "__pycache__",
@@ -157,6 +157,15 @@ and the markitdown package for enhanced markdown processing.
         lines.append(f"{project_root.name}/")
         walk_tree(project_root, "")
         return "\n".join(lines)
+
+    # Public methods for testing
+    def generate_tree_structure(self, project_root: Path) -> str:
+        """Public method for testing tree generation."""
+        return self._generate_tree(project_root)
+
+    def generate_python_tree_structure(self, project_root: Path) -> str:
+        """Public method for testing Python tree fallback."""
+        return self._python_tree(project_root)
 
 
 class TechnicalContentGenerator:

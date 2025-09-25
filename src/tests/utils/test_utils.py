@@ -22,7 +22,7 @@ class TestUtilityFunctions:
 
     def test_safe_get_existing_key(self) -> None:
         """Test safe_get with existing key."""
-        data = {"key1": "value1", "key2": 42}
+        data: dict[str, str | int] = {"key1": "value1", "key2": 42}
 
         result = safe_get(data, "key1")
         assert result == "value1"
@@ -286,10 +286,7 @@ class TestTimerDecorator:
         if sys.flags.optimize < 2:
             # Docstrings should be preserved when not running with -OO
             assert documented_function.__doc__ is not None
-            assert (
-                "This function has documentation"
-                in documented_function.__doc__
-            )
+            assert "This function has documentation" in documented_function.__doc__
         else:
             # When running with -OO, docstrings are stripped, so we just
             # check it's not causing errors
@@ -327,9 +324,7 @@ class TestUtilityIntegration:
 
     def test_filename_sanitization_and_truncation(self) -> None:
         """Test filename sanitization combined with truncation."""
-        dangerous_long_filename = (
-            "Very<>Long|File?Name*With/Dangerous\\Characters.txt"
-        )
+        dangerous_long_filename = "Very<>Long|File?Name*With/Dangerous\\Characters.txt"
 
         # Sanitize first
         clean_filename = sanitize_filename(dangerous_long_filename)
@@ -342,10 +337,7 @@ class TestUtilityIntegration:
 
     def test_slug_generation_with_truncation(self) -> None:
         """Test slug generation with built-in truncation."""
-        long_title = (
-            "This is an extremely long blog post title that needs to be "
-            "converted to a URL-friendly slug"
-        )
+        long_title = "This is an extremely long blog post title that needs to be " "converted to a URL-friendly slug"
 
         slug = generate_slug(long_title, max_length=30)
 

@@ -12,6 +12,26 @@ SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- Use database with proper error handling
 USE goldilocks;
 
+-- Create additional application users for different connection types
+-- Primary application user (matches Docker environment)
+CREATE USER IF NOT EXISTS 'goldilocks_app'@'%' IDENTIFIED BY 'goldilocks_app_secure_2024';
+GRANT ALL PRIVILEGES ON goldilocks.* TO 'goldilocks_app'@'%';
+
+-- Alternative application user (matches application default config)
+CREATE USER IF NOT EXISTS 'goldilocks_user'@'%' IDENTIFIED BY 'goldilocks_pass_2024';
+GRANT ALL PRIVILEGES ON goldilocks.* TO 'goldilocks_user'@'%';
+
+-- Test user for testing environment
+CREATE USER IF NOT EXISTS 'goldilocks_test'@'%' IDENTIFIED BY 'goldilocks_test_2024';
+GRANT ALL PRIVILEGES ON goldilocks.* TO 'goldilocks_test'@'%';
+
+-- Read-only user for monitoring/reporting
+CREATE USER IF NOT EXISTS 'goldilocks_readonly'@'%' IDENTIFIED BY 'goldilocks_readonly_2024';
+GRANT SELECT ON goldilocks.* TO 'goldilocks_readonly'@'%';
+
+-- Flush privileges to ensure users are created
+FLUSH PRIVILEGES;
+
 -- Users table for authentication with enhanced security
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

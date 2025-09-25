@@ -1,17 +1,17 @@
 # filepath: /app/pyproject.toml
 [tool.black]
-line-length = 79
+line-length = 120
 target-version = ["py313"]
 skip-string-normalization = true
 
 [tool.isort]
 profile = "black"
-line_length = 79
+line_length = 120
 known_first_party = ["goldilocks", "app"]
 src_paths = ["src", "."]
 
 [tool.flake8]
-max-line-length = 79
+max-line-length = 120
 extend-ignore = ["E203", "W503"]
 
 [tool.pytest.ini_options]
