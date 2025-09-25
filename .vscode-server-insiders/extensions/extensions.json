@@ -8,6 +8,10 @@
     {
       "id": "github.copilot-chat",
       "enabled": true
+    },
+    {
+      "id": "github.vscode-pull-request-github",
+      "enabled": true
     }
   ]
 }
