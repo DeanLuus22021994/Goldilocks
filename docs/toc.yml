@@ -4,6 +4,8 @@
   href: TECHNICAL_SPECIFICATIONS.md
 - name: Project Structure
   href: PROJECT_STRUCTURE.md
+- name: Docker Infrastructure
+  href: DOCKER.md
 - name: API Reference
   href: api/
   homepage: api/goldilocks.html

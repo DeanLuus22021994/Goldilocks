@@ -1,0 +1,17 @@
+# Documentation Build Dependencies
+#
+# This folder contains required build tools and dependencies for generating
+# documentation (e.g., DocFX, build tools, binaries). These files are kept
+# available for the build process but excluded from version control to avoid
+# storing large binary files in the repository.
+#
+# Build dependencies should be installed/downloaded as needed during the
+# documentation build process.
+
+# Ignore all files in this directory
+*
+
+# But keep this .gitignore file itself
+!.gitignore
+!.copilotignore
+!README.md

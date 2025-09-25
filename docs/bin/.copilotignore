@@ -1,0 +1,38 @@
+# Copilot Ignore for Documentation Build Dependencies
+#
+# This folder contains binary build tools and dependencies for documentation
+# generation. Copilot is aware of this directory's purpose but should not
+# analyze or read through binary files, executables, and build artifacts
+# to avoid unnecessary processing and maintain performance.
+
+# Ignore all binary and executable files
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Ignore build tool directories and artifacts
+node_modules/
+tools/
+bin/
+obj/
+packages/
+cache/
+temp/
+tmp/
+
+# Allow configuration and documentation files
+!*.md
+!*.json
+!*.yml
+!*.yaml
+!*.txt
+!*.cfg
+!*.config
+!.gitignore
+!.copilotignore

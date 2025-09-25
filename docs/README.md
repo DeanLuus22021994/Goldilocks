@@ -22,6 +22,26 @@ Get up and running with Goldilocks:
   - Docker: `docker compose up --build` (uses gunicorn on 9000)
 - **Access**: Navigate to `http://localhost:9000`
 
+## 📚 Documentation
+
+Build and view comprehensive documentation with DocFX:
+
+```bash
+# Build documentation (first run downloads DocFX automatically)
+./docs/bin/build.sh
+
+# View generated site
+cd docs/_site && python -m http.server 8080
+# Access at http://localhost:8080
+```
+
+The documentation system:
+
+- **Auto-build**: Downloads DocFX binaries on first use
+- **Version Control**: Only configuration files tracked, binaries ignored
+- **Comprehensive**: API docs, technical specs, Docker guides
+- **Modern**: Static site generation with navigation and search
+
 ## 🎨 User Interface
 
 Modern, accessible web interface:

@@ -22,7 +22,8 @@
       },
       {
         "files": ["*.md"],
-        "dest": "."
+        "dest": ".",
+        "exclude": ["bin/**"]
       },
       {
         "files": ["../README.md"],
@@ -35,7 +36,9 @@
         "dest": "assets/"
       }
     ],
-    "dest": "_site"
+    "dest": "_site",
+    "globalMetadataFiles": [],
+    "fileMetadataFiles": []
   },
   "globalMetadata": {
     "_appTitle": "Goldilocks Documentation",
