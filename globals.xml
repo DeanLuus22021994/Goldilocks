@@ -228,7 +228,7 @@ This is the SINGLE SOURCE OF TRUTH for all version references in the Goldilocks 
 
             <config-targets>
                 <file path="pyproject.toml" section="[tool.mypy]" key="python_version" />
-                <file path="config/pyproject.toml" section="[tool.mypy]" key="python_version" />
+                <file path="pyproject.toml" section="[tool.mypy]" key="python_version" />
                 <file path=".github/workflows/ci.yml" key="python-version" />
                 <file path="docker-bake.json" key="PYTHON_VERSION" />
             </config-targets>
