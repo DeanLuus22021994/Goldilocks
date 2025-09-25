@@ -1,8 +1,56 @@
-- name: Overview
+# =============================================================================
+# GOLDILOCKS DOCUMENTATION - TABLE OF CONTENTS
+# =============================================================================
+# Structured navigation optimized for GitHub Copilot development workflows
+# Last updated: 2025-09-25
+# =============================================================================
+
+- name: 🏠 Overview
   href: README.md
-- name: Technical Specifications
+  displayName: "Project Overview"
+  items:
+    - name: Quick Start
+      href: README.md#-quick-start
+    - name: API Endpoints
+      href: README.md#-api-endpoints
+    - name: User Interface
+      href: README.md#-user-interface
+
+- name: 🔧 Technical Specifications
   href: TECHNICAL.md
-- name: Project Structure
+  displayName: "Technical Reference"
+  items:
+    - name: System Status
+      href: TECHNICAL.md#-system-status
+    - name: Architecture Overview
+      href: TECHNICAL.md#️-architecture-overview
+    - name: Development Commands
+      href: TECHNICAL.md#-development-commands
+    - name: Testing Strategy
+      href: TECHNICAL.md#-testing-strategy
+    - name: GitHub Copilot Integration
+      href: TECHNICAL.md#-github-copilot-integration
+
+- name: 📁 Project Structure
   href: STRUCTURE.md
-- name: Docker Infrastructure
+  displayName: "Architecture Guide"
+  items:
+    - name: Directory Structure
+      href: STRUCTURE.md#-directory-structure
+    - name: File Organization
+      href: STRUCTURE.md#-file-organization-principles
+    - name: Development Guide
+      href: STRUCTURE.md#-quick-development-guide
+
+- name: 🐳 Docker Infrastructure
   href: DOCKER.md
+  displayName: "Container Guide"
+  items:
+    - name: Quick Start
+      href: DOCKER.md#quick-start
+    - name: Architecture
+      href: DOCKER.md#architecture
+    - name: Configuration
+      href: DOCKER.md#configuration
+    - name: Management Commands
+      href: DOCKER.md#management-commands

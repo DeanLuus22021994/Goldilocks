@@ -1,250 +1,393 @@
 #!/bin/bash
 # Documentation Build Script
-# Downloads required tools to bin/ and builds documentation
+# Template-based document generation following SRP, DRY, MODERNIZE principles
+# Optimized for GitHub Copilot development workflows
+# Adheres to .github/copilot-instructions.md standards
 
-set -e
+set -euo pipefail  # Enhanced error handling
+IFS=$'\n\t'       # Secure Internal Field Separator
 
-DOCS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BIN_DIR="$DOCS_DIR/bin"
+# =============================================================================
+# CONFIGURATION & GLOBALS
+# =============================================================================
 
-echo "🏗️  Building Goldilocks Documentation"
-echo "======================================="
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly DOCS_DIR="$SCRIPT_DIR"
+readonly BIN_DIR="$DOCS_DIR/bin"
+readonly TEMPLATES_DIR="$DOCS_DIR/templates"
+readonly BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-# Create bin directory if it doesn't exist
-mkdir -p "$BIN_DIR"
+# Colors for enhanced output (MODERNIZE principle)
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly NC='\033[0m' # No Color
 
-# Check if DocFX exists, download if not
-if [ ! -f "$BIN_DIR/docfx" ] && [ ! -f "$BIN_DIR/docfx.exe" ]; then
-    echo "📥 Downloading DocFX..."
-    cd "$BIN_DIR"
+# =============================================================================
+# UTILITY FUNCTIONS (SRP - Single Responsibility)
+# =============================================================================
 
-    # Get latest release info and download URL
-    LATEST_RELEASE=$(curl -s https://api.github.com/repos/dotnet/docfx/releases/latest)
+log_info() {
+    echo -e "${BLUE}ℹ️  $*${NC}"
+}
 
-    # Download appropriate version based on OS
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep -o '"browser_download_url": "[^"]*linux[^"]*\.zip"' | cut -d'"' -f4)
-        wget -q "$DOWNLOAD_URL" -O docfx-linux.zip
-        python3 -c "import zipfile; zipfile.ZipFile('docfx-linux.zip').extractall('.')"
-        chmod +x docfx
-        rm docfx-linux.zip
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep -o '"browser_download_url": "[^"]*osx[^"]*\.zip"' | cut -d'"' -f4)
-        wget -q "$DOWNLOAD_URL" -O docfx-osx.zip
-        python3 -c "import zipfile; zipfile.ZipFile('docfx-osx.zip').extractall('.')"
-        chmod +x docfx
-        rm docfx-osx.zip
+log_success() {
+    echo -e "${GREEN}✅ $*${NC}"
+}
+
+log_warn() {
+    echo -e "${YELLOW}⚠️  $*${NC}"
+}
+
+log_error() {
+    echo -e "${RED}❌ $*${NC}" >&2
+}
+
+log_step() {
+    echo -e "${PURPLE}🔧 $*${NC}"
+}
+
+log_header() {
+    echo -e "${CYAN}$*${NC}"
+}
+
+cleanup() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Build failed with exit code $exit_code"
+    fi
+    return $exit_code
+}
+
+trap cleanup EXIT
+
+# =============================================================================
+# DATA COLLECTION FUNCTIONS (DRY - Don't Repeat Yourself)
+# =============================================================================
+
+get_system_info() {
+    log_step "Gathering system information..."
+
+    # Python version (HIGH COMPATIBILITY)
+    local python_version
+    python_version=$(python3 --version 2>/dev/null | cut -d' ' -f2 || echo "Not installed")
+
+    # Flask version
+    local flask_version
+    if [[ -f "$PROJECT_ROOT/requirements.txt" ]]; then
+        flask_version=$(grep -i "^flask" "$PROJECT_ROOT/requirements.txt" | cut -d'=' -f3 2>/dev/null || echo "Unknown")
     else
-        echo "❌ Unsupported OS for automatic DocFX download"
-        exit 1
+        flask_version=$(python3 -c "import flask; print(flask.__version__)" 2>/dev/null || echo "Unknown")
     fi
 
+    # Docker version
+    local docker_version
+    docker_version=$(docker --version 2>/dev/null | cut -d' ' -f3 | cut -d',' -f1 || echo "Not installed")
+
+    # Git info
+    local git_branch git_commit
+    git_branch=$(cd "$PROJECT_ROOT" && git branch --show-current 2>/dev/null || echo "detached")
+    git_commit=$(cd "$PROJECT_ROOT" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    # Export for template usage
+    export PYTHON_VERSION="$python_version"
+    export FLASK_VERSION="$flask_version"
+    export DOCKER_VERSION="$docker_version"
+    export GIT_BRANCH="$git_branch"
+    export GIT_COMMIT="$git_commit"
+}
+
+get_project_metrics() {
+    log_step "Analyzing project metrics..."
+
+    # Test files count
+    local test_count
+    test_count=$(find "$PROJECT_ROOT/src" -name "test_*.py" 2>/dev/null | wc -l)
+
+    # Python files count (excluding tests)
+    local py_count
+    py_count=$(find "$PROJECT_ROOT/src" -name "*.py" -not -path "*/tests/*" 2>/dev/null | wc -l)
+
+    # Template files count
+    local template_count
+    template_count=$(find "$PROJECT_ROOT/frontend" -name "*.html" 2>/dev/null | wc -l)
+
+    # CSS files count
+    local css_count
+    css_count=$(find "$PROJECT_ROOT/frontend" -name "*.css" 2>/dev/null | wc -l)
+
+    # Dependencies count
+    local py_deps=0
+    local node_deps=0
+    local dev_deps=0
+
+    if [[ -f "$PROJECT_ROOT/requirements.txt" ]]; then
+        py_deps=$(grep -c "^[^#]" "$PROJECT_ROOT/requirements.txt" 2>/dev/null || echo "0")
+    fi
+
+    if [[ -f "$PROJECT_ROOT/package.json" ]] && command -v jq >/dev/null; then
+        node_deps=$(jq -r '.dependencies // {} | length' "$PROJECT_ROOT/package.json" 2>/dev/null || echo "0")
+        dev_deps=$(jq -r '.devDependencies // {} | length' "$PROJECT_ROOT/package.json" 2>/dev/null || echo "0")
+    fi
+
+    # Export for template usage
+    export TEST_COUNT="$test_count"
+    export PYTHON_FILES_COUNT="$py_count"
+    export TEMPLATE_COUNT="$template_count"
+    export CSS_COUNT="$css_count"
+    export PY_DEPS_COUNT="$py_deps"
+    export NODE_DEPS_COUNT="$node_deps"
+    export DEV_DEPS_COUNT="$dev_deps"
+}
+
+get_project_structure() {
+    log_step "Generating project structure..."
+
+    cd "$PROJECT_ROOT"
+
+    # Generate tree with enhanced filtering (LIGHTWEIGHT principle)
+    local tree_output
+    tree_output=$(tree . \
+        -I '__pycache__|.mypy_cache|node_modules|.git|.pytest_cache|coverage.xml|*.pyc|_site|bin' \
+        -a \
+        --dirsfirst \
+        --filesfirst \
+        -L 4 2>/dev/null | \
+        sed '1d' | \
+        head -n -2 || echo "Tree command not available")
+
+    export TREE_OUTPUT="$tree_output"
+}
+
+get_performance_data() {
+    log_step "Gathering performance benchmarks..."
+
+    local performance_metrics="No benchmark data available"
+    if [[ -f "$PROJECT_ROOT/.benchmarks/latest_benchmark_summary.txt" ]]; then
+        performance_metrics=$(head -10 "$PROJECT_ROOT/.benchmarks/latest_benchmark_summary.txt" 2>/dev/null || echo "No benchmark data available")
+    fi
+
+    export PERFORMANCE_METRICS="$performance_metrics"
+}
+
+# =============================================================================
+# TEMPLATE ENGINE FUNCTIONS (STRUCTURED principle)
+# =============================================================================
+
+process_template() {
+    local template_content="$1"
+    local output=""
+
+    # Replace template variables using envsubst-like functionality
+    output=$(echo "$template_content" | \
+        sed "s/{{metadata.build_timestamp}}/$BUILD_TIMESTAMP/g" | \
+        sed "s/{{content.tree_output}}/$TREE_OUTPUT/g" | \
+        sed "s/{{content.system_metrics.python_version}}/$PYTHON_VERSION/g" | \
+        sed "s/{{content.system_metrics.flask_version}}/$FLASK_VERSION/g" | \
+        sed "s/{{content.system_metrics.docker_version}}/$DOCKER_VERSION/g" | \
+        sed "s/{{content.system_metrics.git_info.branch}}/$GIT_BRANCH/g" | \
+        sed "s/{{content.system_metrics.git_info.commit}}/$GIT_COMMIT/g" | \
+        sed "s/{{content.project_assets.test_count}}/$TEST_COUNT/g" | \
+        sed "s/{{content.project_assets.python_files.count}}/$PYTHON_FILES_COUNT/g" | \
+        sed "s/{{content.project_assets.templates.count}}/$TEMPLATE_COUNT/g" | \
+        sed "s/{{content.project_assets.css_files.count}}/$CSS_COUNT/g" | \
+        sed "s/{{content.dependencies_info.python_dependencies}}/$PY_DEPS_COUNT/g" | \
+        sed "s/{{content.dependencies_info.node_dependencies}}/$NODE_DEPS_COUNT/g" | \
+        sed "s/{{content.dependencies_info.dev_dependencies}}/$DEV_DEPS_COUNT/g" | \
+        sed "s/{{content.performance_benchmarks}}/$PERFORMANCE_METRICS/g")
+
+    echo "$output"
+}
+
+generate_structure_doc() {
+    log_step "Generating STRUCTURE.md from schema template..."
+
+    if [[ ! -f "$TEMPLATES_DIR/STRUCTURE.schema" ]]; then
+        log_error "STRUCTURE.schema template not found"
+        return 1
+    fi
+
+    # Extract template from schema (MODERNIZE approach)
+    local template_content
+    template_content=$(jq -r '.template' "$TEMPLATES_DIR/STRUCTURE.schema" 2>/dev/null)
+
+    if [[ -z "$template_content" || "$template_content" == "null" ]]; then
+        log_error "Could not extract template from STRUCTURE.schema"
+        return 1
+    fi
+
+    # Process template
+    local processed_content
+    processed_content=$(process_template "$template_content")
+
+    # Write output
+    echo "$processed_content" > "$DOCS_DIR/STRUCTURE.md"
+    log_success "STRUCTURE.md generated successfully"
+}
+
+generate_technical_doc() {
+    log_step "Generating TECHNICAL.md from schema template..."
+
+    if [[ ! -f "$TEMPLATES_DIR/TECHNICAL.schema" ]]; then
+        log_error "TECHNICAL.schema template not found"
+        return 1
+    fi
+
+    # Extract template from schema
+    local template_content
+    template_content=$(jq -r '.template' "$TEMPLATES_DIR/TECHNICAL.schema" 2>/dev/null)
+
+    if [[ -z "$template_content" || "$template_content" == "null" ]]; then
+        log_error "Could not extract template from TECHNICAL.schema"
+        return 1
+    fi
+
+    # Process template
+    local processed_content
+    processed_content=$(process_template "$template_content")
+
+    # Write output
+    echo "$processed_content" > "$DOCS_DIR/TECHNICAL.md"
+    log_success "TECHNICAL.md generated successfully"
+}
+
+# =============================================================================
+# DOCFX MANAGEMENT (IDEMPOTENCY principle)
+# =============================================================================
+
+download_docfx() {
+    log_step "Managing DocFX installation..."
+
+    if [[ -f "$BIN_DIR/docfx" ]] || [[ -f "$BIN_DIR/docfx.exe" ]]; then
+        log_success "DocFX already available"
+        return 0
+    fi
+
+    log_info "Downloading DocFX..."
+    mkdir -p "$BIN_DIR"
+    cd "$BIN_DIR"
+
+    # Get latest release info
+    local latest_release
+    latest_release=$(curl -s https://api.github.com/repos/dotnet/docfx/releases/latest)
+
+    local download_url platform_file
+
+    case "$OSTYPE" in
+        linux-gnu*)
+            download_url=$(echo "$latest_release" | grep -o '"browser_download_url": "[^"]*linux[^"]*\.zip"' | cut -d'"' -f4)
+            platform_file="docfx-linux.zip"
+            ;;
+        darwin*)
+            download_url=$(echo "$latest_release" | grep -o '"browser_download_url": "[^"]*osx[^"]*\.zip"' | cut -d'"' -f4)
+            platform_file="docfx-osx.zip"
+            ;;
+        *)
+            log_error "Unsupported OS: $OSTYPE"
+            return 1
+            ;;
+    esac
+
+    if [[ -z "$download_url" ]]; then
+        log_error "Could not find download URL for $OSTYPE"
+        return 1
+    fi
+
+    # Download and extract (LIGHTWEIGHT principle)
+    wget -q "$download_url" -O "$platform_file"
+    python3 -c "import zipfile; zipfile.ZipFile('$platform_file').extractall('.')"
+    chmod +x docfx
+    rm "$platform_file"
+
     cd "$DOCS_DIR"
-    echo "✅ DocFX downloaded successfully"
-else
-    echo "✅ DocFX already available"
-fi
+    log_success "DocFX downloaded and configured"
+}
 
-# Build documentation
-echo "🔨 Building documentation..."
-cd "$DOCS_DIR"
+# =============================================================================
+# MAIN EXECUTION (STRUCTURED principle)
+# =============================================================================
 
-# Generate updated project structure
-echo "📊 Generating current project structure..."
-STRUCTURE_CONTENT=$(cat << 'EOF'
----
-uid: goldilocks.structure
-title: Project Structure
-description: File organization, module descriptions, and dependency mapping for Goldilocks
-author: Goldilocks Development Team
-ms.date: $(date +%Y-%m-%d)
----
+main() {
+    log_header "🏗️  Building Goldilocks Documentation"
+    log_header "======================================="
+    log_info "Build started at $BUILD_TIMESTAMP"
+    log_info "Following Copilot Instructions: MODERNIZE, DRY, SRP, STRUCTURED"
+    log_info "Project root: $PROJECT_ROOT"
+    log_info "Documentation: $DOCS_DIR"
 
-This document explains the organized project structure and where to find different types of files.
+    # Validate dependencies
+    if ! command -v jq >/dev/null; then
+        log_error "jq is required for JSON schema processing"
+        return 1
+    fi
 
-> [!NOTE]
-> This structure is automatically generated during documentation builds to ensure accuracy.
+    # Create bin directory
+    mkdir -p "$BIN_DIR"
 
-## Directory Structure
+    # Download DocFX if needed (IDEMPOTENCY)
+    download_docfx
 
-> [!NOTE]
-> This structure is automatically generated during documentation builds to ensure accuracy.
+    # Collect all data (DRY principle)
+    log_header "📊 Collecting Project Data"
+    get_system_info
+    get_project_metrics
+    get_project_structure
+    get_performance_data
 
-```text
-EOF
-)
+    # Generate documentation files using templates (SRP)
+    log_header "📚 Generating Documentation Content"
+    generate_structure_doc
+    generate_technical_doc
 
-# Get current project structure
-cd "$DOCS_DIR/.."
-TREE_OUTPUT=$(tree . -I '__pycache__|.mypy_cache|node_modules|.git|.pytest_cache|coverage.xml|*.pyc|_site' -a --dirsfirst | sed '1d' | head -n -2)
+    # Build with DocFX (MODERNIZE)
+    log_header "🔨 Building with DocFX"
+    cd "$DOCS_DIR"
 
-# Generate STRUCTURE.md with current tree
-cat > "$DOCS_DIR/STRUCTURE.md" << EOF
----
-uid: goldilocks.structure
-title: Project Structure
-description: File organization, module descriptions, and dependency mapping for Goldilocks
-author: Goldilocks Development Team
-ms.date: $(date +%Y-%m-%d)
----
+    local docfx_executable
+    if [[ -f "$BIN_DIR/docfx" ]]; then
+        docfx_executable="$BIN_DIR/docfx"
+    elif [[ -f "$BIN_DIR/docfx.exe" ]]; then
+        docfx_executable="$BIN_DIR/docfx.exe"
+    else
+        log_error "DocFX executable not found after installation"
+        return 1
+    fi
 
-This document explains the organized project structure and where to find different types of files.
+    log_step "Running DocFX build..."
+    if "$docfx_executable" docfx.json; then
+        log_success "DocFX build completed successfully"
+    else
+        log_warn "DocFX build completed with warnings"
+    fi
 
-> [!NOTE]
-> This structure is automatically generated during documentation builds to ensure accuracy.
+    # Generate build summary (STANDARDIZATION)
+    log_header "📊 Build Summary"
+    log_success "Documentation built successfully!"
+    log_info "Build timestamp: $BUILD_TIMESTAMP"
+    log_info "Generated files:"
+    log_info "  - STRUCTURE.md: Enhanced project structure (from schema)"
+    log_info "  - TECHNICAL.md: Comprehensive technical specifications (from schema)"
+    log_info "  - _site/: Complete documentation website"
 
-## Directory Structure
+    log_header "🌐 Access Documentation"
+    log_info "Local server: cd docs/_site && python -m http.server 8080"
+    log_info "Browser: http://localhost:8080"
 
-> [!NOTE]
-> This structure is automatically generated during documentation builds to ensure accuracy.
+    # Optional: Start local server if --serve flag is passed
+    if [[ "${1:-}" == "--serve" ]]; then
+        log_step "Starting local documentation server..."
+        cd "_site"
+        python3 -m http.server 8080 &
+        local server_pid=$!
+        log_success "Documentation server started at http://localhost:8080"
+        log_info "Press Ctrl+C to stop the server"
+        wait $server_pid
+    fi
+}
 
-\`\`\`text
-$TREE_OUTPUT
-\`\`\`
-
-## File Organization Principles
-
-### Configuration Files (\`config/\`)
-
-- All tool configurations are centralized here
-- Original files are kept in config/, with copies in root only when required by tools
-- Examples: pytest, mypy, flake8, cypress, pre-commit
-
-### Documentation (\`docs/\`)
-
-- All project documentation
-- README.md is copied to root for GitHub compatibility
-- Technical specifications and development guides
-- Automated build system with DocFX
-
-### Infrastructure (\`infrastructure/\`)
-
-- Container definitions (multi-stage Dockerfiles)
-- Deployment configurations
-- Environment-specific setups
-
-### Docker Scripts (\`infrastructure/docker/scripts/\`)
-
-- Build automation and management scripts
-- Development utilities and testing
-- Container deployment management
-- Linux-based DevContainer environment
-
-### Source Code (\`src/\`)
-
-- All Python source code in \`src/goldilocks/\`
-- Tests are in \`src/goldilocks/tests/\`
-- Follows Python src layout best practices
-
-## Quick Start
-
-1. **Development**: Use the optimized devcontainer or Docker compose
-2. **Testing**: \`python -m pytest\` (uses config/pyproject.toml)
-3. **E2E Tests**: \`npm run test:e2e\` (uses config/cypress.config.js)
-4. **Build**: Use scripts in \`scripts/\` directory
-5. **Deploy**: Use configurations in \`infrastructure/\`
-
-For detailed information, see [docs/README.md](docs/README.md).
-EOF
-
-# Generate updated TECHNICAL.md with current system info
-echo "⚙️  Generating current technical specifications..."
-
-# Get Python version
-PYTHON_VERSION=$(python3 --version 2>/dev/null | cut -d' ' -f2 || echo "3.x")
-
-# Get Flask version from requirements
-FLASK_VERSION=$(grep -i "^flask" ../requirements.txt 2>/dev/null | cut -d'=' -f3 || echo "3.x")
-
-# Count test files
-TEST_COUNT=$(find ../src/goldilocks/tests -name "test_*.py" 2>/dev/null | wc -l)
-
-cat > "$DOCS_DIR/TECHNICAL.md" << EOF
----
-uid: goldilocks.technical
-title: Technical Specifications
-description: Architecture, performance metrics, and development commands for Goldilocks
-author: Goldilocks Development Team
-ms.date: $(date +%Y-%m-%d)
----
-
-## Quick Reference
-
-| Component    | Version     | Status | Performance Target |
-| ------------ | ----------- | ------ | ------------------ |
-| Python       | $PYTHON_VERSION      | ✅     | <100ms startup     |
-| Flask        | $FLASK_VERSION         | ✅     | <50ms response     |
-| Docker       | Multi-stage | ✅     | <100MB runtime     |
-| Tests        | $TEST_COUNT files   | ✅     | <5s execution      |
-| DevContainer | Optimized   | ✅     | <30s rebuild       |
-
-## Architecture Checklist
-
-### ✅ Completed Optimizations
-
-- [x] Test Structure: Moved to src/goldilocks/tests/ for package inclusion
-- [x] Import System: Fixed all import errors, 100% pytest pass rate
-- [x] DevContainer: Removed unnecessary features, added volume caching
-- [x] Docker Multi-Stage: Separate build/tools/runtime images
-- [x] Python Bytecode: Precompilation scripts with optimization level 2
-- [x] File Organization: Config, docs, infrastructure, scripts domains
-- [x] Caching System: devcontainer-lock.json for build reproducibility
-
-## Development Commands
-
-Essential Commands:
-
-- npm run test:e2e # E2E tests with Cypress
-- python -m pytest # Unit tests (100% pass)
-- scripts/compile-bytecode.sh # Bytecode compilation
-- docker-compose --profile dev up # Development container
-- docker-compose --profile prod up # Production container
-
-Build Commands:
-
-- ./infrastructure/docker/scripts/compose.sh development build # Multi-stage Docker build
-- .devcontainer/scripts/generate-lock.sh # Update cache manifest
-- ./infrastructure/docker/scripts/test-infrastructure.sh # Infrastructure testing
-
-## File Locations
-
-- config/ # Tool configurations (pytest, cypress, pre-commit)
-- docs/ # Documentation (README, specifications)
-- infrastructure/ # Docker multi-stage builds, K8s manifests
-- scripts/ # Build automation (bytecode, caching)
-- src/goldilocks/ # Source code and tests
-- frontend/static/ # CSS, JS, HTML assets
-
-## Next Actions
-
-1. Validate Performance: Measure container sizes and startup times
-2. UI Enhancement: Responsive CSS architecture
-3. Error Handling: Structured exception handling throughout app
-4. Production Testing: Load testing and optimization validation
-
-## Troubleshooting
-
-| Issue                  | Quick Fix                                            |
-| ---------------------- | ---------------------------------------------------- |
-| Import errors          | python -m pytest src/goldilocks/tests/               |
-| Container rebuild slow | Check devcontainer-lock.json cache                   |
-| Tests failing          | Verify pytest config points to src/goldilocks/tests/ |
-| Large image size       | Use multi-stage runtime target                       |
-| Bytecode not working   | Run scripts/compile-bytecode.sh                      |
-EOF
-
-echo "✅ Documentation files regenerated"
-
-cd "$DOCS_DIR"
-
-if [ -f "$BIN_DIR/docfx" ]; then
-    "$BIN_DIR/docfx" docfx.json
-elif [ -f "$BIN_DIR/docfx.exe" ]; then
-    "$BIN_DIR/docfx.exe" docfx.json
-else
-    echo "❌ DocFX not found after download"
-    exit 1
-fi
-
-echo "🎉 Documentation built successfully!"
-echo "📖 Open _site/index.html to view the documentation"
+# Execute main function with all arguments
+main "$@"

@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Documentation Template Engine Configuration",
+  "description": "Configuration for template-based document generation following SRP and DRY principles",
+  "properties": {
+    "engine": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "goldilocks-docs-generator"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "principles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "MODERNIZE",
+              "DRY",
+              "SRP",
+              "STRUCTURED",
+              "MONOLITHIC",
+              "STANDARDIZATION",
+              "IDEMPOTENCY",
+              "SOLID",
+              "LOW CODE",
+              "HIGH COMPATIBILITY",
+              "LIGHTWEIGHT",
+              "LOW FOOTPRINT"
+            ]
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "templates": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "object",
+          "properties": {
+            "schema_file": {
+              "type": "string",
+              "const": "templates/STRUCTURE.schema"
+            },
+            "output_file": {
+              "type": "string",
+              "const": "STRUCTURE.md"
+            },
+            "description": {
+              "type": "string",
+              "const": "Project structure documentation with directory tree and organization principles"
+            }
+          }
+        },
+        "technical": {
+          "type": "object",
+          "properties": {
+            "schema_file": {
+              "type": "string",
+              "const": "templates/TECHNICAL.schema"
+            },
+            "output_file": {
+              "type": "string",
+              "const": "TECHNICAL.md"
+            },
+            "description": {
+              "type": "string",
+              "const": "Technical specifications with system status, performance metrics, and development commands"
+            }
+          }
+        }
+      }
+    },
+    "data_sources": {
+      "type": "object",
+      "properties": {
+        "tree_command": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "const": "tree"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "const": [".", "-I", "__pycache__|.mypy_cache|node_modules|.git|.pytest_cache|coverage.xml|*.pyc|_site|bin", "-a", "--dirsfirst", "--filesfirst", "-L", "4"]
+            },
+            "post_process": {
+              "type": "string",
+              "const": "sed '1d' | head -n -2"
+            }
+          }
+        },
+        "python_version": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "const": "python3 --version"
+            },
+            "extract": {
+              "type": "string",
+              "const": "cut -d' ' -f2"
+            }
+          }
+        },
+        "flask_version": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["requirements_file", "python_import"]
+            },
+            "fallback": {
+              "type": "string",
+              "const": "Unknown"
+            }
+          }
+        },
+        "docker_version": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "const": "docker --version"
+            },
+            "extract": {
+              "type": "string",
+              "const": "cut -d' ' -f3 | cut -d',' -f1"
+            },
+            "fallback": {
+              "type": "string",
+              "const": "Not installed"
+            }
+          }
+        },
+        "git_info": {
+          "type": "object",
+          "properties": {
+            "branch": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "git branch --show-current"
+                },
+                "fallback": {
+                  "type": "string",
+                  "const": "detached"
+                }
+              }
+            },
+            "commit": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "git rev-parse --short HEAD"
+                },
+                "fallback": {
+                  "type": "string",
+                  "const": "unknown"
+                }
+              }
+            }
+          }
+        },
+        "file_counts": {
+          "type": "object",
+          "properties": {
+            "test_files": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "find ../src -name \"test_*.py\""
+                },
+                "count": {
+                  "type": "string",
+                  "const": "wc -l"
+                }
+              }
+            },
+            "python_files": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "find ../src -name \"*.py\" -not -path \"*/tests/*\""
+                },
+                "count": {
+                  "type": "string",
+                  "const": "wc -l"
+                }
+              }
+            },
+            "template_files": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "find ../frontend -name \"*.html\""
+                },
+                "count": {
+                  "type": "string",
+                  "const": "wc -l"
+                }
+              }
+            },
+            "css_files": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "const": "find ../frontend -name \"*.css\""
+                },
+                "count": {
+                  "type": "string",
+                  "const": "wc -l"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "schema_validation": {
+          "type": "boolean",
+          "const": true,
+          "description": "Validate generated content against JSON schemas"
+        },
+        "lint_markdown": {
+          "type": "boolean",
+          "const": true,
+          "description": "Lint generated markdown files"
+        },
+        "copilot_optimization": {
+          "type": "boolean",
+          "const": true,
+          "description": "Optimize generated content for GitHub Copilot context"
+        }
+      }
+    }
+  },
+  "required": ["engine", "templates", "data_sources", "validation"]
+}

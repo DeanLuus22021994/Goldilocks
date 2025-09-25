@@ -9,7 +9,7 @@
         {
           "files": ["../src/**/*.py"],
           "dest": "api/",
-          "exclude": ["**/tests/**"],
+          "exclude": ["**/tests/**", "**/__pycache__/**"],
           "src": "../"
         }
       ]
@@ -19,12 +19,13 @@
     "content": [
       {
         "files": ["**/*.yml"],
-        "dest": "api/"
+        "dest": "api/",
+        "exclude": ["bin/**"]
       },
       {
         "files": ["*.md"],
         "dest": ".",
-        "exclude": ["bin/**"]
+        "exclude": ["bin/**", "_site/**"]
       },
       {
         "files": ["../README.md"],
@@ -34,23 +35,52 @@
     ],
     "resource": [
       {
-        "files": ["assets/**"],
-        "dest": "assets/"
+        "files": ["assets/**", "images/**"],
+        "dest": "assets/",
+        "exclude": ["bin/**"]
       }
     ],
     "dest": "_site",
     "globalMetadataFiles": [],
-    "fileMetadataFiles": []
+    "fileMetadataFiles": [],
+    "template": ["default", "modern"],
+    "postProcessors": ["ExtractSearchIndex"],
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false
   },
   "globalMetadata": {
     "_appTitle": "Goldilocks Documentation",
-    "_appFooter": "© 2024 Goldilocks Development Team",
-    "_enableSearch": true
+    "_appName": "Goldilocks",
+    "_appFooter": "© 2025 Goldilocks Development Team | Built with DocFX | Optimized for GitHub Copilot",
+    "_enableSearch": true,
+    "_enableNewTab": true,
+    "_disableContribution": false,
+    "_gitContribute": {
+      "repo": "https://github.com/DeanLuus22021994/Goldilocks",
+      "branch": "main"
+    },
+    "_gitUrlPattern": "github",
+    "ms.prod": "goldilocks",
+    "ms.technology": "flask-python",
+    "ms.topic": "reference",
+    "author": "Goldilocks Development Team",
+    "ms.date": "2025-09-25"
   },
   "fileMetadata": {
     "_tocTitle": {
       "docs/": "Documentation",
       "api/": "API Reference"
+    },
+    "_navPath": {
+      "docs/": "toc.yml"
+    },
+    "_tocPath": {
+      "docs/": "toc.yml"
+    },
+    "ms.custom": {
+      "**/*.md": "copilot-optimized"
     }
   }
 }

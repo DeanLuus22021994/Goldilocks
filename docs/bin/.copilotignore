@@ -27,12 +27,58 @@ temp/
 tmp/
 
 # Allow configuration and documentation files
-!*.md
-!*.json
-!*.yml
-!*.yaml
-!*.txt
-!*.cfg
-!*.config
-!.gitignore
-!.copilotignore
+# =============================================================================
+# COPILOT IGNORE - DOCUMENTATION BUILD TOOLS
+# =============================================================================
+# This directory contains build tools and binaries that should be ignored by
+# GitHub Copilot for context analysis and suggestions.
+#
+# Purpose: Exclude binary files and build artifacts from AI context to:
+# - Improve Copilot performance and accuracy
+# - Focus AI attention on relevant source code and documentation
+# - Prevent binary content from influencing code suggestions
+# =============================================================================
+
+# DocFX Binaries and Dependencies
+docfx*
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build Artifacts
+*.zip
+*.tar.gz
+*.log
+temp/
+tmp/
+
+# Platform-specific binaries
+bin/
+lib/
+obj/
+.playwright/
+
+# Node.js dependencies (if any)
+node_modules/
+package-lock.json
+
+# .NET artifacts
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# =============================================================================
+# COPILOT CONTEXT OPTIMIZATION
+# =============================================================================
+# Files that ARE included for Copilot context:
+# - README.md (tool documentation and usage patterns)
+# - Configuration files (*.json, *.yml, *.toml)
+# - Build scripts (*.sh, *.ps1)
+#
+# This ensures Copilot understands:
+# - How to use the build tools
+# - Configuration patterns
+# - Build process workflows
+# - Documentation generation patterns
+# =============================================================================
