@@ -51,9 +51,6 @@ services:
       # Application source code
       - ${DOCKER_CONTEXT_PATH:-../../../..}:/workspaces/Goldilocks:cached
 
-      # VS Code Server extensions and data persistence
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
-      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
       # PERFORMANCE: Cache volumes for development tools - references shared volumes
       - goldilocks-pip-cache:/tmp/pip-cache
       - goldilocks-pre-commit-cache:/tmp/pre-commit-cache
@@ -62,9 +59,6 @@ services:
       - goldilocks-pytest-cache:/tmp/pytest-cache
       - goldilocks-build-cache:/tmp/build-cache
       - goldilocks-bytecode-cache:/tmp/bytecode-cache
-      # SEPARATION OF CONCERNS: Access to provisioned extensions (read-only access)
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions:ro
-      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
 
     # HIGH COMPATIBILITY: Environment configuration from shared file
     env_file:
@@ -106,10 +100,6 @@ services:
       goldilocks-redis:
         condition: service_healthy
         restart: true
-      # Extensions service optional - backend can start independently
-      # goldilocks-extensions:
-      #   condition: service_completed_successfully
-      #   restart: false
 
     # MODERNIZE: Security and performance
     security_opt:

@@ -44,8 +44,6 @@ VOLUMES=(
     "goldilocks-build-cache"
     "goldilocks-bytecode-cache"
     "goldilocks-precompiled"
-    "vscode-server-insiders"
-    "vscode-extensions-cache"
     "docker-buildx-cache"
 )
 

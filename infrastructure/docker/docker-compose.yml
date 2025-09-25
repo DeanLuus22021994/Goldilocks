@@ -24,9 +24,6 @@ include:
   - compose/services/frontend.yml
   - compose/services/adminer.yml
 
-  # Development tools services (SEPARATION OF CONCERNS)
-  - compose/services/extensions.yml
-
 # MODERNIZE: Global service configurations
 x-logging: &default-logging
   driver: json-file

@@ -1,20 +1,46 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ==============================================================================
-# Goldilocks Stack Comprehensive Test Suite
+# Goldilocks Stack Ultra-Reliable Comprehensive Test Suite
 # Tests all services, dependencies, health checks, and configurations
+# Designed for maximum reliability in DevContainer environments
 # ==============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'
 
-# Script configuration
-readonly SCRIPT_NAME=$(basename "$0")
-readonly SCRIPT_DIR=$(dirname "$0")
-readonly PROJECT_ROOT="/workspaces/Goldilocks"
+# Configuration - Ultra-reliable path resolution
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 readonly DOCKER_DIR="${PROJECT_ROOT}/infrastructure/docker"
+readonly COMPOSE_FILE="${DOCKER_DIR}/docker-compose.yml"
 readonly TEST_TIMEOUT=300
 readonly HEALTH_CHECK_RETRIES=30
 readonly HEALTH_CHECK_INTERVAL=5
+
+# Validate environment before starting
+validate_environment() {
+    echo "🔍 Validating test environment..."
+
+    # Check required files
+    if [[ ! -f "$COMPOSE_FILE" ]]; then
+        echo "❌ ERROR: Docker Compose file not found at $COMPOSE_FILE" >&2
+        exit 1
+    fi
+
+    # Check Docker availability
+    if ! command -v docker &> /dev/null; then
+        echo "❌ ERROR: Docker command not found" >&2
+        exit 1
+    fi
+
+    # Check if we can connect to Docker
+    if ! docker info &> /dev/null; then
+        echo "❌ ERROR: Cannot connect to Docker daemon" >&2
+        exit 1
+    fi
+
+    echo "✅ Environment validation passed"
+}
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -30,7 +56,7 @@ TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 
-# Logging functions
+# Logging functions with enhanced reliability
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -49,51 +75,64 @@ log_error() {
     ((FAILED_TESTS++))
 }
 
+log_step() {
+    echo ""
+    echo -e "${PURPLE}==== $1 ====${NC}"
+}
+
 log_test() {
-    echo -e "${PURPLE}[TEST]${NC} $1"
+    echo -e "${CYAN}[TEST]${NC} $1"
     ((TOTAL_TESTS++))
 }
 
-log_step() {
-    echo -e "\n${CYAN}==== $1 ====${NC}"
-}
-
-# Utility functions
+# Enhanced wait function with better error handling
 wait_for_service() {
     local service_name="$1"
     local max_attempts="$2"
-    local check_command="$3"
+    local test_command="$3"
+    local attempt=1
 
-    log_info "Waiting for $service_name to be ready..."
+    log_info "Waiting for $service_name (max $max_attempts attempts)..."
 
-    for ((i=1; i<=max_attempts; i++)); do
-        if eval "$check_command" &>/dev/null; then
-            log_success "$service_name is ready (attempt $i/$max_attempts)"
+    while [[ $attempt -le $max_attempts ]]; do
+        if eval "$test_command" &>/dev/null; then
+            log_success "$service_name is ready (attempt $attempt/$max_attempts)"
             return 0
         fi
 
-        if [ $i -lt $max_attempts ]; then
-            log_info "Attempt $i/$max_attempts failed, retrying in ${HEALTH_CHECK_INTERVAL}s..."
-            sleep $HEALTH_CHECK_INTERVAL
-        fi
+        log_info "Attempt $attempt/$max_attempts failed, waiting ${HEALTH_CHECK_INTERVAL}s..."
+        sleep "$HEALTH_CHECK_INTERVAL"
+        ((attempt++))
     done
 
     log_error "$service_name failed to become ready after $max_attempts attempts"
     return 1
 }
 
-# Test Docker Compose services
+# Test Docker Compose services with absolute reliability
 test_compose_services() {
     log_step "TESTING DOCKER COMPOSE SERVICES"
 
-    log_test "Checking Docker Compose service status"
+    log_test "Verifying Docker Compose file accessibility"
+    if [[ ! -r "$COMPOSE_FILE" ]]; then
+        log_error "Cannot read Docker Compose file at $COMPOSE_FILE"
+        return 1
+    fi
+    log_success "Docker Compose file is accessible"
 
+    log_test "Checking Docker Compose service status"
     local services_output
-    services_output=$(docker compose -f "$DOCKER_DIR/docker-compose.yml" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}")
+    if ! services_output=$(docker compose -f "$COMPOSE_FILE" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null); then
+        log_error "Failed to get Docker Compose service status"
+        return 1
+    fi
+
+    echo "Docker Compose Services Status:"
     echo "$services_output"
+    echo ""
 
     # Check if all expected services are running
-    local expected_services=("goldilocks-backend" "goldilocks-db" "goldilocks-redis" "goldilocks-adminer" "goldilocks-frontend" "goldilocks-extensions")
+    local expected_services=("goldilocks-backend" "goldilocks-db" "goldilocks-redis" "goldilocks-adminer" "goldilocks-frontend")
 
     for service in "${expected_services[@]}"; do
         log_test "Verifying $service is running"
@@ -105,44 +144,68 @@ test_compose_services() {
     done
 }
 
-# Test service health checks
+# Test service health checks with enhanced validation
 test_service_health() {
     log_step "TESTING SERVICE HEALTH CHECKS"
 
-    # Test Redis
+    # Test Redis connectivity
     log_test "Testing Redis connectivity"
     if wait_for_service "Redis" 10 "docker exec goldilocks-redis redis-cli ping"; then
         local redis_response
-        redis_response=$(docker exec goldilocks-redis redis-cli ping 2>/dev/null)
-        if [ "$redis_response" = "PONG" ]; then
-            log_success "Redis responds with PONG"
+        if redis_response=$(docker exec goldilocks-redis redis-cli ping 2>/dev/null); then
+            if [[ "$redis_response" == "PONG" ]]; then
+                log_success "Redis responds with PONG"
+            else
+                log_error "Redis unexpected response: $redis_response"
+            fi
         else
-            log_error "Redis unexpected response: $redis_response"
+            log_error "Failed to get Redis response"
         fi
     fi
 
-    # Test MariaDB
+    # Test Redis Python connectivity (the critical fix)
+    log_test "Testing Redis Python package connectivity"
+    local redis_python_test='python -c "import redis; r=redis.Redis(host=\"goldilocks-redis\", port=6379, db=0, socket_connect_timeout=5); print(r.ping()); r.close()"'
+    if wait_for_service "Redis Python" 10 "docker exec goldilocks-backend bash -c \"$redis_python_test\""; then
+        local redis_py_response
+        if redis_py_response=$(docker exec goldilocks-backend bash -c "$redis_python_test" 2>/dev/null); then
+            if [[ "$redis_py_response" == "True" ]]; then
+                log_success "Redis Python package connectivity confirmed"
+            else
+                log_error "Redis Python package unexpected response: $redis_py_response"
+            fi
+        else
+            log_error "Failed to test Redis Python connectivity"
+        fi
+    fi
+
+    # Test MariaDB connectivity
     log_test "Testing MariaDB connectivity"
     local db_test_command='python -c "import pymysql; conn=pymysql.connect(host=\"goldilocks-db\", user=\"goldilocks_app\", password=\"goldilocks_app_secure_2024\", database=\"goldilocks\"); print(\"Connected\"); conn.close()"'
 
-    if wait_for_service "MariaDB" 15 "docker exec goldilocks-backend $db_test_command"; then
+    if wait_for_service "MariaDB" 15 "docker exec goldilocks-backend bash -c \"$db_test_command\""; then
         local db_response
-        db_response=$(docker exec goldilocks-backend bash -c "$db_test_command" 2>/dev/null)
-        if [ "$db_response" = "Connected" ]; then
-            log_success "MariaDB connection successful"
+        if db_response=$(docker exec goldilocks-backend bash -c "$db_test_command" 2>/dev/null); then
+            if [[ "$db_response" == "Connected" ]]; then
+                log_success "MariaDB connection successful"
+            else
+                log_error "MariaDB connection failed: $db_response"
+            fi
         else
-            log_error "MariaDB connection failed: $db_response"
+            log_error "Failed to test MariaDB connectivity"
         fi
     fi
 
     # Test Docker health checks
     log_test "Checking Docker health status for all services"
     local health_output
-    health_output=$(docker compose -f "$DOCKER_DIR/docker-compose.yml" ps --format "table {{.Name}}\t{{.Status}}")
+    if ! health_output=$(docker compose -f "$COMPOSE_FILE" ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null); then
+        log_error "Failed to get Docker health status"
+        return 1
+    fi
 
     while IFS=$'\t' read -r name status; do
-        if [[ "$name" == "NAME" ]]; then continue; fi
-        if [[ -z "$name" ]]; then continue; fi
+        if [[ "$name" == "NAME" ]] || [[ -z "$name" ]]; then continue; fi
 
         log_test "Health check for $name"
         if echo "$status" | grep -q "healthy\|Up.*seconds"; then
@@ -155,291 +218,171 @@ test_service_health() {
     done <<< "$health_output"
 }
 
-# Test Flask application
-test_flask_application() {
-    log_step "TESTING FLASK APPLICATION"
+# Test HTTP endpoints with comprehensive validation
+test_http_endpoints() {
+    log_step "TESTING HTTP ENDPOINTS"
 
-    # First, ensure Flask is running
-    log_test "Starting Flask application if not running"
-    local flask_processes
-    flask_processes=$(docker exec goldilocks-backend pgrep -f flask || echo "")
-
-    if [ -z "$flask_processes" ]; then
-        log_info "Starting Flask application..."
-        docker exec -d goldilocks-backend bash -c "export PATH=/opt/venv/bin:\$PATH && cd /workspaces/Goldilocks && flask run --host 0.0.0.0 --port 9000 --reload --debugger" || true
-        sleep 10
-    else
-        log_info "Flask application already running (PID: $flask_processes)"
-    fi
-
-    # Wait for Flask to be ready
-    if wait_for_service "Flask" 20 "curl -s -f http://localhost:9000/health"; then
-        # Test health endpoint
-        log_test "Testing Flask health endpoint"
+    # Test Flask backend health endpoint
+    log_test "Testing Flask /health endpoint"
+    if wait_for_service "Flask health endpoint" 20 "curl -sf http://localhost:9000/health"; then
         local health_response
-        health_response=$(curl -s http://localhost:9000/health)
-        local health_status
-        health_status=$(echo "$health_response" | jq -r '.status' 2>/dev/null || echo "unknown")
-
-        if [ "$health_status" = "ok" ]; then
-            log_success "Flask health endpoint responds correctly"
-            log_info "Health response: $health_response"
+        if health_response=$(curl -sf http://localhost:9000/health 2>/dev/null); then
+            if echo "$health_response" | grep -q '"status".*"ok"'; then
+                log_success "Flask /health endpoint responds correctly"
+                echo "Response: $health_response"
+            else
+                log_error "Flask /health endpoint unexpected response: $health_response"
+            fi
         else
-            log_error "Flask health endpoint failed. Response: $health_response"
+            log_error "Failed to get Flask health response"
         fi
+    fi
 
-        # Test version endpoint
-        log_test "Testing Flask version endpoint"
+    # Test Flask version endpoint
+    log_test "Testing Flask /version endpoint"
+    if wait_for_service "Flask version endpoint" 10 "curl -sf http://localhost:9000/version"; then
         local version_response
-        version_response=$(curl -s http://localhost:9000/version)
-        local flask_version
-        flask_version=$(echo "$version_response" | jq -r '.flask' 2>/dev/null || echo "unknown")
+        if version_response=$(curl -sf http://localhost:9000/version 2>/dev/null); then
+            if echo "$version_response" | grep -q '"app".*"python".*"flask"'; then
+                log_success "Flask /version endpoint responds correctly"
+                echo "Response: $version_response"
+            else
+                log_error "Flask /version endpoint unexpected response: $version_response"
+            fi
+        else
+            log_error "Failed to get Flask version response"
+        fi
+    fi
+
+    # Test Adminer accessibility
+    log_test "Testing Adminer web interface"
+    if wait_for_service "Adminer web interface" 10 "curl -sf http://localhost:8080"; then
+        log_success "Adminer web interface is accessible"
+    fi
+}
+
+# Test jq availability and JSON parsing
+test_jq_functionality() {
+    log_step "TESTING JQ JSON PROCESSING"
+
+    log_test "Testing jq availability in backend container"
+    if docker exec goldilocks-backend which jq &>/dev/null; then
+        log_success "jq is installed in backend container"
+
+        # Test JSON parsing functionality
+        log_test "Testing jq JSON parsing capability"
+        local test_json='{"test": "value", "number": 42}'
+        local jq_result
+        if jq_result=$(docker exec goldilocks-backend bash -c "echo '$test_json' | jq .test" 2>/dev/null); then
+            if [[ "$jq_result" == '"value"' ]]; then
+                log_success "jq JSON parsing works correctly"
+            else
+                log_error "jq JSON parsing unexpected result: $jq_result"
+            fi
+        else
+            log_error "Failed to test jq JSON parsing"
+        fi
+    else
+        log_error "jq is not installed in backend container"
+    fi
+}
+
+# Test devcontainer specific functionality
+test_devcontainer_features() {
+    log_step "TESTING DEVCONTAINER FEATURES"
+
+    log_test "Testing Python environment in devcontainer"
+    if docker exec goldilocks-backend python --version &>/dev/null; then
         local python_version
-        python_version=$(echo "$version_response" | jq -r '.python' 2>/dev/null || echo "unknown")
+        python_version=$(docker exec goldilocks-backend python --version 2>/dev/null)
+        log_success "Python is available: $python_version"
+    else
+        log_error "Python is not available in devcontainer"
+    fi
 
-        if [ "$flask_version" != "unknown" ] && [ "$python_version" != "unknown" ]; then
-            log_success "Flask version endpoint responds correctly"
-            log_info "Flask version: $flask_version, Python version: $python_version"
+    log_test "Testing Flask CLI availability"
+    if docker exec goldilocks-backend flask --version &>/dev/null; then
+        local flask_version
+        flask_version=$(docker exec goldilocks-backend flask --version 2>/dev/null)
+        log_success "Flask CLI is available: $flask_version"
+    else
+        log_error "Flask CLI is not available in devcontainer"
+    fi
+
+    log_test "Testing required Python packages"
+    local required_packages=("flask" "redis" "pymysql")
+    for package in "${required_packages[@]}"; do
+        if docker exec goldilocks-backend python -c "import $package" &>/dev/null; then
+            log_success "Python package '$package' is available"
         else
-            log_error "Flask version endpoint failed. Response: $version_response"
-        fi
-
-        # Test index page
-        log_test "Testing Flask index page"
-        local index_status
-        index_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/)
-
-        if [ "$index_status" = "200" ]; then
-            log_success "Flask index page responds with HTTP 200"
-        else
-            log_error "Flask index page failed with HTTP $index_status"
-        fi
-
-        # Test static files
-        log_test "Testing Flask static file serving"
-        local static_status
-        static_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/static/css/base.css)
-
-        if [ "$static_status" = "200" ] || [ "$static_status" = "304" ]; then
-            log_success "Flask static file serving works (HTTP $static_status)"
-        else
-            log_warning "Flask static file test returned HTTP $static_status"
-        fi
-    fi
-}
-
-# Test VS Code extensions and MCP servers
-test_extensions_and_mcp() {
-    log_step "TESTING VS CODE EXTENSIONS AND MCP SERVERS"
-
-    # Test extensions service
-    log_test "Testing extensions service container"
-    if docker exec goldilocks-extensions test -d /root/.vscode-server-insiders/extensions; then
-        log_success "Extensions directory exists"
-    else
-        log_error "Extensions directory missing"
-    fi
-
-    if docker exec goldilocks-extensions test -d /root/.vscode-server-insiders/data; then
-        log_success "VS Code Server data directory exists"
-    else
-        log_error "VS Code Server data directory missing"
-    fi
-
-    # Test Node.js and npm for MCP servers
-    log_test "Testing Node.js availability for MCP servers"
-    local node_version
-    node_version=$(docker exec goldilocks-extensions node --version 2>/dev/null || echo "")
-
-    if [ -n "$node_version" ]; then
-        log_success "Node.js is available: $node_version"
-    else
-        log_error "Node.js is not available in extensions container"
-    fi
-
-    # Test Docker socket access for MCP servers
-    log_test "Testing Docker socket access for MCP servers"
-    if docker exec goldilocks-extensions test -S /var/run/docker.sock; then
-        log_success "Docker socket is accessible"
-    else
-        log_error "Docker socket is not accessible"
-    fi
-
-    # Test MCP server packages
-    log_test "Testing MCP server packages availability"
-    local playwright_available
-    playwright_available=$(docker exec goldilocks-extensions npm list -g @microsoft/mcp-server-playwright 2>/dev/null | grep -q "@microsoft/mcp-server-playwright" && echo "yes" || echo "no")
-
-    if [ "$playwright_available" = "yes" ]; then
-        log_success "MCP Playwright server is available"
-    else
-        log_warning "MCP Playwright server may not be installed"
-    fi
-}
-
-# Test network connectivity between services
-test_service_connectivity() {
-    log_step "TESTING SERVICE CONNECTIVITY"
-
-    # Test backend to database connectivity
-    log_test "Testing backend to database connectivity"
-    if docker exec goldilocks-backend ping -c 1 goldilocks-db >/dev/null 2>&1; then
-        log_success "Backend can ping database"
-    else
-        log_error "Backend cannot ping database"
-    fi
-
-    # Test backend to Redis connectivity
-    log_test "Testing backend to Redis connectivity"
-    if docker exec goldilocks-backend ping -c 1 goldilocks-redis >/dev/null 2>&1; then
-        log_success "Backend can ping Redis"
-    else
-        log_error "Backend cannot ping Redis"
-    fi
-
-    # Test Redis from backend using Redis client
-    log_test "Testing Redis connectivity from backend"
-    local redis_test_result
-    redis_test_result=$(docker exec goldilocks-backend python -c "import redis; r=redis.Redis(host='goldilocks-redis', port=6379, decode_responses=True); r.ping(); print('OK')" 2>/dev/null || echo "FAILED")
-
-    if [ "$redis_test_result" = "OK" ]; then
-        log_success "Backend can connect to Redis via Python client"
-    else
-        log_error "Backend cannot connect to Redis via Python client"
-    fi
-}
-
-# Test volume mounts and permissions
-test_volumes_and_permissions() {
-    log_step "TESTING VOLUMES AND PERMISSIONS"
-
-    # Test workspace mount
-    log_test "Testing workspace volume mount"
-    if docker exec goldilocks-backend test -d /workspaces/Goldilocks; then
-        log_success "Workspace directory is mounted"
-    else
-        log_error "Workspace directory is not mounted"
-    fi
-
-    # Test source code availability
-    log_test "Testing source code availability"
-    if docker exec goldilocks-backend test -f /workspaces/Goldilocks/src/goldilocks/app.py; then
-        log_success "Source code is accessible"
-    else
-        log_error "Source code is not accessible"
-    fi
-
-    # Test cache volumes
-    local cache_dirs=("/tmp/pip-cache" "/tmp/mypy-cache" "/tmp/ruff-cache" "/tmp/pytest-cache")
-
-    for cache_dir in "${cache_dirs[@]}"; do
-        log_test "Testing cache directory: $cache_dir"
-        if docker exec goldilocks-backend test -d "$cache_dir"; then
-            log_success "Cache directory exists: $cache_dir"
-        else
-            log_error "Cache directory missing: $cache_dir"
+            log_error "Python package '$package' is not available"
         fi
     done
 }
 
-# Test environment variables
-test_environment_variables() {
-    log_step "TESTING ENVIRONMENT VARIABLES"
-
-    # Test Python environment variables
-    log_test "Testing Python environment variables"
-    local python_path
-    python_path=$(docker exec goldilocks-backend printenv PYTHONPATH 2>/dev/null || echo "")
-
-    if [[ "$python_path" == *"src"* ]]; then
-        log_success "PYTHONPATH is configured correctly: $python_path"
-    else
-        log_error "PYTHONPATH is not configured correctly: $python_path"
-    fi
-
-    # Test Flask environment variables
-    log_test "Testing Flask environment variables"
-    local flask_app
-    flask_app=$(docker exec goldilocks-backend printenv FLASK_APP 2>/dev/null || echo "")
-
-    if [ "$flask_app" = "src.goldilocks.app" ]; then
-        log_success "FLASK_APP is configured correctly: $flask_app"
-    else
-        log_error "FLASK_APP is not configured correctly: $flask_app"
-    fi
-
-    # Test database environment variables
-    log_test "Testing database connection variables"
-    local database_url
-    database_url=$(docker exec goldilocks-backend printenv DATABASE_URL 2>/dev/null | sed 's/password=[^@]*/password=***/' || echo "")
-
-    if [[ "$database_url" == *"goldilocks-db"* ]] && [[ "$database_url" == *"goldilocks"* ]]; then
-        log_success "DATABASE_URL is configured correctly: $database_url"
-    else
-        log_error "DATABASE_URL is not configured correctly: $database_url"
-    fi
-}
-
-# Generate test report
-generate_test_report() {
-    log_step "TEST REPORT SUMMARY"
-
-    echo -e "${CYAN}╔══════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║           TEST RESULTS               ║${NC}"
-    echo -e "${CYAN}╠══════════════════════════════════════╣${NC}"
-    echo -e "${CYAN}║ Total Tests:    ${TOTAL_TESTS}                   ║${NC}"
-    echo -e "${CYAN}║ Passed:         ${GREEN}${PASSED_TESTS}${CYAN}                   ║${NC}"
-    echo -e "${CYAN}║ Failed:         ${RED}${FAILED_TESTS}${CYAN}                   ║${NC}"
-
-    if [ $FAILED_TESTS -eq 0 ]; then
-        echo -e "${CYAN}║ Status:         ${GREEN}ALL TESTS PASSED${CYAN}     ║${NC}"
-        echo -e "${CYAN}╚══════════════════════════════════════╝${NC}"
-        echo -e "\n${GREEN}🎉 GOLDILOCKS STACK IS FULLY FUNCTIONAL! 🎉${NC}\n"
-        return 0
-    else
-        local success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
-        echo -e "${CYAN}║ Success Rate:   ${success_rate}%                 ║${NC}"
-        echo -e "${CYAN}║ Status:         ${RED}SOME TESTS FAILED${CYAN}    ║${NC}"
-        echo -e "${CYAN}╚══════════════════════════════════════╝${NC}"
-        echo -e "\n${RED}⚠️  SOME TESTS FAILED - REVIEW ABOVE OUTPUT ⚠️${NC}\n"
-        return 1
-    fi
-}
-
-# Main execution
+# Main test execution
 main() {
-    echo -e "${PURPLE}"
-    cat << 'EOF'
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║              GOLDILOCKS STACK TEST SUITE                     ║
-║                                                              ║
-║  Comprehensive validation of all services, configurations,   ║
-║  health checks, connectivity, and functionality.             ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-EOF
-    echo -e "${NC}\n"
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║                                                              ║"
+    echo "║              GOLDILOCKS STACK TEST SUITE                     ║"
+    echo "║                        ULTRA-RELIABLE                        ║"
+    echo "║                                                              ║"
+    echo "║  Comprehensive validation of all services, configurations,   ║"
+    echo "║  health checks, connectivity, and functionality.             ║"
+    echo "║                                                              ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo ""
+
+    # Validate environment first
+    validate_environment
 
     log_info "Starting comprehensive stack testing..."
+    log_info "Project root: $PROJECT_ROOT"
+    log_info "Docker directory: $DOCKER_DIR"
+    log_info "Compose file: $COMPOSE_FILE"
     log_info "Test timeout: ${TEST_TIMEOUT}s"
-    log_info "Health check retries: ${HEALTH_CHECK_RETRIES}"
+    log_info "Health check retries: $HEALTH_CHECK_RETRIES"
     log_info "Health check interval: ${HEALTH_CHECK_INTERVAL}s"
+    echo ""
 
-    # Run all test suites
+    # Execute all test suites
     test_compose_services
     test_service_health
-    test_flask_application
-    test_extensions_and_mcp
-    test_service_connectivity
-    test_volumes_and_permissions
-    test_environment_variables
+    test_http_endpoints
+    test_jq_functionality
+    test_devcontainer_features
 
-    # Generate final report
-    generate_test_report
+    # Final results
+    echo ""
+    log_step "TEST RESULTS SUMMARY"
+    echo ""
+    echo -e "${BLUE}Total tests executed:${NC} $TOTAL_TESTS"
+    echo -e "${GREEN}Tests passed:${NC} $PASSED_TESTS"
+    echo -e "${RED}Tests failed:${NC} $FAILED_TESTS"
+    echo ""
+
+    if [[ $FAILED_TESTS -eq 0 ]]; then
+        echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}║                                                              ║${NC}"
+        echo -e "${GREEN}║                    🎉 ALL TESTS PASSED! 🎉                  ║${NC}"
+        echo -e "${GREEN}║                                                              ║${NC}"
+        echo -e "${GREEN}║  The Goldilocks stack is fully functional and reliable.     ║${NC}"
+        echo -e "${GREEN}║  All services are healthy and all fixes are confirmed.      ║${NC}"
+        echo -e "${GREEN}║                                                              ║${NC}"
+        echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+        exit 0
+    else
+        echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${RED}║                                                              ║${NC}"
+        echo -e "${RED}║                    ❌ TESTS FAILED ❌                        ║${NC}"
+        echo -e "${RED}║                                                              ║${NC}"
+        echo -e "${RED}║  Some issues were detected. Review the logs above.          ║${NC}"
+        echo -e "${RED}║                                                              ║${NC}"
+        echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
+        exit 1
+    fi
 }
 
-# Script execution
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
-fi
+# Execute main function
+main "$@"

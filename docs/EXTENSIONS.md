@@ -1,316 +1,61 @@
-# Extensions and MCP Servers Architecture - Development Tools Infrastructure
+# VS Code Extensions & MCP Servers
 
 ## Overview
 
-Following the **SEPARATION OF CONCERNS** and **NO CROSS-CUTTING CONCERNS** principles from the Goldilocks Copilot instructions, the VS Code extensions provisioning and MCP (Model Context Protocol) servers have been refactored from cross-cutting concerns into dedicated, focused development tools infrastructure.
+Goldilocks no longer provisions Visual Studio Code extensions or Model Context Protocol (MCP) servers inside Docker containers. Every developer now manages editor tooling directly through the standard VS Code marketplace. This keeps the project lightweight, easy to maintain, and aligned with the **SEPARATION OF CONCERNS** principle from the Copilot instructions.
 
-## Architecture Refactoring
+## Getting Started
 
-### Before: Cross-Cutting Concerns ❌
+- Install GitHub Copilot, Copilot Chat, and any other extensions from within VS Code.
+- When working inside the Dev Container, declare preferred extensions in `devcontainer.json` under `customizations.vscode.extensions`. VS Code handles the installation automatically on attach.
+- Use VS Code Settings Sync (GitHub or Microsoft account) if you want a consistent setup across machines.
 
-```yaml
-# backend.yml (VIOLATION of separation of concerns)
-services:
-  goldilocks-backend:
-    volumes:
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
-      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
-    environment:
-      VSCODE_EXTENSIONS: /root/.vscode-server-insiders/extensions
-      GITHUB_COPILOT_ENABLED: true
-```
-
-### After: Proper Separation of Concerns ✅
-
-```yaml
-# extensions.yml (DEDICATED service with single responsibility)
-services:
-  goldilocks-extensions:
-    # Single Responsibility: VS Code extensions and MCP servers provisioning
-    command: provision-copilot-extensions.sh
-    volumes:
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
-      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
-    # Docker host communication for infrastructure access
-    network_mode: "host"
-
-# backend.yml (CLEAN separation - only consumes provisioned extensions)
-services:
-  goldilocks-backend:
-    volumes:
-      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions:ro
-    depends_on:
-      goldilocks-extensions:
-        condition: service_healthy
-```
-
-## Development Tools Infrastructure
-
-### 🔧 Extensions Service (`compose/services/extensions.yml`)
-
-**Single Responsibility**: VS Code extensions and MCP servers provisioning
-
-- **Purpose**: Provision GitHub Copilot extensions and MCP servers during container startup
-- **Scope**: VS Code Server extensions configuration and MCP server management
-- **Lifecycle**: Runs once to provision, then remains idle
-- **Resources**: Minimal (256M memory, 0.5 CPU)
-- **Network**: Docker host communication enabled for infrastructure access
-
-### 🤖 MCP Servers Integration
-
-**Model Context Protocol servers** are provisioned alongside VS Code extensions:
-
-- **Playwright MCP Server**: Web automation and testing
-- **Docker Host Access**: Full communication with host for infrastructure management
-- **Auto-Provisioning**: MCP servers installed during container build
-- **DevContainer Integration**: Configured through `customizations.vscode.mcp` section
-
-### 🚀 Backend Service (`compose/services/backend.yml`)
-
-**Single Responsibility**: Application backend execution
-
-- **Purpose**: Run the Flask application backend
-- **Scope**: Application logic, API endpoints, business functionality
-- **Lifecycle**: Long-running web server
-- **Resources**: Full allocation (2G memory, 2.0 CPU)
-- **Network**: Port 9000 exposed for application access
-
-## MCP Servers Configuration
-
-### DevContainer Configuration
+### Recommended Dev Container Snippet
 
 ```jsonc
-{
-  "dockerComposeFile": "../infrastructure/docker/docker-compose.yml",
-  "service": "goldilocks-backend",
-  "customizations": {
-    "vscode": {
-      "extensions": ["github.copilot", "github.copilot-chat"],
-      "mcp": {
-        "servers": {
-          "playwright": {
-            "command": "npx",
-            "args": ["-y", "@microsoft/mcp-server-playwright"]
-          },
-          "docker": {
-            "command": "docker",
-            "args": ["--help"]
-          }
-        }
-      }
-    }
+"customizations": {
+  "vscode": {
+    "extensions": [
+      "github.copilot",
+      "github.copilot-chat"
+    ]
   }
 }
 ```
 
-### MCP Servers Provisioning Script
+Add or remove extension identifiers to match your workflow. The Dev Container never ships with preinstalled marketplace content, so this list is the single source of truth.
 
-The extensions service provisions MCP servers through an enhanced script:
+## MCP Servers
+
+MCP servers were previously provisioned alongside Copilot extensions. They are no longer bundled with the container image. If your workflow still needs an MCP server, install and configure it locally through the VS Code marketplace or follow the vendor’s installation guide.
+
+## Retirement of Custom Provisioning
+
+The former `goldilocks-extensions` Docker service, provisioning scripts, and Dockerfile layers have been removed. The pipeline now focuses solely on running the Flask application. Benefits:
+
+- **Simplicity:** No bespoke scripts to maintain or debug.
+- **Flexibility:** Each contributor can decide which tools to install.
+- **Security:** Marketplace downloads remain signed and up to date.
+- **Compatibility:** Works with both local VS Code installs and the Dev Container.
+
+## Legacy Cleanup (Optional)
+
+If you previously ran the deprecated provisioning workflow, you might have residual Docker volumes. Remove them to free disk space:
 
 ```bash
-#!/bin/bash
-# provision-copilot-extensions.sh
-
-# Install Node.js and npm for MCP servers
-curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-apt-get install -y nodejs
-
-# Install MCP servers
-npm install -g @microsoft/mcp-server-playwright
-
-# Configure MCP servers in VS Code
-mkdir -p /root/.vscode-server-insiders/data/User
-cat > /root/.vscode-server-insiders/data/User/mcp.json << 'EOF'
-{
-  "servers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@microsoft/mcp-server-playwright"]
-    }
-  }
-}
-EOF
+docker volume rm goldilocks_vscode_server_extensions || true
+docker volume rm goldilocks_vscode_server_data || true
 ```
+
+No further action is required—VS Code will handle extensions the next time you attach to the container.
+
+## Troubleshooting
+
+- **Extensions not installing in the Dev Container?** Re-open the folder in container and confirm the extensions are listed under `customizations.vscode.extensions`.
+- **Need to share a standard set of tools?** Document the recommended marketplace IDs in the project README or team handbook rather than baking them into container images.
+- **Unsure which extensions to use?** Start with the snippet above and add extras as needed—VS Code installations remain isolated per-user.
+
+For more details on Dev Container customization, read the official [VS Code documentation](https://code.visualstudio.com/docs/devcontainers/containers#_creating-a-devcontainerjson-file).
+Refer to `docs/SETUP.md` for Dev Container usage instructions or reach out to the team if you encounter marketplace installation issues.
 
 ## Docker Host Communication
-
-### Network Configuration
-
-For infrastructure access, the extensions service requires Docker host communication:
-
-```yaml
-# extensions.yml
-services:
-  goldilocks-extensions:
-    # Enable full Docker host communication
-    network_mode: "host"
-    # OR alternative: bridge with host networking
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    # Docker socket access for infrastructure management
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-```
-
-### Security Considerations
-
-- Docker host access limited to extensions service only
-- Backend service maintains network isolation
-- Read-only Docker socket access for monitoring
-- Host networking only for development environment
-
-## Architectural Benefits
-
-### ✅ Separation of Concerns
-
-- **Backend Service**: Focused solely on application logic
-- **Extensions Service**: Focused on development tools (VS Code + MCP servers)
-- **Clear Boundaries**: No functionality bleeding between services
-
-### ✅ Single Responsibility Principle (SRP)
-
-- Each service has exactly one reason to change
-- Extensions service changes only when development tools change
-- Backend service changes only when application logic changes
-
-### ✅ Infrastructure Integration
-
-- **Docker Host Access**: Extensions service can manage infrastructure
-- **MCP Servers**: Integrated with VS Code for enhanced development experience
-- **Auto-Provisioning**: All development tools ready on container start
-
-### ✅ High Cohesion
-
-- All development tools functionality grouped in extensions service
-- All application-related functionality remains in backend service
-- MCP servers and VS Code extensions managed together
-
-## Service Orchestration
-
-### Dependency Management
-
-```yaml
-# Backend depends on extensions being provisioned
-goldilocks-backend:
-  depends_on:
-    goldilocks-extensions:
-      condition: service_healthy
-      restart: false # Extensions provision once
-```
-
-### Volume Sharing
-
-```yaml
-# Extensions service provisions (read-write)
-goldilocks-extensions:
-  volumes:
-    - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
-    - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
-    - /var/run/docker.sock:/var/run/docker.sock:ro # Docker host access
-
-# Backend service consumes (read-only)
-goldilocks-backend:
-  volumes:
-    - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions:ro
-    - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
-```
-
-## Environment-Specific Configuration
-
-### Development Overrides (`compose/overrides/development.yml`)
-
-```yaml
-services:
-  goldilocks-extensions:
-    network_mode: "host" # Full host access for development
-    environment:
-      - EXTENSIONS_DEVELOPMENT_MODE=true
-      - MCP_SERVERS_ENABLED=true
-      - DOCKER_HOST_ACCESS=true
-      - PLAYWRIGHT_BROWSERS_PATH=/tmp/playwright-browsers
-```
-
-## File Structure
-
-```
-docs/
-└── EXTENSIONS.md                    # This file - development tools architecture
-
-infrastructure/docker/
-├── scripts/
-│   └── provision-copilot-extensions.sh  # Enhanced with MCP server support
-└── compose/
-    ├── services/
-    │   ├── backend.yml              # Application backend (clean, focused)
-    │   └── extensions.yml           # Development tools (VS Code + MCP servers)
-    └── overrides/
-        └── development.yml          # Extensions + MCP development configuration
-
-.devcontainer/
-└── devcontainer.json               # Enhanced with MCP server configuration
-```
-
-## Usage
-
-### Start Extensions Service Only
-
-```bash
-docker-compose --profile extensions up -d goldilocks-extensions
-```
-
-### Start Development Environment (includes extensions + MCP servers)
-
-```bash
-docker-compose --profile dev up -d
-```
-
-### Verify Extensions and MCP Servers Provisioning
-
-```bash
-# Check extensions
-docker-compose logs goldilocks-extensions
-docker exec goldilocks-extensions ls -la /root/.vscode-server-insiders/extensions/
-
-# Check MCP servers
-docker exec goldilocks-extensions npx @microsoft/mcp-server-playwright --version
-docker exec goldilocks-extensions cat /root/.vscode-server-insiders/data/User/mcp.json
-```
-
-## Compliance with Goldilocks Principles
-
-- ✅ **SEPARATION OF CONCERNS**: Extensions and MCP servers isolated from application logic
-- ✅ **NO CROSS-CUTTING**: No functionality spans multiple service concerns
-- ✅ **STRUCTURED**: Follows established service pattern in `compose/services/`
-- ✅ **DRY**: Reuses common Docker patterns and volume definitions
-- ✅ **LIGHTWEIGHT**: Extensions service uses minimal resources
-- ✅ **STANDARDIZATION**: Consistent with other service definitions
-- ✅ **HIGH COMPATIBILITY**: Support for multiple environments and MCP server types
-- ✅ **MODERNIZE**: Uses latest VS Code and MCP server technologies
-
-## MCP Server Types Supported
-
-### Available MCP Servers
-
-- **@microsoft/mcp-server-playwright**: Web automation and testing
-- **@microsoft/mcp-server-docker**: Docker container management
-- **@microsoft/mcp-server-git**: Git repository operations
-- **@microsoft/mcp-server-filesystem**: File system operations
-
-### Custom MCP Server Integration
-
-```bash
-# Add custom MCP servers to provisioning script
-npm install -g your-custom-mcp-server
-
-# Update mcp.json configuration
-{
-  "servers": {
-    "custom": {
-      "command": "your-custom-mcp-server",
-      "args": ["--config", "/path/to/config"]
-    }
-  }
-}
-```
-
-This architecture transforms cross-cutting development tool concerns into a well-architected, focused service that maintains clean boundaries while providing comprehensive VS Code extensions and MCP server functionality with full Docker infrastructure access.

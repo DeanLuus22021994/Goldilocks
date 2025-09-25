@@ -203,27 +203,6 @@ volumes:
       com.goldilocks.volume.environment: "development"
       com.docker.compose.project: "goldilocks"
 
-  # VS Code Server extensions and configuration
-  goldilocks-vscode-server-extensions:
-    name: goldilocks_vscode_server_extensions
-    driver: local
-    labels:
-      com.goldilocks.volume.type: "development-tools"
-      com.goldilocks.volume.purpose: "vscode-server-extensions"
-      com.goldilocks.volume.environment: "development"
-      com.goldilocks.volume.backup: "optional"
-      com.docker.compose.project: "goldilocks"
-
-  goldilocks-vscode-server-data:
-    name: goldilocks_vscode_server_data
-    driver: local
-    labels:
-      com.goldilocks.volume.type: "development-tools"
-      com.goldilocks.volume.purpose: "vscode-server-data"
-      com.goldilocks.volume.environment: "development"
-      com.goldilocks.volume.backup: "optional"
-      com.docker.compose.project: "goldilocks"
-
   # Frontend development caches
   goldilocks-node-modules:
     name: goldilocks_node_modules

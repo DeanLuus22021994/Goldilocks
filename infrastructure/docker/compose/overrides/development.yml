@@ -6,44 +6,6 @@
 # ==============================================================================
 
 services:
-  goldilocks-extensions:
-    # DEVELOPMENT: Extensions and MCP servers optimization
-    environment:
-      - EXTENSIONS_DEVELOPMENT_MODE=true
-      - VSCODE_EXTENSIONS_AUTO_RELOAD=true
-      - EXTENSIONS_LOG_LEVEL=DEBUG
-      - GITHUB_COPILOT_DEVELOPMENT=true
-      - EXTENSIONS_CACHE_ENABLED=true
-      - MCP_SERVERS_DEVELOPMENT=true
-      - DOCKER_HOST_ACCESS=true
-      - PLAYWRIGHT_BROWSERS_PATH=/tmp/playwright-browsers
-
-    # DEVELOPMENT: Extended health check for debugging extensions and MCP
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "test",
-          "-f",
-          "/root/.vscode-server-insiders/extensions/extensions.json",
-          "&&",
-          "test",
-          "-f",
-          "/root/.vscode-server-insiders/data/User/mcp.json",
-        ]
-      start_period: 15s
-      start_interval: 2s
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-    # DEVELOPMENT: Volume for live configuration updates
-    volumes:
-      - type: bind
-        source: ${DOCKER_CONTEXT_PATH:-../../../..}/.vscode-server-insiders
-        target: /workspace/.vscode-server-insiders
-        consistency: cached # Development optimization
-
   goldilocks-backend:
     # Development-specific configurations
     environment:
