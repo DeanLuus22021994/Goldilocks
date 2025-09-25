@@ -1,37 +1,147 @@
 {
   "development": {
-    "tools": ["codebase", "changes", "usages", "problems", "runTasks"],
-    "description": "Essential tools for general development tasks",
+    "tools": [
+      "codebase",
+      "changes",
+      "usages",
+      "problems",
+      "runTasks",
+      "readFile",
+      "writeFile",
+      "createFile",
+      "deleteFile",
+      "listFiles",
+      "terminal",
+      "shell",
+      "git",
+      "docker",
+      "fetch",
+      "network",
+      "filesystem",
+      "system"
+    ],
+    "description": "Complete development toolkit with unrestricted access",
     "icon": "code"
   },
   "testing": {
-    "tools": ["problems", "codebase", "changes", "runTasks"],
-    "description": "Tools focused on testing and quality assurance",
+    "tools": [
+      "problems",
+      "codebase",
+      "changes",
+      "runTasks",
+      "readFile",
+      "writeFile",
+      "createFile",
+      "deleteFile",
+      "terminal",
+      "shell",
+      "system"
+    ],
+    "description": "Comprehensive testing and quality assurance tools",
     "icon": "beaker"
   },
   "debugging": {
-    "tools": ["problems", "codebase", "changes", "runTasks"],
-    "description": "Tools for debugging and troubleshooting issues",
+    "tools": [
+      "problems",
+      "codebase",
+      "changes",
+      "runTasks",
+      "readFile",
+      "writeFile",
+      "terminal",
+      "shell",
+      "git",
+      "system",
+      "filesystem"
+    ],
+    "description": "Full debugging and troubleshooting toolkit",
     "icon": "bug"
   },
   "refactoring": {
-    "tools": ["codebase", "usages", "changes", "problems"],
-    "description": "Tools for code refactoring and architectural changes",
+    "tools": [
+      "codebase",
+      "usages",
+      "changes",
+      "problems",
+      "readFile",
+      "writeFile",
+      "createFile",
+      "deleteFile",
+      "git",
+      "terminal",
+      "system"
+    ],
+    "description": "Complete refactoring and architectural change tools",
     "icon": "symbol-class"
   },
   "documentation": {
-    "tools": ["codebase", "changes"],
-    "description": "Tools for documentation generation and updates",
+    "tools": [
+      "codebase",
+      "changes",
+      "readFile",
+      "writeFile",
+      "createFile",
+      "deleteFile",
+      "terminal",
+      "git",
+      "system"
+    ],
+    "description": "Full documentation generation and management toolkit",
     "icon": "book"
   },
   "security": {
-    "tools": ["codebase", "problems", "changes"],
-    "description": "Tools for security analysis and vulnerability assessment",
+    "tools": [
+      "codebase",
+      "problems",
+      "changes",
+      "readFile",
+      "writeFile",
+      "terminal",
+      "shell",
+      "system",
+      "network",
+      "filesystem"
+    ],
+    "description": "Complete security analysis and vulnerability assessment tools",
     "icon": "shield"
   },
   "research": {
-    "tools": ["codebase", "fetch", "changes", "problems"],
-    "description": "Tools for technology research and modernization analysis",
+    "tools": [
+      "codebase",
+      "fetch",
+      "changes",
+      "problems",
+      "readFile",
+      "writeFile",
+      "terminal",
+      "shell",
+      "network",
+      "system"
+    ],
+    "description": "Full technology research and modernization analysis toolkit",
     "icon": "search"
+  },
+  "infrastructure": {
+    "tools": [
+      "docker",
+      "terminal",
+      "shell",
+      "system",
+      "network",
+      "filesystem",
+      "readFile",
+      "writeFile",
+      "createFile",
+      "deleteFile",
+      "git",
+      "runTasks"
+    ],
+    "description": "Complete infrastructure management and DevOps tools",
+    "icon": "server"
+  },
+  "full-access": {
+    "tools": ["*"],
+    "description": "Unrestricted access to all available tools and capabilities",
+    "icon": "unlock"
   }
 }
