@@ -24,17 +24,6 @@ include:
   - compose/services/frontend.yml
   - compose/services/adminer.yml
 
-# MODERNIZE: Global service configurations
-x-logging: &default-logging
-  driver: json-file
-  options:
-    max-size: "10m"
-    max-file: "3"
-    compress: "true"
-
-x-restart-policy: &restart-policy
-  restart: unless-stopped
-
 # DRY: Common service extensions
 x-common-labels: &common-labels
   com.goldilocks.project: "goldilocks"
