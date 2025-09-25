@@ -103,7 +103,7 @@ class TestAPIUtilities:
         """Test creating basic error response."""
         response = create_error_response("Test error", 400)
 
-        expected = {
+        expected: dict[str, str | int | bool] = {
             "error": True,
             "message": "Test error",
             "status_code": 400,
@@ -115,7 +115,7 @@ class TestAPIUtilities:
         details = {"field": "email", "reason": "invalid format"}
         response = create_error_response("Validation error", 422, details)
 
-        expected = {
+        expected: dict[str, str | int | bool | dict[str, str]] = {
             "error": True,
             "message": "Validation error",
             "status_code": 422,

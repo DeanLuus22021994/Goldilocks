@@ -72,7 +72,7 @@ class TestAuthenticationEndpoints:
 
     def test_register_with_valid_data(self, client: FlaskClient) -> None:
         """Test user registration with valid data."""
-        user_data = {
+        user_data: dict[str, str | bool] = {
             "username": "newuser",
             "email": "newuser@example.com",
             "full_name": "New User",
@@ -93,7 +93,7 @@ class TestAuthenticationEndpoints:
             db.session.add(test_user)
             db.session.commit()
 
-        user_data = {
+        user_data: dict[str, str | bool] = {
             "username": "differentuser",
             "email": test_user.email,  # Duplicate email
             "full_name": "Different User",
@@ -110,7 +110,7 @@ class TestAuthenticationEndpoints:
 
     def test_register_with_password_mismatch(self, client: FlaskClient) -> None:
         """Test registration with password confirmation mismatch."""
-        user_data = {
+        user_data: dict[str, str | bool] = {
             "username": "testuser",
             "email": "test@example.com",
             "full_name": "Test User",
@@ -169,7 +169,7 @@ class TestAuthenticationForms:
         """Test login form validation."""
         with app.app_context():
             # Valid form
-            form_data = {
+            form_data: dict[str, str] = {
                 "email": "test@example.com",
                 "password": "password123",
             }
@@ -191,7 +191,7 @@ class TestAuthenticationForms:
         """Test registration form validation."""
         with app.app_context():
             # Valid form
-            form_data = {
+            form_data: dict[str, str | bool] = {
                 "username": "testuser",
                 "email": "test@example.com",
                 "full_name": "Test User",
@@ -256,6 +256,6 @@ class TestAuthenticationSecurity:
         with client.application.app_context():
             # Check that secure session configurations are set
             config = client.application.config
-            assert config.get("SESSION_COOKIE_HTTPONLY") is True
-            assert config.get("SESSION_COOKIE_SAMESITE") == "Lax"
+            assert config.get("SESSION_COOKIE_HTTPONLY") is True  # type: ignore[misc]
+            assert config.get("SESSION_COOKIE_SAMESITE") == "Lax"  # type: ignore[misc]
             # Note: SESSION_COOKIE_SECURE would be True in production

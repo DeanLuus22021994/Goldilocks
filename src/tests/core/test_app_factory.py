@@ -8,7 +8,17 @@ from unittest.mock import patch
 
 from flask import Flask
 from flask.testing import FlaskClient
-from flask_login import current_user
+
+try:
+    from flask_login import current_user  # type: ignore[import-untyped]
+except ImportError:
+    # Mock current_user for testing if flask_login is not available
+    class MockCurrentUser:
+        @property
+        def is_anonymous(self) -> bool:
+            return True
+
+    current_user = MockCurrentUser()  # type: ignore[assignment]
 
 from goldilocks.core.app_factory import (
     create_app,
@@ -58,7 +68,7 @@ class TestAppFactory:
         with app.app_context():
             # Database should be initialized
             assert db is not None
-            assert hasattr(db, 'create_all')
+            assert hasattr(db, "create_all")
 
     def test_create_app_sets_up_logging(self) -> None:
         """Test that logging is properly configured."""
@@ -81,7 +91,7 @@ class TestAppFactory:
         with tempfile.TemporaryDirectory() as temp_dir:
             # Mock the static folder path
             with patch(
-                'goldilocks.core.app_factory.os.path.join',
+                "goldilocks.core.app_factory.os.path.join",
                 return_value=temp_dir,
             ):
                 app = create_app("testing")
@@ -119,7 +129,7 @@ class TestSetupFunctions:
         # Should return initialized extensions
         assert csrf is not None
         assert login_manager is not None
-        assert hasattr(login_manager, 'user_loader')
+        assert hasattr(login_manager, "user_loader")
 
     def test_setup_request_handlers(self) -> None:
         """Test request handlers setup."""
@@ -139,10 +149,10 @@ class TestApplicationConfiguration:
         app = create_app("testing")
 
         required_configs = [
-            'SECRET_KEY',
-            'SQLALCHEMY_DATABASE_URI',
-            'SQLALCHEMY_TRACK_MODIFICATIONS',
-            'WTF_CSRF_ENABLED',
+            "SECRET_KEY",
+            "SQLALCHEMY_DATABASE_URI",
+            "SQLALCHEMY_TRACK_MODIFICATIONS",
+            "WTF_CSRF_ENABLED",
         ]
 
         for config_key in required_configs:
@@ -153,22 +163,22 @@ class TestApplicationConfiguration:
         app = create_app("testing")
 
         assert app.testing is True
-        assert app.config['SQLALCHEMY_DATABASE_URI'] == "sqlite:///:memory:"
+        assert app.config["SQLALCHEMY_DATABASE_URI"] == "sqlite:///:memory:"
 
     def test_development_config_settings(self) -> None:
         """Test development configuration settings."""
         app = create_app("development")
 
         assert app.debug is True
-        assert app.config['FLASK_ENV'] == "development"
+        assert app.config["FLASK_ENV"] == "development"
 
     def test_production_config_security_settings(self) -> None:
         """Test production configuration security settings."""
         app = create_app("production")
 
         assert app.debug is False
-        assert app.config['FLASK_ENV'] == "production"
-        assert app.config['SESSION_COOKIE_SECURE'] is True
+        assert app.config["FLASK_ENV"] == "production"
+        assert app.config["SESSION_COOKIE_SECURE"] is True
 
 
 class TestRequestHandling:
