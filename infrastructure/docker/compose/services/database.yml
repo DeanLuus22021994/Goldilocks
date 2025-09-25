@@ -31,7 +31,7 @@ services:
     volumes:
       - goldilocks-db-data:/var/lib/mysql
       - type: bind
-        source: ${DOCKER_CONTEXT_PATH}/database-init
+        source: ${DOCKER_CONTEXT_PATH}/infrastructure/docker/database-init
         target: /docker-entrypoint-initdb.d
         read_only: true
 

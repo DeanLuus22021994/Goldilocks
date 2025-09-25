@@ -32,11 +32,17 @@ services:
           memory: 512M
           cpus: "0.5"
 
-    # DRY: Command configuration
+    # DRY: Command configuration with robust startup
     command: >
       sh -c "
         export PATH=/opt/venv/bin:$$PATH &&
+        cd /workspaces/Goldilocks &&
         echo '🚀 Starting Goldilocks backend...' &&
+        echo 'Python version:' $$(python --version) &&
+        echo 'Flask version:' $$(flask --version) &&
+        echo 'Working directory:' $$(pwd) &&
+        echo 'FLASK_APP:' $$FLASK_APP &&
+        echo 'PYTHONPATH:' $$PYTHONPATH &&
         flask run --host 0.0.0.0 --port 9000 --reload --debugger
       "
 

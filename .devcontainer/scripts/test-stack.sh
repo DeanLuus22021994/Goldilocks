@@ -87,10 +87,9 @@ test_compose_services() {
     log_step "TESTING DOCKER COMPOSE SERVICES"
 
     log_test "Checking Docker Compose service status"
-    cd "$DOCKER_DIR"
 
     local services_output
-    services_output=$(docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}")
+    services_output=$(docker compose -f "$DOCKER_DIR/docker-compose.yml" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}")
     echo "$services_output"
 
     # Check if all expected services are running
@@ -138,9 +137,8 @@ test_service_health() {
 
     # Test Docker health checks
     log_test "Checking Docker health status for all services"
-    cd "$DOCKER_DIR"
     local health_output
-    health_output=$(docker compose ps --format "table {{.Name}}\t{{.Status}}")
+    health_output=$(docker compose -f "$DOCKER_DIR/docker-compose.yml" ps --format "table {{.Name}}\t{{.Status}}")
 
     while IFS=$'\t' read -r name status; do
         if [[ "$name" == "NAME" ]]; then continue; fi

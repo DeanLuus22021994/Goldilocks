@@ -94,7 +94,7 @@ services:
     # Development volumes (persistent data)
     volumes:
       - mariadb-dev-data:/var/lib/mysql
-      - ../../infrastructure/docker/mariadb-init:/docker-entrypoint-initdb.d:ro
+      - ../../infrastructure/docker/database-init:/docker-entrypoint-initdb.d:ro
       - mariadb-dev-logs:/var/log/mysql
 
     # Development MariaDB configuration

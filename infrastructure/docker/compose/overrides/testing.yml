@@ -91,7 +91,7 @@ services:
     # Testing database volumes (ephemeral)
     volumes:
       - test-db-data:/var/lib/mysql
-      - ../../infrastructure/docker/mariadb-init:/docker-entrypoint-initdb.d:ro
+      - ../../infrastructure/docker/database-init:/docker-entrypoint-initdb.d:ro
 
     # Testing resource limits (minimal)
     deploy:
