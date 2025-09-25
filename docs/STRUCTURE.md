@@ -1,19 +1,20 @@
 # Project Structure
 
-Generated on: 2025-09-25 12:43:01
+Generated on: 2025-09-25 13:08:31
 
 ## Overview
 
-This document provides a comprehensive overview of the Goldilocks project structure,
-following modern development practices and clean architecture principles.
+This document provides a comprehensive overview of the Goldilocks project
+structure, following modern development practices and clean architecture
+principles.
 
 ## Project Metrics
 
-- **Total Files**: 2117
-- **Lines of Code**: 5,777
-- **Test Files**: 13
+- **Total Files**: 2182
+- **Lines of Code**: 6,549
+- **Test Files**: 16
 - **Docker Files**: 5
-- **GitHub Actions**: 1
+- **GitHub Actions**: 2
 
 ## Directory Structure
 
@@ -132,6 +133,14 @@ following modern development practices and clean architecture principles.
 │   ├── compile-bytecode.ps1
 │   └── compile-bytecode.sh
 ├── src
+│   ├── docs
+│   │   ├── __init__.py
+│   │   ├── cli.py
+│   │   ├── collectors.py
+│   │   ├── generators.py
+│   │   ├── models.py
+│   │   ├── processors.py
+│   │   └── service.py
 │   ├── goldilocks
 │   │   ├── __init__.py
 │   │   ├── api
@@ -149,61 +158,73 @@ following modern development practices and clean architecture principles.
 │   │   ├── services
 │   │   │   ├── __init__.py
 │   │   │   └── auth.py
-│   │   ├── tests
-│   │   │   ├── __init__.py
-│   │   │   ├── api
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── test_api_endpoints.py
-│   │   │   │   └── test_auth_endpoints.py
-│   │   │   ├── conftest.py
-│   │   │   ├── core
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_app_factory.py
-│   │   │   ├── errors
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_404.py
-│   │   │   ├── health
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_health.py
-│   │   │   ├── index
-│   │   │   │   ├── test_index.py
-│   │   │   │   └── version
-│   │   │   ├── models
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_database_models.py
-│   │   │   ├── services
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_auth_service.py
-│   │   │   ├── templates
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── test_template_system.py
-│   │   │   ├── utils
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── test_helpers.py
-│   │   │   │   └── test_utils.py
-│   │   │   └── version
-│   │   │       ├── __init__.py
-│   │   │       ├── test_version.py
-│   │   │       └── test_version_fallback.py
 │   │   └── utils
 │   │       └── __init__.py
-│   └── instance
-│       └── goldilocks.db
+│   ├── instance
+│   │   └── goldilocks.db
+│   ├── pyproject.toml
+│   ├── setup.py
+│   └── tests
+│       ├── __init__.py
+│       ├── api
+│       │   ├── __init__.py
+│       │   ├── test_api_endpoints.py
+│       │   └── test_auth_endpoints.py
+│       ├── conftest.py
+│       ├── core
+│       │   ├── __init__.py
+│       │   └── test_app_factory.py
+│       ├── docs
+│       │   ├── __init__.py
+│       │   ├── test_collectors.py
+│       │   ├── test_generators.py
+│       │   └── test_service.py
+│       ├── errors
+│       │   ├── __init__.py
+│       │   └── test_404.py
+│       ├── health
+│       │   ├── __init__.py
+│       │   └── test_health.py
+│       ├── index
+│       │   ├── test_index.py
+│       │   └── version
+│       ├── models
+│       │   ├── __init__.py
+│       │   └── test_database_models.py
+│       ├── services
+│       │   ├── __init__.py
+│       │   └── test_auth_service.py
+│       ├── templates
+│       │   ├── __init__.py
+│       │   └── test_template_system.py
+│       ├── utils
+│       │   ├── __init__.py
+│       │   ├── test_helpers.py
+│       │   └── test_utils.py
+│       └── version
+│           ├── __init__.py
+│           ├── test_version.py
+│           └── test_version_fallback.py
 └── start-dev.sh
 
-48 directories, 124 files
+50 directories, 137 files
 
 ```
 
 ## Architecture Principles
 
-The project follows these key principles from `.github/copilot-instructions.md`:
+The project follows these key principles from
+`.github/copilot-instructions.md`:
 
-- **SEPARATION OF CONCERNS**: Each module handles only its specific responsibility
-- **NO CROSS-CUTTING CONCERNS**: Avoid functionality that spans multiple modules
+- **SEPARATION OF CONCERNS**: Each module handles only its specific
+  responsibility
+- **NO CROSS-CUTTING CONCERNS**: Avoid functionality that spans multiple
+  modules
 - **DRY**: Don't Repeat Yourself - abstract common patterns
-- **SRP**: Single Responsibility Principle - one purpose per function/class
-- **SOLID**: Follow all SOLID principles for clean, maintainable design
+- **SRP**: Single Responsibility Principle - one purpose per
+  function/class
+- **SOLID**: Follow all SOLID principles for clean, maintainable
+  design
 
 ## Key Directories
 

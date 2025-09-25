@@ -43,6 +43,13 @@ def timer(func: F) -> F:
         print(f"{func.__name__} took {duration:.4f} seconds")
         return result
 
+    # Ensure wrapper has all the same attributes as the original function
+    wrapper.__doc__ = func.__doc__
+    wrapper.__name__ = func.__name__
+    wrapper.__module__ = func.__module__
+    wrapper.__qualname__ = getattr(func, "__qualname__", func.__name__)
+    wrapper.__annotations__ = getattr(func, "__annotations__", {})
+
     return wrapper  # type: ignore
 
 
@@ -89,10 +96,10 @@ def validate_email(email: str) -> bool:
     """Validate email address format."""
     # More strict regex that doesn't allow consecutive dots
     pattern = (
-        r'^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@'
-        r'[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$'
+        r"^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@"
+        r"[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$"
     )
-    if '..' in email:  # Explicitly reject consecutive dots
+    if ".." in email:  # Explicitly reject consecutive dots
         return False
     return bool(re.match(pattern, email))
 
@@ -100,26 +107,26 @@ def validate_email(email: str) -> bool:
 def sanitize_filename(filename: str) -> str:
     """Sanitize filename by removing dangerous characters."""
     # Remove or replace dangerous characters
-    filename = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
     # Remove leading/trailing spaces and dots
-    filename = filename.strip(' .')
+    filename = filename.strip(" .")
     # Ensure it's not empty
     if not filename:
-        filename = 'unnamed'
+        filename = "unnamed"
     return filename
 
 
 def generate_slug(text: str, max_length: int = 50) -> str:
     """Generate URL-friendly slug from text."""
     # Convert to lowercase and replace spaces/special chars with dashes
-    slug = re.sub(r'[^\w\s-]', '', text.lower())
-    slug = re.sub(r'[\s_-]+', '-', slug)
+    slug = re.sub(r"[^\w\s-]", "", text.lower())
+    slug = re.sub(r"[\s_-]+", "-", slug)
     # Remove leading/trailing dashes
-    slug = slug.strip('-')
+    slug = slug.strip("-")
     # Truncate if too long
     if len(slug) > max_length:
-        slug = slug[:max_length].rstrip('-')
-    return slug or 'untitled'
+        slug = slug[:max_length].rstrip("-")
+    return slug or "untitled"
 
 
 def truncate_string(
@@ -136,11 +143,11 @@ def is_safe_url(url: str) -> bool:
     if not url:
         return False
     # Only allow relative URLs or URLs to same domain
-    return url.startswith('/') and not url.startswith('//')
+    return url.startswith("/") and not url.startswith("//")
 
 
 def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
     """Mask sensitive data like email or phone numbers."""
     if len(data) <= visible_chars:
-        return '*' * len(data)
-    return data[:visible_chars] + '*' * (len(data) - visible_chars)
+        return "*" * len(data)
+    return data[:visible_chars] + "*" * (len(data) - visible_chars)
