@@ -48,10 +48,12 @@ services:
 
     # STRUCTURED: Volume management with performance optimization
     volumes:
-      - type: bind
-        source: ${DOCKER_CONTEXT_PATH:-../../../..}
-        target: /workspaces/Goldilocks
-        consistency: cached
+      # Application source code
+      - ${DOCKER_CONTEXT_PATH:-../../../..}:/workspaces/Goldilocks:cached
+
+      # VS Code Server extensions and data persistence
+      - goldilocks-vscode-server-extensions:/root/.vscode-server-insiders/extensions
+      - goldilocks-vscode-server-data:/root/.vscode-server-insiders/data
       # PERFORMANCE: Cache volumes for development tools - references shared volumes
       - goldilocks-pip-cache:/tmp/pip-cache
       - goldilocks-pre-commit-cache:/tmp/pre-commit-cache
