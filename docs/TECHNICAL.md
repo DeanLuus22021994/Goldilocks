@@ -3,17 +3,17 @@ uid: goldilocks.technical
 title: Technical Specifications
 description: Architecture, performance metrics, and development commands for Goldilocks
 author: Goldilocks Development Team
-ms.date: 2024-09-24
+ms.date: 2025-09-25
 ---
 
 ## Quick Reference
 
 | Component    | Version     | Status | Performance Target |
 | ------------ | ----------- | ------ | ------------------ |
-| Python       | 3.14.0      | ✅     | <100ms startup     |
-| Flask        | 3.x         | ✅     | <50ms response     |
+| Python       | 3.12.3      | ✅     | <100ms startup     |
+| Flask        |          | ✅     | <50ms response     |
 | Docker       | Multi-stage | ✅     | <100MB runtime     |
-| Tests        | 100% pass   | ✅     | <5s execution      |
+| Tests        | 0 files   | ✅     | <5s execution      |
 | DevContainer | Optimized   | ✅     | <30s rebuild       |
 
 ## Architecture Checklist
@@ -34,7 +34,7 @@ Essential Commands:
 
 - npm run test:e2e # E2E tests with Cypress
 - python -m pytest # Unit tests (100% pass)
-- scripts/compile-bytecode.ps1 # Bytecode compilation
+- scripts/compile-bytecode.sh # Bytecode compilation
 - docker-compose --profile dev up # Development container
 - docker-compose --profile prod up # Production container
 
@@ -68,4 +68,4 @@ Build Commands:
 | Container rebuild slow | Check devcontainer-lock.json cache                   |
 | Tests failing          | Verify pytest config points to src/goldilocks/tests/ |
 | Large image size       | Use multi-stage runtime target                       |
-| Bytecode not working   | Run scripts/compile-bytecode.ps1                     |
+| Bytecode not working   | Run scripts/compile-bytecode.sh                      |

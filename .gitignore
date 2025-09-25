@@ -37,3 +37,6 @@ node_modules/
 pip-log.txt
 .cache/
 node_modules/
+
+# Documentation build output
+docs/_site/

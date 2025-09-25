@@ -24,4 +24,6 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
+        exclude: '^(docs/_site/|docs/bin/)'
       - id: trailing-whitespace
+        exclude: '^(docs/_site/|docs/bin/)'

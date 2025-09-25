@@ -9,7 +9,8 @@
         {
           "files": ["../src/**/*.py"],
           "dest": "api/",
-          "exclude": ["**/tests/**"]
+          "exclude": ["**/tests/**"],
+          "src": "../"
         }
       ]
     }
@@ -27,7 +28,8 @@
       },
       {
         "files": ["../README.md"],
-        "dest": "."
+        "dest": ".",
+        "src": "../"
       }
     ],
     "resource": [
