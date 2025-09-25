@@ -1,0 +1,108 @@
+# MariaDB Database Service - Edge Computing Optimized
+# Adheres to: LIGHTWEIGHT, HIGH COMPATIBILITY, STRUCTURED, LOW FOOTPRINT
+version: '3.9'
+
+services:
+  goldilocks-db:
+    image: mariadb:11.4-noble  # MODERNIZE: Latest LTS with Ubuntu Noble base
+    container_name: goldilocks-db
+    restart: unless-stopped
+
+    # LIGHTWEIGHT: Minimal resource allocation
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+
+    # HIGH COMPATIBILITY: Environment configuration
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_AUTO_UPGRADE: 1
+      MARIADB_DISABLE_UPGRADE_BACKUP: 1
+      MARIADB_INIT_CONNECT: 'SET sql_mode="STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"'
+
+    # STRUCTURED: Volume management
+    volumes:
+      - type: volume
+        source: goldilocks-db-data
+        target: /var/lib/mysql
+      - type: bind
+        source: ${DOCKER_CONTEXT_PATH}/mariadb-init
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+
+    # LOW FOOTPRINT: Network configuration
+    ports:
+      - "${DB_PORT:-3306}:3306"
+
+    networks:
+      - goldilocks-network
+
+    # MODERNIZE: Advanced edge computing optimizations
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=256M
+      - --innodb-log-file-size=64M
+      - --innodb-flush-log-at-trx-commit=2
+      - --innodb-flush-method=O_DIRECT
+      - --innodb-use-native-aio=1
+      - --innodb-adaptive-flushing=1
+      - --innodb-change-buffering=inserts
+      - --query-cache-type=1
+      - --query-cache-size=32M
+      - --max-connections=100
+      - --table-open-cache=512
+      - --thread-cache-size=16
+      - --key-buffer-size=32M
+      - --tmp-table-size=32M
+      - --max-heap-table-size=32M
+      - --skip-name-resolve
+      - --skip-log-bin
+      - --expire-logs-days=1
+
+    # RELIABILITY: Health monitoring
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 30s
+      start_interval: 5s
+      interval: 15s
+      timeout: 10s
+      retries: 3
+
+    profiles: ["dev", "prod", "database"]
+
+    # PERFORMANCE: System optimizations
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    # SECURITY: Non-root execution
+    user: "999:999"  # mysql user
+
+# STRUCTURED: Volume definitions
+volumes:
+  goldilocks-db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/database
+
+# LOW FOOTPRINT: Network definitions
+networks:
+  goldilocks-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: goldilocks0
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

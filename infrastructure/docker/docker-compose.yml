@@ -1,214 +1,97 @@
+# Goldilocks Ultra-Performance Docker Compose Configuration
+# Modular, Maintainable, and Scalable Microservice Architecture
+# Adheres to: MODERNIZE, DRY, STRUCTURED, MONOLITHIC, STANDARDIZATION, LOW FOOTPRINT
+
+# MODERNIZE: Latest Docker Compose specification
+version: "3.9"
+
+# STRUCTURED: Include service definitions following SRP
+include:
+  # Core application services
+  - compose/services/database.yml
+  - compose/services/backend.yml
+  - compose/services/frontend.yml
+  - compose/services/adminer.yml
+
+# MODERNIZE: Global service configurations
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+    compress: "true"
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+# DRY: Common service extensions
+x-common-labels: &common-labels
+  com.goldilocks.project: "goldilocks"
+  com.goldilocks.version: "${APP_VERSION:-1.0.0}"
+  com.goldilocks.environment: "${ENVIRONMENT:-development}"
+
+# HIGH COMPATIBILITY: Multi-environment service overrides
 services:
-  # Frontend tooling service - separate Node.js container
-  goldilocks-frontend:
-    image: node:22-alpine
-    container_name: goldilocks-frontend
-    restart: unless-stopped
-    volumes:
-      - ../..:/workspace:cached
-      - goldilocks-node-modules:/workspace/node_modules
-      - npm-cache:/home/node/.npm
-    working_dir: /workspace
-    command: ["tail", "-f", "/dev/null"] # Keep container running
-    networks:
-      - goldilocks-network
-    profiles: ["dev", "frontend"]
-
-  # MariaDB database service - optimized for edge computing
+  # Apply common configurations to all services
   goldilocks-db:
-    image: mariadb:11.2
-    container_name: goldilocks-db
-    restart: unless-stopped
-    environment:
-      - MARIADB_ROOT_PASSWORD=goldilocks_root_2024
-      - MARIADB_DATABASE=goldilocks
-      - MARIADB_USER=goldilocks_user
-      - MARIADB_PASSWORD=goldilocks_pass_2024
-      # Edge computing optimizations
-      - MARIADB_INIT_CONNECT='SET sql_mode="STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"'
-    volumes:
-      - goldilocks-db-data:/var/lib/mysql
-      - ./mariadb-init:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "3306:3306"
-    networks:
-      - goldilocks-network
-    command: >
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-      --innodb-buffer-pool-size=256M
-      --innodb-log-file-size=64M
-      --innodb-flush-log-at-trx-commit=2
-      --innodb-flush-method=O_DIRECT
-      --query-cache-type=1
-      --query-cache-size=32M
-      --max-connections=100
-      --table-open-cache=512
-      --thread-cache-size=16
-      --key-buffer-size=32M
-      --tmp-table-size=32M
-      --max-heap-table-size=32M
-      --skip-name-resolve
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    profiles: ["dev", "prod"]
+    <<: *restart-policy
+    logging: *default-logging
+    labels: *common-labels
 
-  # Adminer database management interface - lightweight
+  goldilocks-backend:
+    <<: *restart-policy
+    logging: *default-logging
+    labels: *common-labels
+
+  goldilocks-frontend:
+    <<: *restart-policy
+    logging: *default-logging
+    labels: *common-labels
+
   goldilocks-adminer:
-    image: adminer:4.8.1-standalone
-    container_name: goldilocks-adminer
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    networks:
-      - goldilocks-network
-    environment:
-      - ADMINER_DEFAULT_SERVER=goldilocks-db
-      - ADMINER_DESIGN=pappu687
-    depends_on:
-      goldilocks-db:
-        condition: service_healthy
-    profiles: ["dev"]
+    <<: *restart-policy
+    logging: *default-logging
+    labels: *common-labels
 
-  # Development service with tools and hot reload
-  goldilocks-dev:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
-      target: devcontainer
-      cache_from:
-        - goldilocks:devcontainer
-      args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.14.0rc3-trixie}
-        BUILDKIT_INLINE_CACHE: ${BUILDKIT_INLINE_CACHE:-1}
-    container_name: goldilocks-dev
-    restart: unless-stopped
-    command: flask run --host 0.0.0.0 --port 9000
-    volumes:
-      - ../..:/workspaces/Goldilocks:cached
-      # Removed: goldilocks-venv:/opt/venv - Use container's optimized venv instead
-      - goldilocks-bytecode-cache:/workspaces/Goldilocks/__pycache__
-      - pip-cache:/home/app/.cache/pip
-      - pre-commit-cache:/home/app/.cache/pre-commit
-      - mypy-cache:/home/app/.mypy_cache
-      - pytest-cache:/home/app/.cache/pytest
-      - ruff-cache:/home/app/.cache/ruff
-      - buildx-cache:/tmp/.buildx-cache
-    environment:
-      - FLASK_APP=app
-      - FLASK_ENV=development
-      - FLASK_DEBUG=1
-      - PYTHONPATH=/workspaces/Goldilocks/src
-      - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=0
-      - DOCKER_BUILDKIT=1
-      - BUILDKIT_PROGRESS=plain
-      # Database connection
-      - DATABASE_URL=mysql+pymysql://goldilocks_user:goldilocks_pass_2024@goldilocks-db:3306/goldilocks
-      - DB_HOST=goldilocks-db
-      - DB_PORT=3306
-      - DB_NAME=goldilocks
-      - DB_USER=goldilocks_user
-      - DB_PASSWORD=goldilocks_pass_2024
-    ports:
-      - "9000:9000"
-    working_dir: /workspaces/Goldilocks
-    networks:
-      - goldilocks-network
-    depends_on:
-      goldilocks-db:
-        condition: service_healthy
-    profiles: ["dev"]
-
-  # Production service with minimal footprint
-  goldilocks-prod:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
-      target: runtime
-      cache_from:
-        - goldilocks:runtime
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-    container_name: goldilocks-prod
-    restart: unless-stopped
-    volumes:
-      - goldilocks-data:/app/data
-    environment:
-      - FLASK_ENV=production
-      - FLASK_DEBUG=0
-      - WORKERS=2
-      - TIMEOUT=30
-    ports:
-      - "9000:9000"
-    networks:
-      - goldilocks-network
-    profiles: ["prod"]
-
-  # Build-only service for CI/CD and caching
-  goldilocks-builder:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
-      target: builder
-      cache_from:
-        - goldilocks:builder
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-    container_name: goldilocks-builder
-    volumes:
-      - goldilocks-build-cache:/app/precompiled
-    profiles: ["build"]
-
+# STRUCTURED: Global volume definitions
 volumes:
-  # Database data volume - persistent MariaDB storage
-  goldilocks-db-data:
+  # Persistent application data
+  goldilocks-app-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/app
+    labels: *common-labels
 
-  # Node modules cache
-  goldilocks-node-modules:
-    driver: local
-
-  # Python bytecode cache
-  goldilocks-bytecode-cache:
-    driver: local
-
-  # Build cache for instant rebuilds
-  goldilocks-build-cache:
-    driver: local
-
-  # Application data
-  goldilocks-data:
-    driver: local
-
-  # Package manager caches
-  pip-cache:
-    driver: local
-
-  npm-cache:
-    driver: local
-
-  # Development tool caches
-  pre-commit-cache:
-    driver: local
-
-  mypy-cache:
-    driver: local
-
-  pytest-cache:
-    driver: local
-
-  ruff-cache:
-    driver: local
-
-  # BuildKit cache for multi-stage builds
-  buildx-cache:
-    driver: local
-
+# LOW FOOTPRINT: Optimized network configuration
 networks:
   goldilocks-network:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: goldilocks0
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+    labels: *common-labels
+
+# STRUCTURED: Environment-specific configurations
+configs:
+  app-config:
+    file: ${CONFIG_PATH:-./config}/app.conf
+
+  nginx-config:
+    file: ${CONFIG_PATH:-./config}/nginx.conf
+
+# SECURITY: Secrets management
+secrets:
+  db-password:
+    external: true
+    name: goldilocks_db_password
+
+  app-secret-key:
+    external: true
+    name: goldilocks_app_secret

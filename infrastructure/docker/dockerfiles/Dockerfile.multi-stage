@@ -1,150 +1,256 @@
 # Goldilocks Ultra-Performance Multi-Stage Dockerfile
-# Optimized for instant subsequent builds with GPU acceleration and aggressive caching
-# Adheres strictly to Copilot Instructions: MODERNIZE, DRY, LIGHTWEIGHT, HIGH COMPATIBILITY
+# MODERNIZE: Latest Python 3.14 with advanced BuildKit features
+# STRUCTURED: Multi-stage build for maximum optimization
+# LIGHTWEIGHT: Minimal attack surface and dependencies
+# HIGH COMPATIBILITY: Cross-platform and multi-architecture support
 
+# syntax=docker/dockerfile:1.9
 ARG PYTHON_VERSION=3.14.0rc3-trixie
-ARG NODE_VERSION=22
+ARG NODE_VERSION=22-alpine3.20
 
 # ============================================================================
-# BUILDER STAGE - Ultra-optimized base with GPU BuildKit acceleration
+# BUILDER STAGE - Ultra-optimized foundation with GPU acceleration
 # ============================================================================
 FROM python:${PYTHON_VERSION} AS builder
 
-# Performance-critical build arguments
+# MODERNIZE: Advanced build arguments with platform detection
 ARG BUILDKIT_INLINE_CACHE=1
-ARG PIP_NO_CACHE_DIR=0
-ARG PIP_DISABLE_PIP_VERSION_CHECK=1
+ARG BUILDX_EXPERIMENTAL=1
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-ARG BUILDX_EXPERIMENTAL=1
+ARG TARGETOS
+ARG TARGETARCH
 
-# Ultra-performance environment variables (LIGHTWEIGHT principle)
+# HIGH COMPATIBILITY: Multi-architecture labels
+LABEL org.opencontainers.image.source="https://github.com/DeanLuus22021994/Goldilocks"
+LABEL org.opencontainers.image.description="Goldilocks Flask Application - Builder Stage"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL maintainer="Goldilocks Team <team@goldilocks.dev>"
+
+# PERFORMANCE: Ultra-optimized environment variables
 ENV PYTHONUNBUFFERED=1 \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONOPTIMIZE=2 \
+  PYTHONHASHSEED=random \
   PIP_NO_INPUT=1 \
-  PIP_TIMEOUT=100 \
+  PIP_TIMEOUT=120 \
   PIP_RETRIES=5 \
+  PIP_DISABLE_PIP_VERSION_CHECK=1 \
+  PIP_NO_CACHE_DIR=0 \
   PIP_CACHE_DIR=/tmp/pip-cache \
+  UV_CACHE_DIR=/tmp/uv-cache \
   DOCKER_BUILDKIT=1 \
-  BUILDKIT_PROGRESS=plain
+  BUILDKIT_PROGRESS=plain \
+  DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies with maximum cache optimization (HIGH COMPATIBILITY)
+# MODERNIZE: Install uv (fastest Python package manager) and system dependencies
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
-  apt-get update && apt-get install -y --no-install-recommends \
+  --mount=type=cache,target=/tmp/uv-cache,sharing=locked \
+  set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends \
   build-essential \
   git \
   curl \
   ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get clean
+  pkg-config \
+  libffi-dev \
+  libssl-dev \
+  libbz2-dev \
+  liblzma-dev \
+  libsqlite3-dev \
+  libreadline-dev \
+  zlib1g-dev; \
+  curl -LsSf https://astral.sh/uv/install.sh | sh; \
+  export PATH="/root/.cargo/bin:$PATH"; \
+  rm -rf /var/lib/apt/lists/*; \
+  apt-get clean; \
+  python -m pip install --upgrade pip setuptools wheel
 
-# Create optimized working environment
+# STRUCTURED: Optimized working environment
 WORKDIR /app
 
-# Copy requirements with maximum layer caching efficiency (DRY principle)
-COPY requirements.txt pyproject.toml ./
+# DRY: Copy dependency files first for maximum layer caching efficiency
+COPY requirements.txt pyproject.toml README.md ./
 
-# Create ultra-optimized virtual environment with persistent caching
+# MODERNIZE: Ultra-fast dependency installation with uv
 RUN --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
+  --mount=type=cache,target=/tmp/uv-cache,sharing=locked \
   --mount=type=cache,target=/opt/venv-cache,sharing=locked \
-  python -m venv /opt/venv --upgrade-deps \
-  && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
-  && /opt/venv/bin/pip install -r requirements.txt
+  set -eux; \
+  export PATH="/root/.cargo/bin:$PATH"; \
+  python -m venv /opt/venv --upgrade-deps; \
+  /opt/venv/bin/pip install --upgrade pip setuptools wheel; \
+  if command -v uv >/dev/null 2>&1; then \
+  uv pip install --system --requirement requirements.txt; \
+  else \
+  /opt/venv/bin/pip install --requirement requirements.txt; \
+  fi
 
-# Copy source code for bytecode precompilation
+# STRUCTURED: Copy source code for bytecode optimization
 COPY src/ ./src/
+COPY frontend/ ./frontend/
 
-# Ultra-performance bytecode precompilation (MODERNIZE principle)
+# PERFORMANCE: Advanced bytecode precompilation with error resilience
 RUN --mount=type=cache,target=/tmp/bytecode-cache,sharing=locked \
-  /opt/venv/bin/python -m compileall -b -f -q src/ \
-  && find src/ -name "*.py" -delete || true \
-  && find src/ -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true \
-  && mkdir -p /opt/precompiled \
-  && cp -r src/* /opt/precompiled/ 2>/dev/null || true
+  set -eux; \
+  export PATH="/opt/venv/bin:$PATH"; \
+  python -m compileall -b -f -q src/ || echo "Warning: Some files failed to compile"; \
+  find src/ -name "*.py" -delete 2>/dev/null || true; \
+  find src/ -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true; \
+  mkdir -p /opt/precompiled; \
+  if [ -d "src/" ]; then cp -r src/* /opt/precompiled/ 2>/dev/null || true; fi
 
 # ============================================================================
-# TOOLS STAGE - Development tools with ultra-aggressive caching
+# TOOLS STAGE - Development tools with intelligent caching
 # ============================================================================
 FROM builder AS tools
 
-# Install development tools with persistent cache (LOW CODE principle)
+# MODERNIZE: Install development tools with uv for speed
 RUN --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
-  /opt/venv/bin/pip install \
-  pytest pytest-cov pytest-xdist \
+  --mount=type=cache,target=/tmp/uv-cache,sharing=locked \
+  set -eux; \
+  export PATH="/root/.cargo/bin:$PATH:/opt/venv/bin"; \
+  if command -v uv >/dev/null 2>&1; then \
+  uv pip install --system \
+  pytest pytest-cov pytest-xdist pytest-benchmark \
   ruff mypy pre-commit \
-  black isort flake8 \
-  httpx
+  black isort flake8 bandit safety \
+  httpx requests-mock \
+  coverage[toml] \
+  sphinx sphinx-rtd-theme; \
+  else \
+  /opt/venv/bin/pip install \
+  pytest pytest-cov pytest-xdist pytest-benchmark \
+  ruff mypy pre-commit \
+  black isort flake8 bandit safety \
+  httpx requests-mock \
+  coverage[toml] \
+  sphinx sphinx-rtd-theme; \
+  fi
 
-# Copy development configurations for caching
-COPY .pre-commit-config.yaml ./
+# STRUCTURED: Development configuration management
+COPY .pre-commit-config.yaml .coveragerc ./
+COPY pyproject.toml setup.cfg ./
 
-# Setup pre-commit hooks with persistent cache (IDEMPOTENCY principle)
+# IDEMPOTENCY: Pre-commit hooks installation with error handling
 RUN --mount=type=cache,target=/tmp/pre-commit-cache,sharing=locked \
-  PRE_COMMIT_HOME=/tmp/pre-commit-cache /opt/venv/bin/pre-commit install-hooks || true
+  set -eux; \
+  export PRE_COMMIT_HOME=/tmp/pre-commit-cache; \
+  export PATH="/opt/venv/bin:$PATH"; \
+  pre-commit install-hooks || echo "Warning: Pre-commit hooks installation failed"
 
 # ============================================================================
-# RUNTIME STAGE - Ultra-minimal production image (LOW FOOTPRINT)
+# RUNTIME STAGE - Ultra-minimal production image (LIGHTWEIGHT)
 # ============================================================================
 FROM python:${PYTHON_VERSION}-slim AS runtime
 
-# Runtime environment (LIGHTWEIGHT principle)
+# LIGHTWEIGHT: Minimal production environment
 ENV PYTHONUNBUFFERED=1 \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONOPTIMIZE=2 \
+  PYTHONHASHSEED=random \
   PATH="/opt/venv/bin:$PATH" \
   FLASK_APP=src.goldilocks.app \
-  FLASK_ENV=production
+  FLASK_ENV=production \
+  FLASK_SKIP_DOTENV=1
 
-# Minimal runtime dependencies with cache
+# SECURITY: Non-root user creation
+RUN groupadd -r app && useradd -r -g app app
+
+# LOW FOOTPRINT: Essential runtime dependencies only
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update && apt-get install -y --no-install-recommends \
-  curl ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get clean
+  set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends \
+  curl \
+  ca-certificates \
+  libffi8 \
+  libssl3; \
+  rm -rf /var/lib/apt/lists/*; \
+  apt-get clean
 
-# Copy optimized virtual environment and precompiled code
-COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /opt/precompiled /app/src
-COPY --from=builder /app /app
+# STRUCTURED: Copy optimized artifacts from builder
+COPY --from=builder --chown=app:app /opt/venv /opt/venv
+COPY --from=builder --chown=app:app /opt/precompiled /app/src
+COPY --from=builder --chown=app:app /app/frontend /app/frontend
+COPY --chown=app:app app.py /app/
 
-# Copy static assets
-COPY frontend/static/ /app/static/
-
+# STRUCTURED: Working directory and permissions
 WORKDIR /app
+RUN chown -R app:app /app
+USER app
+
+# STRUCTURED: Port exposure
 EXPOSE 9000
 
-# Ultra-efficient health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=2 \
+# RELIABILITY: Comprehensive health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --start-interval=5s --retries=3 \
   CMD curl -f http://localhost:9000/health || exit 1
 
-# Optimized production command
-CMD ["/opt/venv/bin/python", "-m", "gunicorn", "--bind", "0.0.0.0:9000", "--workers", "2", "src.goldilocks.app:app"]
+# PERFORMANCE: Optimized production command with gunicorn
+CMD ["/opt/venv/bin/python", "-m", "gunicorn", \
+  "--bind", "0.0.0.0:9000", \
+  "--workers", "2", \
+  "--worker-class", "sync", \
+  "--worker-connections", "1000", \
+  "--max-requests", "1000", \
+  "--max-requests-jitter", "100", \
+  "--timeout", "30", \
+  "--keep-alive", "5", \
+  "--preload-app", \
+  "--access-logfile", "-", \
+  "--error-logfile", "-", \
+  "--log-level", "info", \
+  "src.goldilocks.app:app"]
 
 # ============================================================================
 # DEVCONTAINER STAGE - Ultra-performance development environment
 # ============================================================================
 FROM tools AS devcontainer
 
-# Switch to root for devcontainer setup (STRUCTURED principle)
+# MODERNIZE: Development environment labels
+LABEL org.opencontainers.image.description="Goldilocks Flask Application - DevContainer"
+LABEL org.opencontainers.image.url="https://github.com/DeanLuus22021994/Goldilocks"
+
+# SECURITY: Switch to root for devcontainer setup
 USER root
 
-# Install additional development dependencies with cache (HIGH COMPATIBILITY)
+# HIGH COMPATIBILITY: Modern development tools with error resilience
 RUN --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update && apt-get install -y --no-install-recommends \
-  sudo zsh vim less wget gpg \
-  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
-  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-  && apt-get update \
-  && apt-get install -y gh \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get clean
+  set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends \
+  sudo \
+  zsh \
+  fish \
+  vim \
+  nano \
+  less \
+  wget \
+  gpg \
+  gpg-agent \
+  ssh-client \
+  git-lfs \
+  jq \
+  tree \
+  htop \
+  tmux \
+  unzip; \
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+  gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg; \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+  tee /etc/apt/sources.list.d/github-cli.list > /dev/null; \
+  apt-get update; \
+  apt-get install -y gh || echo "Warning: GitHub CLI installation failed"; \
+  rm -rf /var/lib/apt/lists/*; \
+  apt-get clean
 
-# Ultra-performance development environment (MODERNIZE principle)
+# PERFORMANCE: Optimized development environment variables
 ENV PATH="/opt/venv/bin:$PATH" \
   FLASK_APP=src.goldilocks.app \
   FLASK_ENV=development \
@@ -152,17 +258,28 @@ ENV PATH="/opt/venv/bin:$PATH" \
   PYTHONPATH="/workspaces/Goldilocks/src" \
   PYTHONOPTIMIZE=0 \
   PYTHONDONTWRITEBYTECODE=0 \
+  PYTHONHASHSEED=random \
   PIP_CACHE_DIR=/tmp/pip-cache \
   PRE_COMMIT_HOME=/tmp/pre-commit-cache \
   MYPY_CACHE_DIR=/tmp/mypy-cache \
   RUFF_CACHE_DIR=/tmp/ruff-cache \
-  PYTEST_CACHE_DIR=/tmp/pytest-cache
+  PYTEST_CACHE_DIR=/tmp/pytest-cache \
+  UV_CACHE_DIR=/tmp/uv-cache \
+  SHELL=/bin/bash
 
-# Create optimized cache directories (PERFORMANCE principle)
-RUN mkdir -p /tmp/{pip,pre-commit,mypy,ruff,pytest,build,bytecode}-cache \
-  /opt/precompiled /workspaces/Goldilocks
+# STRUCTURED: Optimized cache directory creation with proper permissions
+RUN mkdir -p /tmp/{pip,uv,pre-commit,mypy,ruff,pytest,build,bytecode}-cache \
+  /opt/precompiled \
+  /workspaces/Goldilocks && \
+  chmod -R 777 /tmp/*-cache && \
+  chmod -R 755 /opt/precompiled /workspaces
 
+# STRUCTURED: Development working directory
 WORKDIR /workspaces/Goldilocks
 
-# Ultra-performance default command
-CMD ["/bin/bash"]
+# MODERNIZE: Enhanced health check for development
+HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=2 \
+  CMD python --version && flask --version || exit 1
+
+# PERFORMANCE: Optimized development command
+CMD ["/bin/bash", "-c", "while :; do sleep 3600; done"]

@@ -1,0 +1,186 @@
+# Backend Application Service - Ultra-Performance Development
+# Adheres to: MODERNIZE, DRY, STRUCTURED, MONOLITHIC, HIGH COMPATIBILITY
+version: '3.9'
+
+services:
+  goldilocks-backend:
+    build:
+      context: ${DOCKER_CONTEXT_PATH:-../../../..}
+      dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
+      target: ${BUILD_TARGET:-devcontainer}
+      # MODERNIZE: Advanced BuildKit features
+      cache_from:
+        - goldilocks:${BUILD_TARGET:-devcontainer}
+        - goldilocks:builder
+        - goldilocks:tools
+      # HIGH COMPATIBILITY: Build arguments
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.14.0rc3-trixie}
+        BUILDKIT_INLINE_CACHE: ${BUILDKIT_INLINE_CACHE:-1}
+        BUILDX_EXPERIMENTAL: ${BUILDX_EXPERIMENTAL:-1}
+        TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64}
+        BUILDPLATFORM: ${BUILDPLATFORM:-linux/amd64}
+      # PERFORMANCE: Parallel builds
+      x-bake:
+        platforms:
+          - linux/amd64
+        cache-to:
+          - type=inline
+        cache-from:
+          - type=registry,ref=goldilocks:buildcache
+
+    container_name: goldilocks-backend
+    restart: unless-stopped
+
+    # MODERNIZE: Resource optimization
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+    # DRY: Command configuration
+    command: >
+      sh -c "
+        export PATH=/opt/venv/bin:$$PATH &&
+        echo '🚀 Starting Goldilocks backend...' &&
+        flask run --host 0.0.0.0 --port 9000 --reload --debugger
+      "
+
+    # STRUCTURED: Volume management with performance optimization
+    volumes:
+      - type: bind
+        source: ${DOCKER_CONTEXT_PATH:-../../../..}
+        target: /workspaces/Goldilocks
+        consistency: cached
+      # PERFORMANCE: Cache volumes for development tools
+      - type: volume
+        source: goldilocks-pip-cache
+        target: /tmp/pip-cache
+      - type: volume
+        source: goldilocks-pre-commit-cache
+        target: /tmp/pre-commit-cache
+      - type: volume
+        source: goldilocks-mypy-cache
+        target: /tmp/mypy-cache
+      - type: volume
+        source: goldilocks-ruff-cache
+        target: /tmp/ruff-cache
+      - type: volume
+        source: goldilocks-pytest-cache
+        target: /tmp/pytest-cache
+      - type: volume
+        source: goldilocks-build-cache
+        target: /tmp/build-cache
+      - type: volume
+        source: goldilocks-bytecode-cache
+        target: /tmp/bytecode-cache
+
+    # HIGH COMPATIBILITY: Environment configuration
+    environment:
+      # Application settings
+      FLASK_APP: ${FLASK_APP:-src.goldilocks.app}
+      FLASK_ENV: ${FLASK_ENV:-development}
+      FLASK_DEBUG: ${FLASK_DEBUG:-1}
+
+      # Python configuration
+      PYTHONPATH: ${PYTHONPATH:-/workspaces/Goldilocks/src}
+      PYTHONUNBUFFERED: ${PYTHONUNBUFFERED:-1}
+      PYTHONDONTWRITEBYTECODE: ${PYTHONDONTWRITEBYTECODE:-0}
+      PYTHONOPTIMIZE: ${PYTHONOPTIMIZE:-0}
+
+      # Development tools
+      PIP_CACHE_DIR: /tmp/pip-cache
+      PRE_COMMIT_HOME: /tmp/pre-commit-cache
+      MYPY_CACHE_DIR: /tmp/mypy-cache
+      RUFF_CACHE_DIR: /tmp/ruff-cache
+      PYTEST_CACHE_DIR: /tmp/pytest-cache
+
+      # Build optimization
+      DOCKER_BUILDKIT: 1
+      BUILDKIT_PROGRESS: plain
+      BUILDX_EXPERIMENTAL: 1
+
+      # Database connection
+      DATABASE_URL: mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@goldilocks-db:3306/${MARIADB_DATABASE}
+      DB_HOST: goldilocks-db
+      DB_PORT: 3306
+      DB_NAME: ${MARIADB_DATABASE}
+      DB_USER: ${MARIADB_USER}
+      DB_PASSWORD: ${MARIADB_PASSWORD}
+
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+
+      # Performance monitoring
+      FLASK_PROFILER_ENABLED: ${FLASK_PROFILER_ENABLED:-false}
+      FLASK_PROFILER_PATH: ${FLASK_PROFILER_PATH:-/tmp/profiler}
+
+    # STRUCTURED: Port configuration
+    ports:
+      - "${BACKEND_PORT:-9000}:9000"
+
+    # STRUCTURED: Working directory
+    working_dir: /workspaces/Goldilocks
+
+    # LOW FOOTPRINT: Network configuration
+    networks:
+      - goldilocks-network
+
+    # RELIABILITY: Dependencies
+    depends_on:
+      goldilocks-db:
+        condition: service_healthy
+        restart: true
+
+    # STRUCTURED: Profile management
+    profiles: ["dev", "backend"]
+
+    # MODERNIZE: Security and performance
+    security_opt:
+      - seccomp:unconfined
+
+    cap_add:
+      - SYS_PTRACE
+
+    # PERFORMANCE: System optimization
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+
+    # MODERNIZE: Health monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health", "||", "exit", "1"]
+      start_period: 60s
+      start_interval: 10s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# PERFORMANCE: Cache volumes
+volumes:
+  goldilocks-pip-cache:
+    driver: local
+  goldilocks-pre-commit-cache:
+    driver: local
+  goldilocks-mypy-cache:
+    driver: local
+  goldilocks-ruff-cache:
+    driver: local
+  goldilocks-pytest-cache:
+    driver: local
+  goldilocks-build-cache:
+    driver: local
+  goldilocks-bytecode-cache:
+    driver: local
+
+networks:
+  goldilocks-network:
+    external: true

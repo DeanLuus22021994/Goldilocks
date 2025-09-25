@@ -1,0 +1,73 @@
+# Database Administration Service - Adminer Ultra-Lightweight
+# Adheres to: LIGHTWEIGHT, STRUCTURED, LOW FOOTPRINT, SECURITY
+version: '3.9'
+
+services:
+  goldilocks-adminer:
+    image: adminer:4.8.1-standalone  # LIGHTWEIGHT: Standalone version
+    container_name: goldilocks-adminer
+    restart: unless-stopped
+
+    # LIGHTWEIGHT: Minimal resources
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.5'
+        reservations:
+          memory: 32M
+          cpus: '0.1'
+
+    # STRUCTURED: Port configuration
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+
+    # LOW FOOTPRINT: Network configuration
+    networks:
+      - goldilocks-network
+
+    # DRY: Environment configuration
+    environment:
+      ADMINER_DEFAULT_SERVER: goldilocks-db
+      ADMINER_DESIGN: ${ADMINER_DESIGN:-pappu687}
+      ADMINER_PLUGINS: ${ADMINER_PLUGINS:-tables-filter tinymce}
+      ADMINER_DEFAULT_DB: ${MARIADB_DATABASE}
+
+    # RELIABILITY: Service dependencies
+    depends_on:
+      goldilocks-db:
+        condition: service_healthy
+        restart: true
+
+    # STRUCTURED: Profile management
+    profiles: ["dev", "admin", "database"]
+
+    # MODERNIZE: Health monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080", "||", "exit", "1"]
+      start_period: 15s
+      start_interval: 3s
+      interval: 30s
+      timeout: 5s
+      retries: 2
+
+    # SECURITY: Read-only root filesystem
+    read_only: true
+
+    # SECURITY: Temporary filesystem for writes
+    tmpfs:
+      - /tmp:size=50M,noexec,nosuid,nodev
+
+    # SECURITY: Drop all capabilities
+    cap_drop:
+      - ALL
+
+    # SECURITY: No new privileges
+    security_opt:
+      - no-new-privileges:true
+
+    init: true  # RELIABILITY: Proper signal handling
+
+networks:
+  goldilocks-network:
+    external: true
