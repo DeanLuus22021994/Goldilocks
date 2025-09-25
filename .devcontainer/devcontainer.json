@@ -5,9 +5,9 @@
     "dockerfile": "../infrastructure/docker/dockerfiles/Dockerfile.multi-stage",
     "target": "devcontainer",
     "args": {
-      "PYTHON_VERSION": "${localEnv:PYTHON_VERSION:-3.14.0rc3-trixie}",
-      "BUILDKIT_INLINE_CACHE": "${localEnv:BUILDKIT_INLINE_CACHE:-1}",
-      "BUILDX_EXPERIMENTAL": "${localEnv:BUILDX_EXPERIMENTAL:-1}"
+      "PYTHON_VERSION": "${localEnv:PYTHON_VERSION}",
+      "BUILDKIT_INLINE_CACHE": "${localEnv:BUILDKIT_INLINE_CACHE}",
+      "BUILDX_EXPERIMENTAL": "${localEnv:BUILDX_EXPERIMENTAL}"
     },
     "options": ["--platform=linux/amd64", "--build-arg=BUILDKIT_INLINE_CACHE=1"]
   },
@@ -35,23 +35,23 @@
 
   "containerEnv": {
     "FLASK_APP": "src.goldilocks.app",
-    "FLASK_ENV": "${localEnv:FLASK_ENV:-development}",
-    "FLASK_DEBUG": "${localEnv:FLASK_DEBUG:-1}",
-    "PYTHONPATH": "${localEnv:PYTHONPATH:-/workspaces/Goldilocks/src}",
-    "PYTHONUNBUFFERED": "${localEnv:PYTHONUNBUFFERED:-1}",
-    "PYTHONDONTWRITEBYTECODE": "${localEnv:PYTHONDONTWRITEBYTECODE:-0}",
+    "FLASK_ENV": "${localEnv:FLASK_ENV}",
+    "FLASK_DEBUG": "${localEnv:FLASK_DEBUG}",
+    "PYTHONPATH": "${localEnv:PYTHONPATH}",
+    "PYTHONUNBUFFERED": "${localEnv:PYTHONUNBUFFERED}",
+    "PYTHONDONTWRITEBYTECODE": "${localEnv:PYTHONDONTWRITEBYTECODE}",
     "PYTHONOPTIMIZE": "0",
-    "PIP_CACHE_DIR": "${localEnv:PIP_CACHE_DIR:-/tmp/pip-cache}",
-    "PRE_COMMIT_HOME": "${localEnv:PRE_COMMIT_HOME:-/tmp/pre-commit-cache}",
-    "MYPY_CACHE_DIR": "${localEnv:MYPY_CACHE_DIR:-/tmp/mypy-cache}",
-    "RUFF_CACHE_DIR": "${localEnv:RUFF_CACHE_DIR:-/tmp/ruff-cache}",
-    "PYTEST_CACHE_DIR": "${localEnv:PYTEST_CACHE_DIR:-/tmp/pytest-cache}",
+    "PIP_CACHE_DIR": "${localEnv:PIP_CACHE_DIR}",
+    "PRE_COMMIT_HOME": "${localEnv:PRE_COMMIT_HOME}",
+    "MYPY_CACHE_DIR": "${localEnv:MYPY_CACHE_DIR}",
+    "RUFF_CACHE_DIR": "${localEnv:RUFF_CACHE_DIR}",
+    "PYTEST_CACHE_DIR": "${localEnv:PYTEST_CACHE_DIR}",
     "DOCKER_BUILDKIT": "1",
     "BUILDKIT_PROGRESS": "plain",
-    "BUILDX_EXPERIMENTAL": "${localEnv:BUILDX_EXPERIMENTAL:-1}",
-    "CUDA_VISIBLE_DEVICES": "${localEnv:CUDA_VISIBLE_DEVICES:-all}",
-    "NVIDIA_VISIBLE_DEVICES": "${localEnv:NVIDIA_VISIBLE_DEVICES:-all}",
-    "NVIDIA_DRIVER_CAPABILITIES": "${localEnv:NVIDIA_DRIVER_CAPABILITIES:-all}"
+    "BUILDX_EXPERIMENTAL": "${localEnv:BUILDX_EXPERIMENTAL}",
+    "CUDA_VISIBLE_DEVICES": "${localEnv:CUDA_VISIBLE_DEVICES}",
+    "NVIDIA_VISIBLE_DEVICES": "${localEnv:NVIDIA_VISIBLE_DEVICES}",
+    "NVIDIA_DRIVER_CAPABILITIES": "${localEnv:NVIDIA_DRIVER_CAPABILITIES}"
   },
 
   "mounts": [
