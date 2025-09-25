@@ -10,13 +10,7 @@
 
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "github.copilot",
-        "github.copilot-chat"
-      ],
+      "extensions": ["github.copilot", "github.copilot-chat"],
       "settings": {
         "python.defaultInterpreterPath": "/opt/venv/bin/python"
       },

@@ -1,4 +1,13 @@
 {
-  "recommendations": ["github.copilot", "github.copilot-chat"],
-  "unwantedRecommendations": []
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "id": "github.copilot",
+      "enabled": true
+    },
+    {
+      "id": "github.copilot-chat",
+      "enabled": true
+    }
+  ]
 }
