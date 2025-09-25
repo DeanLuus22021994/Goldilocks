@@ -1,39 +1,12 @@
 {
-  "name": "Goldilocks Ultra-Performance DevContainer",
-  "build": {
-    "context": "..",
-    "dockerfile": "../infrastructure/docker/dockerfiles/Dockerfile.multi-stage",
-    "target": "devcontainer",
-    "args": {
-      "PYTHON_VERSION": "3.14.0rc3-trixie",
-      "BUILDKIT_INLINE_CACHE": "1",
-      "BUILDX_EXPERIMENTAL": "1"
-    }
-  },
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "name": "Goldilocks DevContainer",
+  "dockerComposeFile": "../infrastructure/docker/docker-compose.yml",
+  "service": "goldilocks-backend",
   "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "root",
 
-  "runArgs": ["--privileged", "--gpus=all", "--shm-size=2g"],
-
-  "containerEnv": {
-    "FLASK_APP": "src.goldilocks.app",
-    "FLASK_ENV": "development",
-    "FLASK_DEBUG": "1",
-    "PYTHONPATH": "/workspaces/Goldilocks/src",
-    "PYTHONUNBUFFERED": "1",
-    "PYTHONDONTWRITEBYTECODE": "0",
-    "PYTHONOPTIMIZE": "0"
-  },
-
-  "overrideCommand": false,
-
-  "onCreateCommand": "echo '🚀 DevContainer initializing...'",
-
-  "postCreateCommand": [
-    "bash",
-    "-c",
-    "echo '🔥 Setting up Python environment...' && export PATH=/opt/venv/bin:$PATH && chmod +x .devcontainer/scripts/*.sh 2>/dev/null || true && .devcontainer/scripts/post-create.sh 2>/dev/null || echo 'Setup complete'"
-  ],
+  "overrideCommand": true,
 
   "customizations": {
     "vscode": {
@@ -42,31 +15,14 @@
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
         "github.copilot",
-        "github.copilot-chat",
-        "ms-python.debugpy"
+        "github.copilot-chat"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/opt/venv/bin/python",
-        "python.terminal.activateEnvironment": true,
-        "python.analysis.typeCheckingMode": "strict",
-        "python.analysis.autoImportCompletions": true,
-        "python.analysis.indexing": true,
-        "files.watcherExclude": {
-          "**/__pycache__/**": true,
-          "**/.pytest_cache/**": true,
-          "**/.mypy_cache/**": true,
-          "**/.ruff_cache/**": true
-        }
+        "python.defaultInterpreterPath": "/opt/venv/bin/python"
       }
     }
   },
 
   "forwardPorts": [9000],
-  "portsAttributes": {
-    "9000": {
-      "label": "Flask Development Server",
-      "onAutoForward": "notify"
-    }
-  },
   "shutdownAction": "stopContainer"
 }

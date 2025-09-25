@@ -1,5 +1,5 @@
 {
-  "python.defaultInterpreterPath": "C:\\Users\\deanl.MSI\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+  "python.defaultInterpreterPath": "/opt/venv/bin/python",
   "python.terminal.activateEnvironment": false,
   "python.analysis.autoSearchPaths": true,
   "python.analysis.extraPaths": [
@@ -10,9 +10,9 @@
     "${workspaceFolder}/src",
     "${workspaceFolder}/*.py"
   ],
-  "python.envFile": "${workspaceFolder}/.env",
+  "python.envFile": "${workspaceFolder}/infrastructure/docker/compose/shared/environment.env",
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["src/goldilocks/tests", "-v", "--tb=short"],
+  "python.testing.pytestArgs": ["src/tests", "-v", "--tb=short"],
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
   "editor.rulers": [79],
   "python.formatting.blackArgs": ["--line-length", "79"],
@@ -36,7 +36,19 @@
   "python.analysis.diagnosticMode": "workspace",
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "pylance.insidersChannel": "off",
-  "python.analysis.typeCheckingMode": "basic",
-  "python-envs.defaultEnvManager": "ms-python.python:system",
-  "python-envs.pythonProjects": []
+  "python.analysis.typeCheckingMode": "strict",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.formatting.provider": "none",
+  "python.analysis.stubPath": "${workspaceFolder}/src",
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "**/.devcontainer/devcontainer.json",
+        "**/devcontainer.json"
+      ],
+      "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json"
+    }
+  ]
 }
