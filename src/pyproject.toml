@@ -55,17 +55,17 @@ where = ["src"]
 "" = "src"
 
 [tool.black]
-line-length = 79
+line-length = 120
 target-version = ["py39", "py310", "py311", "py312"]
 include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
-line_length = 79
+line_length = 120
 multi_line_output = 3
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

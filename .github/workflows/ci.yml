@@ -35,7 +35,7 @@ jobs:
             echo "Pre-commit failed (likely network timeout), running individual checks..."
             pip install pyupgrade==3.19.0
             black --check .
-            isort --check-only --profile black --line-length 100 .
+            isort --check-only --profile black --line-length 120 .
             flake8 .
             find . -name "*.py" -exec pyupgrade --py313-plus {} \;
             find . -name "*.yaml" -o -name "*.yml" | xargs -I {} python -c "import yaml; yaml.safe_load(open('{}'))"

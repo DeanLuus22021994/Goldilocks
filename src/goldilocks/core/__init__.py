@@ -10,8 +10,12 @@ This module provides:
 - Base classes for business logic components
 """
 
+from __future__ import annotations
+
 import os
 from typing import Any
+
+from sqlalchemy.pool import StaticPool
 
 
 class Config:
@@ -23,6 +27,7 @@ class Config:
         "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@" "localhost:3306/goldilocks",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_SESSION_OPTIONS = {"expire_on_commit": False}
     SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
         "pool_size": 10,
         "pool_timeout": 30,
@@ -65,7 +70,12 @@ class TestingConfig(Config):
     """Testing configuration."""
 
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite:///:memory:")
+    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False},
+    }
 
 
 # Configuration mapping

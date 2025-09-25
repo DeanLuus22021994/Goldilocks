@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from typing import Any, cast
 
 import pytest
@@ -14,7 +14,7 @@ from flask.testing import FlaskClient
 from goldilocks.app import app as flask_app
 
 # Import our models for fixtures
-from goldilocks.models.database import User
+from goldilocks.models.database import User, db
 
 # Cached terminal reporter and verbosity settings
 _TR: Any = None
@@ -32,6 +32,19 @@ def pytest_configure(config: pytest.Config) -> None:
 def app_fixture() -> Flask:
     """Return the Flask app instance once per test session."""
     return flask_app
+
+
+@pytest.fixture(autouse=True)
+def _reset_database(app: Flask) -> Generator[None]:
+    """Ensure a clean database state for every test."""
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+    yield
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
 
 
 @pytest.fixture()
@@ -105,20 +118,28 @@ def pytest_report_teststatus(
 @pytest.fixture()
 def test_user() -> User:
     """Create a test user instance."""
-    user = User()
-    user.email = "test@example.com"
-    user.username = "testuser"
-    user.full_name = "Test User"
-    user.role = "user"
+    user = User(
+        email="test@example.com",
+        username="testuser",
+        full_name="Test User",
+        role="user",
+    )
+    user.set_password("TestPassword123!")
+    user.active = True
+    user.is_verified = False
     return user
 
 
 @pytest.fixture()
 def admin_user() -> User:
     """Create a test admin user instance."""
-    user = User()
-    user.email = "admin@example.com"
-    user.username = "admin"
-    user.full_name = "Admin User"
-    user.role = "admin"
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        full_name="Admin User",
+        role="admin",
+    )
+    user.set_password("AdminPassword123!")
+    user.active = True
+    user.is_verified = True
     return user
