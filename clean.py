@@ -115,9 +115,7 @@ def clean_virtual_environments() -> int:
                 or (venv_path / "Scripts" / "python.exe").exists()
                 or (venv_path / "bin" / "python").exists()
             ):
-                count += remove_directory(
-                    venv_path, f"virtual environment ({venv_name})"
-                )
+                count += remove_directory(venv_path, f"virtual environment ({venv_name})")
 
     return count
 
@@ -310,9 +308,7 @@ def _confirm(action: str, force: bool) -> bool:
 
 def main() -> None:
     """Main cleanup function."""
-    parser = argparse.ArgumentParser(
-        description="Aggressively clean Python caches and temp files."
-    )
+    parser = argparse.ArgumentParser(description="Aggressively clean Python caches and temp files.")
     parser.add_argument(
         "--force",
         "-f",

@@ -61,8 +61,7 @@ class RegisterForm(FlaskForm):  # type: ignore[misc]
             ),
             Regexp(
                 r"^[a-zA-Z0-9_-]+$",
-                message="Username can only contain letters, numbers, "
-                "underscores, and hyphens",
+                message="Username can only contain letters, numbers, " "underscores, and hyphens",
             ),
         ],
         render_kw={
@@ -106,8 +105,7 @@ class RegisterForm(FlaskForm):  # type: ignore[misc]
             Length(min=8, message="Password must be at least 8 characters"),
             Regexp(
                 r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)",
-                message="Password must contain at least one lowercase letter, "
-                "one uppercase letter, and one number",
+                message="Password must contain at least one lowercase letter, " "one uppercase letter, and one number",
             ),
         ],
         render_kw={
@@ -130,9 +128,7 @@ class RegisterForm(FlaskForm):  # type: ignore[misc]
 
     terms_accepted = BooleanField(
         "I accept the Terms of Service and Privacy Policy",
-        validators=[
-            DataRequired(message="You must accept the terms to register")
-        ],
+        validators=[DataRequired(message="You must accept the terms to register")],
     )
 
 
@@ -168,9 +164,7 @@ class ProfileForm(FlaskForm):  # type: ignore[misc]
         "Location",
         validators=[
             Optional(),
-            Length(
-                max=255, message="Location must be less than 255 characters"
-            ),
+            Length(max=255, message="Location must be less than 255 characters"),
         ],
         render_kw={
             "placeholder": "City, Country",
@@ -182,9 +176,7 @@ class ProfileForm(FlaskForm):  # type: ignore[misc]
         "Website",
         validators=[
             Optional(),
-            Length(
-                max=500, message="Website URL must be less than 500 characters"
-            ),
+            Length(max=500, message="Website URL must be less than 500 characters"),
         ],
         render_kw={"placeholder": "https://example.com", "type": "url"},
     )
@@ -208,9 +200,7 @@ class ProfileForm(FlaskForm):  # type: ignore[misc]
         "Job Title",
         validators=[
             Optional(),
-            Length(
-                max=255, message="Job title must be less than 255 characters"
-            ),
+            Length(max=255, message="Job title must be less than 255 characters"),
         ],
         render_kw={
             "placeholder": "Job title",
@@ -238,8 +228,7 @@ class ChangePasswordForm(FlaskForm):  # type: ignore[misc]
             Length(min=8, message="Password must be at least 8 characters"),
             Regexp(
                 r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)",
-                message="Password must contain at least one lowercase letter, "
-                "one uppercase letter, and one number",
+                message="Password must contain at least one lowercase letter, " "one uppercase letter, and one number",
             ),
         ],
         render_kw={
@@ -287,8 +276,7 @@ class ResetPasswordForm(FlaskForm):  # type: ignore[misc]
             Length(min=8, message="Password must be at least 8 characters"),
             Regexp(
                 r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)",
-                message="Password must contain at least one lowercase letter, "
-                "one uppercase letter, and one number",
+                message="Password must contain at least one lowercase letter, " "one uppercase letter, and one number",
             ),
         ],
         render_kw={

@@ -21,9 +21,7 @@ class ProjectDataCollector:
 
     def collect_metrics(self) -> ProjectMetrics:
         """Collect project metrics without cross-cutting concerns."""
-        files_count = sum(
-            1 for _ in self.project_root.rglob("*") if _.is_file()
-        )
+        files_count = sum(1 for _ in self.project_root.rglob("*") if _.is_file())
 
         # Count lines of code in Python files
         loc = 0
@@ -34,12 +32,10 @@ class ProjectDataCollector:
                 continue
 
         test_files = len(list(self.project_root.rglob("test*.py")))
-        docker_files = len(
-            list(self.project_root.rglob("*Dockerfile*"))
-        ) + len(list(self.project_root.rglob("docker-compose*.yml")))
-        github_workflows = len(
-            list(self.project_root.rglob(".github/workflows/*.yml"))
+        docker_files = len(list(self.project_root.rglob("*Dockerfile*"))) + len(
+            list(self.project_root.rglob("docker-compose*.yml"))
         )
+        github_workflows = len(list(self.project_root.rglob(".github/workflows/*.yml")))
 
         return ProjectMetrics(
             files_count=files_count,

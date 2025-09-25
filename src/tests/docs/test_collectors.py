@@ -78,12 +78,8 @@ class TestSystemDataCollector:
         """Test successful system info collection."""
         # Mock subprocess calls
         mock_run.side_effect = [
-            MagicMock(
-                stdout="Python 3.12.0", returncode=0
-            ),  # python --version
-            MagicMock(
-                stdout="Docker version 20.10.0", returncode=0
-            ),  # docker --version
+            MagicMock(stdout="Python 3.12.0", returncode=0),  # python --version
+            MagicMock(stdout="Docker version 20.10.0", returncode=0),  # docker --version
         ]
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -103,9 +99,7 @@ class TestSystemDataCollector:
             assert system_info.timestamp is not None
 
     @patch("subprocess.run")
-    def test_collect_system_info_command_failures(
-        self, mock_run: MagicMock
-    ) -> None:
+    def test_collect_system_info_command_failures(self, mock_run: MagicMock) -> None:
         """Test system info collection with command failures."""
         # Mock failed subprocess calls
         mock_run.side_effect = FileNotFoundError()

@@ -87,10 +87,7 @@ def version() -> tuple[dict[str, Any], int]:
 
     return {
         "app": _FALLBACK_APP_VERSION,
-        "python": (
-            f"{sys.version_info.major}.{sys.version_info.minor}."
-            f"{sys.version_info.micro}"
-        ),
+        "python": (f"{sys.version_info.major}.{sys.version_info.minor}." f"{sys.version_info.micro}"),
         "flask": get_version("Flask"),
         "platform": platform.system().lower(),
     }, 200

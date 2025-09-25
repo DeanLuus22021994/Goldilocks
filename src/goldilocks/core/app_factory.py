@@ -98,9 +98,7 @@ def setup_request_handlers(app: Flask) -> None:
     def add_correlation_id_and_timing() -> None:
         """Add correlation ID and start timing for each request."""
         # Use provided X-Request-ID header or generate new UUID
-        g.correlation_id = request.headers.get(
-            'X-Request-ID', str(uuid.uuid4())
-        )
+        g.correlation_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
         g.start_time = time.perf_counter()  # More precise timing
 
     @app.after_request
@@ -143,9 +141,7 @@ def create_app(config_name: str = "default") -> Flask:
     # app_factory.py is in src/goldilocks/core/app_factory.py
     # We need to go up 3 levels to get to project root
     current_file = os.path.abspath(__file__)
-    base_dir = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
-    )
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_file))))
     static_folder = os.path.join(base_dir, "frontend", "static")
 
     # Templates are now located in frontend/static/templates

@@ -33,9 +33,7 @@ db = SQLAlchemy(model_class=Base)
 
 # Typed wrappers for werkzeug functions to satisfy mypy
 _generate_password_hash: Callable[..., str] = cast(Any, generate_password_hash)
-_check_password_hash: Callable[[str, str], bool] = cast(
-    Any, check_password_hash
-)
+_check_password_hash: Callable[[str, str], bool] = cast(Any, check_password_hash)
 
 
 class User(Base):  # ← Type checker happy, fully modern
@@ -45,32 +43,22 @@ class User(Base):  # ← Type checker happy, fully modern
 
     id: Mapped[int] = mapped_column(primary_key=True)
     uuid: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False
-    )
-    username: Mapped[str] = mapped_column(
-        String(64), unique=True, nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
     # Renamed to avoid UserMixin conflict
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
-    role: Mapped[str] = mapped_column(
-        Enum("user", "admin", "moderator", name="user_role"), default="user"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    role: Mapped[str] = mapped_column(Enum("user", "admin", "moderator", name="user_role"), default="user")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
-    last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Relationships
     sessions: Mapped[list[UserSession]] = relationship(
@@ -94,9 +82,7 @@ class User(Base):  # ← Type checker happy, fully modern
 
     def set_password(self, password: str) -> None:
         """Set password hash."""
-        self.password_hash = _generate_password_hash(
-            password, method="pbkdf2:sha256"
-        )
+        self.password_hash = _generate_password_hash(password, method="pbkdf2:sha256")
 
     def check_password(self, password: str) -> bool:
         """Check password against hash."""
@@ -132,15 +118,9 @@ class User(Base):  # ← Type checker happy, fully modern
             "is_active": self.is_active,
             "is_verified": self.is_verified,
             "role": self.role,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
-            "updated_at": (
-                self.updated_at.isoformat() if self.updated_at else None
-            ),
-            "last_login_at": (
-                self.last_login_at.isoformat() if self.last_login_at else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
+            "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
+            "last_login_at": (self.last_login_at.isoformat() if self.last_login_at else None),
         }
 
     def __repr__(self) -> str:
@@ -157,20 +137,12 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    session_id: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False
-    )
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=False
-    )
+    session_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
-    expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
@@ -191,12 +163,8 @@ class UserSession(Base):
             "session_id": self.session_id,
             "user_id": self.user_id,
             "ip_address": self.ip_address,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
-            "expires_at": (
-                self.expires_at.isoformat() if self.expires_at else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
+            "expires_at": (self.expires_at.isoformat() if self.expires_at else None),
             "is_active": self.is_active,
             "is_expired": self.is_expired(),
         }
@@ -211,9 +179,7 @@ class UserProfile(Base):
     __tablename__ = "user_profiles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), unique=True, nullable=False
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
     bio: Mapped[str | None] = mapped_column(Text)
     location: Mapped[str | None] = mapped_column(String(255))
     website: Mapped[str | None] = mapped_column(String(500))
@@ -221,12 +187,8 @@ class UserProfile(Base):
     job_title: Mapped[str | None] = mapped_column(String(255))
     timezone: Mapped[str] = mapped_column(String(64), default="UTC")
     language: Mapped[str] = mapped_column(String(8), default="en")
-    theme: Mapped[str] = mapped_column(
-        Enum("light", "dark", "auto", name="theme_type"), default="auto"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    theme: Mapped[str] = mapped_column(Enum("light", "dark", "auto", name="theme_type"), default="auto")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -253,12 +215,8 @@ class UserProfile(Base):
             "timezone": self.timezone,
             "language": self.language,
             "theme": self.theme,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
-            "updated_at": (
-                self.updated_at.isoformat() if self.updated_at else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
+            "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
         }
 
     def __repr__(self) -> str:
@@ -277,17 +235,11 @@ class ActivityLog(Base):
     resource_id: Mapped[str | None] = mapped_column(String(255))
     ip_address: Mapped[str | None] = mapped_column(String(45))
     user_agent: Mapped[str | None] = mapped_column(Text)
-    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(
-        JSON
-    )  # Renamed to avoid SQLAlchemy conflict
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # Renamed to avoid SQLAlchemy conflict
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    user: Mapped[User | None] = relationship(
-        "User", back_populates="activity_logs"
-    )
+    user: Mapped[User | None] = relationship("User", back_populates="activity_logs")
 
     def __init__(self, **kwargs: Any) -> None:
         """Initialize ActivityLog with proper parameter handling."""
@@ -306,9 +258,7 @@ class ActivityLog(Base):
             "resource_id": self.resource_id,
             "ip_address": self.ip_address,
             "metadata": self.metadata_json,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
         }
 
     def __repr__(self) -> str:
@@ -321,9 +271,7 @@ class SystemSetting(Base):
     __tablename__ = "system_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    key_name: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False
-    )
+    key_name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     value_text: Mapped[str | None] = mapped_column(Text)
     value_type: Mapped[str] = mapped_column(
         Enum("string", "integer", "boolean", "json", name="setting_type"),
@@ -331,9 +279,7 @@ class SystemSetting(Base):
     )
     description: Mapped[str | None] = mapped_column(Text)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -386,12 +332,8 @@ class SystemSetting(Base):
             "value_type": self.value_type,
             "description": self.description,
             "is_public": self.is_public,
-            "created_at": (
-                self.created_at.isoformat() if self.created_at else None
-            ),
-            "updated_at": (
-                self.updated_at.isoformat() if self.updated_at else None
-            ),
+            "created_at": (self.created_at.isoformat() if self.created_at else None),
+            "updated_at": (self.updated_at.isoformat() if self.updated_at else None),
         }
 
     def __repr__(self) -> str:

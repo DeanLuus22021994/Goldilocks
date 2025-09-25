@@ -194,9 +194,7 @@ class TestRequestHandling:
         timing = response.headers["X-Response-Time-ms"]
         assert float(timing) >= 0.0
 
-    def test_correlation_id_generated_when_not_provided(
-        self, client: FlaskClient
-    ) -> None:
+    def test_correlation_id_generated_when_not_provided(self, client: FlaskClient) -> None:
         """Test that correlation ID is generated when not provided."""
         response = client.get("/health")
 
@@ -215,9 +213,7 @@ class TestRequestHandling:
         data = response.get_json()
         assert data == {"message": "Not Found"}
 
-    def test_error_responses_include_headers(
-        self, client: FlaskClient
-    ) -> None:
+    def test_error_responses_include_headers(self, client: FlaskClient) -> None:
         """Test that error responses include standard headers."""
         response = client.get("/nonexistent-endpoint")
 
@@ -262,11 +258,7 @@ class TestApplicationIntegration:
             db.session.commit()
 
             # Should be able to query the user
-            queried_user = (
-                db.session.query(User)
-                .filter_by(email="test@example.com")
-                .first()
-            )
+            queried_user = db.session.query(User).filter_by(email="test@example.com").first()
             assert queried_user is not None
             assert queried_user.username == "testuser"
 

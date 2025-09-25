@@ -82,9 +82,7 @@ class DatabaseTestMixin:
     """Mixin class for database tests."""
 
     @staticmethod
-    def create_test_user(
-        email: str = "test@example.com", username: str = "testuser"
-    ) -> User:
+    def create_test_user(email: str = "test@example.com", username: str = "testuser") -> User:
         """Create a test user with specified email and username."""
         user = User()
         user.email = email

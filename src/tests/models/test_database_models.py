@@ -81,9 +81,7 @@ class TestUserModel:
             assert user.is_admin() is False
 
             # Admin user
-            admin = User(
-                email="admin@example.com", username="admin", role="admin"
-            )
+            admin = User(email="admin@example.com", username="admin", role="admin")
             assert admin.is_admin() is True
 
     def test_user_get_id_for_flask_login(self, app: Flask) -> None:
@@ -210,9 +208,7 @@ class TestUserSessionModel:
             assert session.user_id == test_user.id
             assert session.ip_address == "127.0.0.1"
 
-    def test_user_session_expiration(
-        self, app: Flask, test_user: User
-    ) -> None:
+    def test_user_session_expiration(self, app: Flask, test_user: User) -> None:
         """Test session expiration functionality."""
         with app.app_context():
             db.create_all()
@@ -220,9 +216,7 @@ class TestUserSessionModel:
             db.session.commit()
 
             # Create expired session
-            expired_time = datetime.now(timezone.utc).replace(
-                year=2020
-            )  # Past date
+            expired_time = datetime.now(timezone.utc).replace(year=2020)  # Past date
             session = UserSession(
                 session_id="expired_session",
                 user_id=test_user.id,
@@ -232,16 +226,12 @@ class TestUserSessionModel:
             assert session.is_expired() is True
 
             # Create future session
-            future_time = datetime.now(timezone.utc).replace(
-                year=2030
-            )  # Future date
+            future_time = datetime.now(timezone.utc).replace(year=2030)  # Future date
             session.expires_at = future_time
 
             assert session.is_expired() is False
 
-    def test_user_session_relationship(
-        self, app: Flask, test_user: User
-    ) -> None:
+    def test_user_session_relationship(self, app: Flask, test_user: User) -> None:
         """Test relationship between user and session."""
         with app.app_context():
             db.create_all()
@@ -291,9 +281,7 @@ class TestUserProfileModel:
             assert profile.location == "Test City"
             assert profile.website == "https://example.com"
 
-    def test_user_profile_relationship(
-        self, app: Flask, test_user: User
-    ) -> None:
+    def test_user_profile_relationship(self, app: Flask, test_user: User) -> None:
         """Test relationship between user and profile."""
         with app.app_context():
             db.create_all()
@@ -429,15 +417,11 @@ class TestSystemSettingModel:
         with app.app_context():
             db.create_all()
 
-            setting1 = SystemSetting(
-                key_name="duplicate_key", value_text="value1"
-            )
+            setting1 = SystemSetting(key_name="duplicate_key", value_text="value1")
             db.session.add(setting1)
             db.session.commit()
 
-            setting2 = SystemSetting(
-                key_name="duplicate_key", value_text="value2"
-            )
+            setting2 = SystemSetting(key_name="duplicate_key", value_text="value2")
             db.session.add(setting2)
 
             try:
@@ -462,9 +446,7 @@ class TestDatabaseIntegration:
             db.session.commit()
 
             # Create profile
-            profile = UserProfile(
-                user_id=user.id, bio="Test developer", location="Test City"
-            )
+            profile = UserProfile(user_id=user.id, bio="Test developer", location="Test City")
             db.session.add(profile)
 
             # Create session
@@ -517,21 +499,6 @@ class TestDatabaseIntegration:
             db.session.commit()
 
             # Verify cascaded deletion
-            assert (
-                db.session.execute(
-                    select(UserProfile).filter_by(user_id=user_id)
-                ).first()
-                is None
-            )
-            assert (
-                db.session.execute(
-                    select(UserSession).filter_by(user_id=user_id)
-                ).first()
-                is None
-            )
-            assert (
-                db.session.execute(
-                    select(ActivityLog).filter_by(user_id=user_id)
-                ).first()
-                is None
-            )
+            assert db.session.execute(select(UserProfile).filter_by(user_id=user_id)).first() is None
+            assert db.session.execute(select(UserSession).filter_by(user_id=user_id)).first() is None
+            assert db.session.execute(select(ActivityLog).filter_by(user_id=user_id)).first() is None
