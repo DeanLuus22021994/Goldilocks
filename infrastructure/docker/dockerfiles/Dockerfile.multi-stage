@@ -5,7 +5,7 @@
 # HIGH COMPATIBILITY: Cross-platform and multi-architecture support
 
 # syntax=docker/dockerfile:1.9
-ARG PYTHON_VERSION=3.14.0rc3-trixie
+ARG PYTHON_VERSION=3.12-slim
 ARG NODE_VERSION=22-alpine3.20
 
 # ============================================================================
@@ -132,8 +132,8 @@ RUN --mount=type=cache,target=/tmp/pip-cache,sharing=locked \
   fi
 
 # STRUCTURED: Development configuration management
-COPY .pre-commit-config.yaml .coveragerc ./
-COPY pyproject.toml setup.cfg ./
+COPY .pre-commit-config.yaml ./
+COPY pyproject.toml ./
 
 # IDEMPOTENCY: Pre-commit hooks installation with error handling
 RUN --mount=type=cache,target=/tmp/pre-commit-cache,sharing=locked \

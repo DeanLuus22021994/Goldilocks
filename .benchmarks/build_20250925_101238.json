@@ -1,0 +1,27 @@
+{
+  "benchmark_info": {
+    "timestamp": "2025-09-25T10:12:38+02:00",
+    "script_version": "1.0.0",
+    "benchmark_id": "20250925_101238"
+  },
+  "system_info": {
+    "os": "Linux",
+    "kernel": "5.15.167.4-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "cpu_cores": 16,
+    "total_memory_mb": 15700,
+    "docker_version": "28.1.1",
+    "buildx_version": "v0.28.0-desktop.1"
+  },
+  "gpu_info": {
+    "available": true,
+    "driver_version": "576.52",
+    "gpu_name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+    "total_memory_mb": 6144
+  },
+  "pre_build_metrics": {
+    "memory_used_mb": 3602,
+    "disk_used_mb": 41154,
+    "gpu_memory_used_mb": 762
+  },
+  "build_process": {
