@@ -8,25 +8,16 @@ services:
       dockerfile: infrastructure/docker/dockerfiles/Dockerfile.multi-stage
       target: ${BUILD_TARGET:-devcontainer}
       # MODERNIZE: Advanced BuildKit features
-      cache_from:
-        - goldilocks:${BUILD_TARGET:-devcontainer}
-        - goldilocks:builder
-        - goldilocks:tools
+      # cache_from: # Removed problematic cache references - will be populated after first build
       # HIGH COMPATIBILITY: Build arguments
       args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.14.0rc3-trixie}
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12-slim}
         BUILDKIT_INLINE_CACHE: ${BUILDKIT_INLINE_CACHE:-1}
         BUILDX_EXPERIMENTAL: ${BUILDX_EXPERIMENTAL:-1}
         TARGETPLATFORM: ${TARGETPLATFORM:-linux/amd64}
         BUILDPLATFORM: ${BUILDPLATFORM:-linux/amd64}
-      # PERFORMANCE: Parallel builds
-      x-bake:
-        platforms:
-          - linux/amd64
-        cache-to:
-          - type=inline
-        cache-from:
-          - type=registry,ref=goldilocks:buildcache
+      # PERFORMANCE: Parallel builds with inline cache
+      # x-bake: # Removed complex bake configuration for reliability
 
     container_name: goldilocks-backend
     restart: unless-stopped
@@ -99,14 +90,18 @@ services:
     networks:
       - goldilocks-network
 
-    # RELIABILITY: Dependencies
+    # RELIABILITY: Dependencies with proper startup order
     depends_on:
       goldilocks-db:
         condition: service_healthy
         restart: true
-      goldilocks-extensions:
+      goldilocks-redis:
         condition: service_healthy
-        restart: false # Extensions provision once
+        restart: true
+      # Extensions service optional - backend can start independently
+      # goldilocks-extensions:
+      #   condition: service_completed_successfully
+      #   restart: false
 
     # MODERNIZE: Security and performance
     security_opt:
@@ -127,7 +122,10 @@ services:
     # MODERNIZE: Health monitoring
     healthcheck:
       test:
-        ["CMD", "curl", "-f", "http://localhost:9000/health", "||", "exit", "1"]
+        - CMD
+        - sh
+        - -c
+        - "curl -f http://localhost:9000/health || exit 1"
       start_period: 60s
       start_interval: 10s
       interval: 30s
