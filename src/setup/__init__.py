@@ -9,7 +9,12 @@ Follows MODERNIZE, HIGH COMPATIBILITY, and STANDARDIZATION principles.
 import platform
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Union
+
+if TYPE_CHECKING:
+    from .container import ContainerSetupManager
+    from .linux import LinuxSetupManager
+    from .windows import WindowsSetupManager
 
 __version__ = "1.0.0"
 
@@ -29,7 +34,7 @@ def get_platform_info() -> dict[str, Any]:
     }
 
 
-def get_setup_module():
+def get_setup_module() -> Union["ContainerSetupManager", "WindowsSetupManager", "LinuxSetupManager"]:
     """
     Get the appropriate setup module based on the current environment.
 
@@ -40,22 +45,22 @@ def get_setup_module():
 
     # Determine environment type
     if platform_info["is_container"]:
-        from .container import setup_manager
+        from .container import ContainerSetupManager
 
-        return setup_manager
+        return ContainerSetupManager()
     elif platform_info["system"] == "windows":
-        from .windows import setup_manager
+        from .windows import WindowsSetupManager
 
-        return setup_manager
+        return WindowsSetupManager()
     elif platform_info["system"] == "linux":
-        from .linux import setup_manager
+        from .linux import LinuxSetupManager
 
-        return setup_manager
+        return LinuxSetupManager()
     else:
         # Fallback to Linux for Unix-like systems
-        from .linux import setup_manager
+        from .linux import LinuxSetupManager
 
-        return setup_manager
+        return LinuxSetupManager()
 
 
 def setup_environment(config: dict[str, Any] | None = None) -> bool:

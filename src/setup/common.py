@@ -75,7 +75,7 @@ def run_command(command: list[str], capture_output: bool = True, use_sudo: bool 
             result = subprocess.run(command, capture_output=True, text=True, timeout=600)
             return result.returncode, result.stdout, result.stderr
         else:
-            result = subprocess.run(command, timeout=600)
+            result = subprocess.run(command, text=True, timeout=600)
             return result.returncode, "", ""
     except subprocess.TimeoutExpired:
         return 1, "", "Command timed out"
@@ -91,7 +91,7 @@ def check_python_version() -> bool:
 
 def verify_packages() -> dict[str, bool]:
     """Verify that required packages are installed."""
-    results = {}
+    results: dict[str, bool] = {}
     for package in REQUIRED_PACKAGES:
         try:
             __import__(package.replace("-", "_"))

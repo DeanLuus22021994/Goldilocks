@@ -183,7 +183,7 @@ Examples:
 
 def _interactive_config() -> dict[str, Any]:
     """Gather configuration in interactive mode."""
-    config = {}
+    config: dict[str, Any] = {}
 
     print("\nInteractive Configuration:")
     print("Press Enter to use default values in [brackets]")

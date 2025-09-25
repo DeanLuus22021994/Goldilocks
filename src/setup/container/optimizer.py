@@ -127,7 +127,7 @@ def setup_minimal_environment() -> bool:
 
 def get_container_stats() -> dict[str, str]:
     """Get container resource statistics."""
-    stats = {}
+    stats: dict[str, str] = {}
 
     try:
         # Get disk usage

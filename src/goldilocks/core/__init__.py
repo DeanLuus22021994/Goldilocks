@@ -23,7 +23,7 @@ class Config:
         "mysql+pymysql://goldilocks_user:goldilocks_pass_2024@" "localhost:3306/goldilocks",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
+    SQLALCHEMY_ENGINE_OPTIONS: dict[str, Any] = {
         "pool_size": 10,
         "pool_timeout": 30,
         "pool_recycle": 1800,  # Recycle connections every 30 minutes
@@ -69,7 +69,7 @@ class TestingConfig(Config):
 
 
 # Configuration mapping
-config = {
+config: dict[str, type[Config]] = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
     "testing": TestingConfig,
@@ -78,7 +78,7 @@ config = {
 
 
 # Core configuration constants
-DEFAULT_CONFIG = {
+DEFAULT_CONFIG: dict[str, Any] = {
     "FLASK_APP": "goldilocks.app",
     "FLASK_ENV": "production",
     "LOG_LEVEL": "INFO",
