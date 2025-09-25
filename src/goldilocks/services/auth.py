@@ -304,7 +304,7 @@ class AuthenticationService:
         """Get statistics about users in the system."""
         try:
             total_users = db.session.query(User).count()
-            active_users = db.session.query(User).filter_by(is_active=True).count()
+            active_users = db.session.query(User).filter_by(active=True).count()
             verified_users = db.session.query(User).filter_by(is_verified=True).count()
             admin_users = db.session.query(User).filter_by(role="admin").count()
 
