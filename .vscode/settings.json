@@ -1,6 +1,6 @@
 {
   // ------------- Python Project Configuration ----------------
-  "python.defaultInterpreterPath": "/opt/venv/bin/python",
+  "python.defaultInterpreterPath": "./venv/bin/python",
   "python.terminal.activateEnvironment": false,
   "python.analysis.autoSearchPaths": true,
   "python.analysis.extraPaths": [
@@ -221,5 +221,6 @@
   "ruff.codeAction.fixViolation": {
     "enable": true
   },
-  "ruff.fixAll": true
+  "ruff.fixAll": true,
+  "python-envs.pythonProjects": []
 }

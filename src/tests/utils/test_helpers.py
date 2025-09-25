@@ -18,8 +18,8 @@ def test_app() -> Generator[Flask]:
     app = create_app("testing")
 
     # Ensure we're using in-memory SQLite for tests
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"
-    app.config['TESTING'] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["TESTING"] = True
 
     with app.app_context():
         db.create_all()
@@ -143,7 +143,9 @@ def assert_json_response(
     if expected_keys:
         data = response.get_json()
         assert isinstance(data, dict)
-        assert expected_keys.issubset(data.keys())
+        # Check that all expected keys are present in the response
+        for key in expected_keys:
+            assert key in data
 
 
 def assert_error_response(

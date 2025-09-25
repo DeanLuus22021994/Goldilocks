@@ -10,33 +10,37 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 
-# Import the Flask app from our package
-from goldilocks.app import app as flask_app
+# Import the Flask app using app factory for testing
+from goldilocks.core.app_factory import create_app
 
 # Import our models for fixtures
 from goldilocks.models.database import User, db
 
 # Cached terminal reporter and verbosity settings
-_TR: Any = None
-_QUIET = False
+_tr: Any = None
+_quiet = False
 
 
 def pytest_configure(config: pytest.Config) -> None:
     """Configure pytest with terminal reporter and verbosity settings."""
-    global _TR, _QUIET  # pylint: disable=global-statement
-    _TR = config.pluginmanager.get_plugin("terminalreporter")
-    _QUIET = bool(getattr(config.option, "quiet", 0))
+    global _tr, _quiet  # pylint: disable=global-statement
+    _tr = config.pluginmanager.get_plugin("terminalreporter")
+    _quiet = bool(getattr(config.option, "quiet", 0))
 
 
 @pytest.fixture(scope="session", name="app")
 def app_fixture() -> Flask:
     """Return the Flask app instance once per test session."""
-    return flask_app
+    return create_app("testing")
 
 
 @pytest.fixture(autouse=True)
-def _reset_database(app: Flask) -> Generator[None]:
-    """Ensure a clean database state for every test."""
+def reset_database(app: Flask) -> Generator[None]:
+    """Ensure a clean database state for every test.
+
+    This fixture runs automatically before and after each test
+    due to autouse=True, so it doesn't need explicit access.
+    """
     with app.app_context():
         db.session.remove()
         db.drop_all()
@@ -71,7 +75,7 @@ def correlation_id_header() -> dict[str, str]:
 
 def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     """Emit a brief RAG status line per test when not in quiet mode."""
-    if report.when != "call" or _TR is None or _QUIET:
+    if report.when != "call" or _tr is None or _quiet:
         return
 
     outcome = report.outcome  # 'passed' | 'failed' | 'skipped'
@@ -85,7 +89,7 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     if getattr(report, "wasxfail", False):
         rag = "AMBER"
 
-    _TR.write_line(
+    _tr.write_line(
         f"{rag} {report.nodeid}",
         green=outcome == "passed",
         red=outcome == "failed",
