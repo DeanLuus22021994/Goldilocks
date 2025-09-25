@@ -2,7 +2,12 @@
 management."""
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import login_required  # type: ignore[misc]
+from flask_login import login_user  # type: ignore[misc]
+from flask_login import (  # type: ignore[import-untyped]
+    current_user,
+    logout_user,
+)
 from werkzeug.wrappers import Response
 
 from goldilocks.models.forms import LoginForm, ProfileForm, RegisterForm
@@ -19,7 +24,7 @@ def login() -> str | Response:
         return redirect(url_for("auth.dashboard"))
 
     form = LoginForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit():  # type: ignore[misc]
         email = form.email.data
         password = form.password.data
 
@@ -52,7 +57,7 @@ def register() -> str | Response:
         return redirect(url_for("auth.dashboard"))
 
     form = RegisterForm()
-    if form.validate_on_submit():
+    if form.validate_on_submit():  # type: ignore[misc]
         email = form.email.data
         username = form.username.data
         password = form.password.data
@@ -107,7 +112,7 @@ def profile() -> str | Response:
     """User profile page and update handler."""
     form = ProfileForm()
 
-    if form.validate_on_submit():
+    if form.validate_on_submit():  # type: ignore[misc]
         success, error = AuthenticationService.update_user_profile(
             user_id=current_user.id,
             full_name=form.full_name.data,
@@ -123,7 +128,7 @@ def profile() -> str | Response:
     # Pre-populate form with current user data
     if not form.is_submitted():
         form.full_name.data = current_user.full_name
-        if hasattr(current_user, 'profile') and current_user.profile:
+        if hasattr(current_user, "profile") and current_user.profile:
             form.bio.data = current_user.profile.bio
 
     return render_template("auth/profile.html", form=form)

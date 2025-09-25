@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from flask import current_app, request
-from flask_login import current_user
+from flask_login import current_user  # type: ignore[import-untyped]
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from goldilocks.models.database import (

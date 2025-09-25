@@ -11,8 +11,8 @@ from logging import StreamHandler, getLogger
 from typing import Any
 
 from flask import Flask, Response, g, request
-from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager  # type: ignore[import-untyped]
+from flask_wtf.csrf import CSRFProtect  # type: ignore[import-untyped]
 
 from goldilocks.api import api_bp
 from goldilocks.api.auth import auth_bp
@@ -84,13 +84,13 @@ def setup_extensions(app: Flask) -> tuple[CSRFProtect, LoginManager]:
 
     # Initialize login manager
     login_manager = LoginManager()
-    login_manager.init_app(app)
+    login_manager.init_app(app)  # type: ignore[misc]
     # Configure login manager properties
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = "auth.login"  # type: ignore[misc]
     login_manager.login_message = "Please log in to access this page"
     login_manager.login_message_category = "info"
 
-    @login_manager.user_loader
+    @login_manager.user_loader  # type: ignore[misc]
     def load_user(user_id: str) -> User | None:  # type: ignore[misc]
         """Load user by ID for Flask-Login."""
         return AuthenticationService.get_user_by_id(int(user_id))
@@ -102,14 +102,14 @@ def setup_request_handlers(app: Flask) -> None:
     """Set up request/response handlers with modern timing."""
 
     @app.before_request
-    def add_correlation_id_and_timing() -> None:
+    def add_correlation_id_and_timing() -> None:  # type: ignore[misc]
         """Add correlation ID and start timing for each request."""
         # Use provided X-Request-ID header or generate new UUID
         g.correlation_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         g.start_time = time.perf_counter()  # More precise timing
 
     @app.after_request
-    def add_response_headers(response: Response) -> Response:
+    def add_response_headers(response: Response) -> Response:  # type: ignore[misc]
         """Add response headers including timing and correlation ID."""
         # Add timing header with precise measurements
         duration_ms = 0.0
@@ -136,7 +136,7 @@ def setup_request_handlers(app: Flask) -> None:
         return response
 
     @app.errorhandler(404)
-    def not_found(_error: Any) -> tuple[dict[str, str], int]:
+    def not_found(_error: Any) -> tuple[dict[str, str], int]:  # type: ignore[misc]
         """Handle 404 errors with proper typing."""
         response_data = {"message": "Not Found"}
         return response_data, 404

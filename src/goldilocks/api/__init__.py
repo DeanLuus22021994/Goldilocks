@@ -20,10 +20,13 @@ from typing import Any
 from flask import Blueprint
 
 # Import fallback version
+_fallback_version = "0.1.0"
 try:
-    from goldilocks import __version__ as _FALLBACK_APP_VERSION
+    from goldilocks import __version__ as _fallback_version
 except ImportError:
-    _FALLBACK_APP_VERSION = "0.1.0"
+    pass
+
+FALLBACK_APP_VERSION = _fallback_version
 
 __all__: list[str] = [
     "API_VERSION",
@@ -53,7 +56,7 @@ def create_error_response(
     details: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create standardized error response format."""
-    response = {
+    response: dict[str, Any] = {
         "error": True,
         "message": message,
         "status_code": status_code,
@@ -86,7 +89,7 @@ def version() -> tuple[dict[str, Any], int]:
             return "unknown"
 
     return {
-        "app": _FALLBACK_APP_VERSION,
+        "app": FALLBACK_APP_VERSION,
         "python": (f"{sys.version_info.major}.{sys.version_info.minor}." f"{sys.version_info.micro}"),
         "flask": get_version("Flask"),
         "platform": platform.system().lower(),
