@@ -11,7 +11,7 @@ Analyze, debug, and fix the identified issue with comprehensive testing.
 ## Issue Description
 
 - **Problem**: ${input:issue_description:Describe the issue or bug}
-- **Error Message**: ${input:error_message:Any specific error messages}
+- **Error Message**: ${input:error_message:Paste the exact error message including stack trace if available}
 - **Expected Behavior**: ${input:expected_behavior:What should happen}
 - **Actual Behavior**: ${input:actual_behavior:What actually happens}
 - **Reproduction Steps**: ${input:repro_steps:Steps to reproduce the issue}

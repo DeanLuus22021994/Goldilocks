@@ -41,7 +41,7 @@ description: "Docker and containerization best practices"
 
 ## Docker Compose Guidelines
 
-- Use version 3.8+ of docker-compose.yml format
+- Do not use version of docker-compose.yml format as it is obsolete
 - Define services with descriptive names
 - Use environment variables for configuration
 - Implement proper volume mounts for persistence
