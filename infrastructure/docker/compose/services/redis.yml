@@ -1,0 +1,62 @@
+# Redis Cache & Session Storage Service - Ultra-Performance
+# Adheres to: LIGHTWEIGHT, HIGH COMPATIBILITY, STRUCTURED, LOW FOOTPRINT
+
+services:
+  goldilocks-redis:
+    image: redis:7-alpine  # LIGHTWEIGHT: Alpine Linux base
+    container_name: goldilocks-redis
+    restart: unless-stopped
+
+    # LIGHTWEIGHT: Minimal resource allocation
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+    # STRUCTURED: Redis configuration
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+      --appendfsync everysec
+      --tcp-keepalive 300
+      --timeout 300
+
+    # STRUCTURED: Volume management - references shared volumes
+    volumes:
+      - goldilocks-redis-data:/data
+
+    # STRUCTURED: Port configuration
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+    # LOW FOOTPRINT: Network configuration - references shared network
+    networks:
+      - goldilocks-network
+
+    # STRUCTURED: Profile management
+    profiles: ["dev", "prod", "cache"]
+
+    # MODERNIZE: Health monitoring
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 10s
+      start_interval: 2s
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+    # SECURITY: Non-root user (redis user in Alpine)
+    user: "999:1000"
+
+    # PERFORMANCE: System optimizations
+    sysctls:
+      - net.core.somaxconn=65535
+
+    init: true  # RELIABILITY: Proper signal handling

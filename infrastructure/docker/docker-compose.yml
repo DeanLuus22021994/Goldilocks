@@ -19,6 +19,7 @@ include:
 
   # Core application services
   - compose/services/database.yml
+  - compose/services/redis.yml
   - compose/services/backend.yml
   - compose/services/frontend.yml
   - compose/services/adminer.yml

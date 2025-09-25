@@ -1,7 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Goldilocks DevContainer",
-  "dockerComposeFile": "../infrastructure/docker/docker-compose.yml",
+  "dockerComposeFile": [
+    "../infrastructure/docker/docker-compose.yml",
+    "docker-compose.devcontainer.yml",
+    "docker-compose.devcontainer.dev.yml"
+  ],
   "service": "goldilocks-backend",
   "workspaceFolder": "/workspaces/Goldilocks",
   "remoteUser": "root",
@@ -43,6 +47,13 @@
     }
   },
 
-  "forwardPorts": [9000],
-  "shutdownAction": "stopContainer"
+  "forwardPorts": [
+    9000, // Flask application
+    3306, // MariaDB database
+    6379, // Redis cache
+    8080, // Adminer database UI
+    5555, // Python debugger
+    9090 // Application metrics/profiler
+  ],
+  "shutdownAction": "stopCompose"
 }

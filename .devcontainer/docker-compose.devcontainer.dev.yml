@@ -1,0 +1,154 @@
+# DevContainer Development Optimizations
+# This file provides development-specific configurations for the devcontainer
+# Adheres to: MODERNIZE, DRY, STRUCTURED development practices
+
+services:
+  goldilocks-backend:
+    # Development environment variables
+    environment:
+      # Flask development settings
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      TEMPLATES_AUTO_RELOAD: "true"
+      SEND_FILE_MAX_AGE_DEFAULT: 1
+
+      # Python development settings
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 0 # Keep .pyc files for debugging
+
+      # Logging for development
+      LOG_LEVEL: DEBUG
+      LOG_FORMAT: colored
+      LOG_REQUESTS: "true"
+      LOG_REQUEST_ID: "true"
+      LOG_RESPONSE_TIME: "true"
+      LOG_DB_QUERIES: "true"
+      LOG_SLOW_QUERIES: "true"
+
+      # Development features
+      ENABLE_PROFILER: "true"
+      ENABLE_QUERY_PROFILER: "true"
+      HOT_RELOAD: 1
+
+      # Feature flags for development
+      FEATURE_DEBUG_TOOLBAR: "true"
+      FEATURE_PROFILER: "true"
+      FEATURE_QUERY_PROFILER: "true"
+
+      # Development security (relaxed for dev)
+      WTF_CSRF_ENABLED: "false"
+      SESSION_COOKIE_SECURE: "false"
+
+    # Expose additional development ports
+    ports:
+      - "9000:9000" # Main Flask app
+      - "5555:5555" # Debugger port
+      - "9090:9090" # Metrics/profiler port
+
+    # Development resource limits (generous)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "4.0"
+        reservations:
+          memory: 1G
+          cpus: "1.0"
+
+  goldilocks-db:
+    # Development database configuration with query logging
+    command:
+      - --general-log=1
+      - --general-log-file=/var/log/mysql/general.log
+      - --slow-query-log=1
+      - --slow-query-log-file=/var/log/mysql/slow.log
+      - --long-query-time=0.5
+      - --log-queries-not-using-indexes=1
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=256M
+      - --max-connections=100
+
+    # Expose database port for external tools
+    ports:
+      - "3306:3306"
+
+  goldilocks-redis:
+    # Development Redis configuration
+    command:
+      - redis-server
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - "" # Disable persistence in development
+      - --appendonly
+      - "no"
+      - --tcp-keepalive
+      - "60"
+      - --timeout
+      - "300"
+      - --loglevel
+      - debug
+
+    # Expose Redis port for external tools
+    ports:
+      - "6379:6379"
+
+  goldilocks-adminer:
+    # Development Adminer configuration
+    environment:
+      ADMINER_DEFAULT_SERVER: goldilocks-db
+      ADMINER_DEFAULT_DB: goldilocks
+      ADMINER_DESIGN: pepa-linha-dark # Better for development
+      ADMINER_PLUGINS: tables-filter tinymce
+
+    # Expose Adminer port
+    ports:
+      - "8080:8080"
+
+  goldilocks-frontend:
+    # Development Node.js environment
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --max-old-space-size=1024
+      NPM_CONFIG_UPDATE_NOTIFIER: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_AUDIT_LEVEL: moderate
+      CI: "false"
+
+    # Development resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "2.0"
+        reservations:
+          memory: 256M
+          cpus: "0.5"
+
+  goldilocks-extensions:
+    # Enhanced development configuration for extensions
+    environment:
+      EXTENSIONS_DEVELOPMENT_MODE: "true"
+      VSCODE_EXTENSIONS_AUTO_RELOAD: "true"
+      EXTENSIONS_LOG_LEVEL: DEBUG
+      GITHUB_COPILOT_DEVELOPMENT: "true"
+      EXTENSIONS_CACHE_ENABLED: "true"
+      MCP_SERVERS_DEVELOPMENT: "true"
+      DOCKER_HOST_ACCESS: "true"
+      PLAYWRIGHT_BROWSERS_PATH: /tmp/playwright-browsers
+
+    # Extended health check interval for development
+    healthcheck:
+      test:
+        - CMD
+        - test
+        - -f
+        - /root/.vscode-server-insiders/extensions/extensions.json
+      start_period: 45s
+      start_interval: 5s
+      interval: 60s
+      timeout: 10s
+      retries: 5

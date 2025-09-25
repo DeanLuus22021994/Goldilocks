@@ -1,0 +1,28 @@
+# DevContainer override for Goldilocks Docker Compose
+# This file removes profile restrictions for devcontainer services
+# and ensures proper service startup for full development stack
+
+services:
+  # Backend application (main devcontainer service)
+  goldilocks-backend:
+    profiles: [] # Remove profile restrictions for devcontainer
+
+  # Database service
+  goldilocks-db:
+    profiles: [] # Remove profile restrictions for devcontainer
+
+  # Redis cache and session storage
+  goldilocks-redis:
+    profiles: [] # Remove profile restrictions for devcontainer
+
+  # Database management UI
+  goldilocks-adminer:
+    profiles: [] # Remove profile restrictions for devcontainer
+
+  # Frontend development tools
+  goldilocks-frontend:
+    profiles: [] # Remove profile restrictions for devcontainer
+
+  # VS Code extensions provisioning
+  goldilocks-extensions:
+    profiles: [] # Remove profile restrictions for devcontainer
