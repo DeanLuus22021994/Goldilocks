@@ -83,13 +83,14 @@ services:
       cache_from:
         - goldilocks:devcontainer
       args:
-        BUILDKIT_INLINE_CACHE: 1
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.14.0rc3-trixie}
+        BUILDKIT_INLINE_CACHE: ${BUILDKIT_INLINE_CACHE:-1}
     container_name: goldilocks-dev
     restart: unless-stopped
     command: flask run --host 0.0.0.0 --port 9000
     volumes:
       - ../..:/workspaces/Goldilocks:cached
-      - goldilocks-venv:/opt/venv
+      # Removed: goldilocks-venv:/opt/venv - Use container's optimized venv instead
       - goldilocks-bytecode-cache:/workspaces/Goldilocks/__pycache__
       - pip-cache:/home/app/.cache/pip
       - pre-commit-cache:/home/app/.cache/pre-commit
@@ -166,10 +167,6 @@ services:
 volumes:
   # Database data volume - persistent MariaDB storage
   goldilocks-db-data:
-    driver: local
-
-  # Virtual environment cache - persistent across rebuilds
-  goldilocks-venv:
     driver: local
 
   # Node modules cache
