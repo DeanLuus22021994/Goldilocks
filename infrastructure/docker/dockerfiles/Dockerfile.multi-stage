@@ -265,14 +265,44 @@ ENV PATH="/opt/venv/bin:$PATH" \
   RUFF_CACHE_DIR=/tmp/ruff-cache \
   PYTEST_CACHE_DIR=/tmp/pytest-cache \
   UV_CACHE_DIR=/tmp/uv-cache \
-  SHELL=/bin/bash
+  SHELL=/bin/bash \
+  VSCODE_EXTENSIONS=/root/.vscode-server-insiders/extensions \
+  GITHUB_COPILOT_ENABLED=true
 
 # STRUCTURED: Optimized cache directory creation with proper permissions
 RUN mkdir -p /tmp/{pip,uv,pre-commit,mypy,ruff,pytest,build,bytecode}-cache \
   /opt/precompiled \
-  /workspaces/Goldilocks && \
+  /workspaces/Goldilocks \
+  /root/.vscode-server-insiders/extensions \
+  /root/.vscode-server-insiders/data \
+  /root/.vscode-server-insiders/logs \
+  /root/.vscode-server-insiders/bin \
+  /root/.vscode-server-insiders/extensions/github.copilot \
+  /root/.vscode-server-insiders/extensions/github.copilot-chat && \
   chmod -R 777 /tmp/*-cache && \
-  chmod -R 755 /opt/precompiled /workspaces
+  chmod -R 755 /opt/precompiled /workspaces /root/.vscode-server-insiders
+
+# STRUCTURED: Copy VS Code Server extensions configuration for GitHub Copilot
+COPY --chown=root:root .vscode-server-insiders/extensions/extensions.json /root/.vscode-server-insiders/extensions/extensions.json
+
+# STRUCTURED: Copy and execute GitHub Copilot provisioning script
+COPY --chown=root:root infrastructure/docker/scripts/provision-copilot-extensions.sh /usr/local/bin/provision-copilot-extensions.sh
+RUN chmod +x /usr/local/bin/provision-copilot-extensions.sh && \
+  /usr/local/bin/provision-copilot-extensions.sh
+
+# PERFORMANCE: Pre-install GitHub Copilot extensions for instant availability
+RUN --mount=type=cache,target=/tmp/vscode-extensions-cache,sharing=locked \
+  set -eux; \
+  # Create extensions manifest to ensure Copilot extensions are prioritized
+  echo '{"extensions": [{"id": "github.copilot", "preRelease": false}, {"id": "github.copilot-chat", "preRelease": false}]}' > /root/.vscode-server-insiders/extensions/extensions-manifest.json; \
+  # Set permissions for VS Code Server directories
+  chmod -R 755 /root/.vscode-server-insiders/extensions; \
+  # Create extension directories with proper structure
+  mkdir -p /root/.vscode-server-insiders/extensions/github.copilot/extension; \
+  mkdir -p /root/.vscode-server-insiders/extensions/github.copilot-chat/extension; \
+  # Ensure extensions.json has proper permissions
+  chmod 644 /root/.vscode-server-insiders/extensions/extensions.json; \
+  echo "GitHub Copilot extension directories prepared"
 
 # STRUCTURED: Development working directory
 WORKDIR /workspaces/Goldilocks
