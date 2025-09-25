@@ -1,0 +1,37 @@
+{
+  "development": {
+    "tools": ["codebase", "changes", "usages", "problems", "runTasks"],
+    "description": "Essential tools for general development tasks",
+    "icon": "code"
+  },
+  "testing": {
+    "tools": ["problems", "codebase", "changes", "runTasks"],
+    "description": "Tools focused on testing and quality assurance",
+    "icon": "beaker"
+  },
+  "debugging": {
+    "tools": ["problems", "codebase", "changes", "runTasks"],
+    "description": "Tools for debugging and troubleshooting issues",
+    "icon": "bug"
+  },
+  "refactoring": {
+    "tools": ["codebase", "usages", "changes", "problems"],
+    "description": "Tools for code refactoring and architectural changes",
+    "icon": "symbol-class"
+  },
+  "documentation": {
+    "tools": ["codebase", "changes"],
+    "description": "Tools for documentation generation and updates",
+    "icon": "book"
+  },
+  "security": {
+    "tools": ["codebase", "problems", "changes"],
+    "description": "Tools for security analysis and vulnerability assessment",
+    "icon": "shield"
+  },
+  "research": {
+    "tools": ["codebase", "fetch", "changes", "problems"],
+    "description": "Tools for technology research and modernization analysis",
+    "icon": "search"
+  }
+}
