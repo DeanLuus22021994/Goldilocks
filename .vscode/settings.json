@@ -91,6 +91,29 @@
     ".github/instructions": true
   },
   "chat.tools.autoApprove": false,
+  "chat.tools.enabled": {
+    "readFile": true,
+    "writeFile": true,
+    "createFile": true,
+    "deleteFile": true,
+    "listFiles": true,
+    "codebase": true,
+    "changes": true,
+    "usages": true,
+    "problems": true,
+    "runTasks": true,
+    "fetch": true,
+    "terminal": true
+  },
+  "chat.tools.files.autoApprove": {
+    "**/*": true,
+    "**/.env*": false,
+    "**/secrets/**": false,
+    "**/*.key": false,
+    "**/*.pem": false,
+    "**/.ssh/**": false,
+    "**/node_modules/**": false
+  },
   "chat.tools.edits.autoApprove": {
     "**/*": true,
     "**/.vscode/*.json": false,
